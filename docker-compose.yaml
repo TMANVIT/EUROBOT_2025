@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  ros2_humble:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ros2_humble_container
+    volumes:
+      - ros2_ws:/ros2_ws
+    tty: true
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+
+volumes:
+  ros2_ws:
