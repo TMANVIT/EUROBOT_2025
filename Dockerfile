@@ -34,10 +34,13 @@ RUN apt-get update && \
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 
 # Create a workspace directory
-RUN mkdir -p /ros2_ws/src
+RUN mkdir -p /ros2_ws/src && cd ~/ros2_ws/ &&\
+    rosdep install -i --from-path src --rosdistro humble -y
 
 # Set the working directory
 WORKDIR /ros2_ws
 
-# Set the entrypoint to bash
-ENTRYPOINT ["/bin/bash"]
+COPY ./run.sh /ros2_ws/run.sh
+RUN chmod 777 ./ros2_ws/run.sh && ./run.sh
+
+ENTRYPOINT ["bin/bash"]
