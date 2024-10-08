@@ -24,27 +24,29 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Add the ROS 2 GPG key and repository
-RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key | tee /etc/apt/trusted.gpg.d/ros.gpg > /dev/null && \
-    echo "deb [signed-by=/etc/apt/trusted.gpg.d/ros.gpg] http://repo.ros2.org/ubuntu/main jammy main" > /etc/apt/sources.list.d/ros2-latest.list
+RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
 
 # Install ROS 2 Humble packages
 RUN apt-get update && \
     apt-get install -y ros-humble-desktop && \
+    apt-get install -y ros-dev-tools && \
+    apt-get install -y python3-colcon-common-extensions &&\
+    apt-get install ros-humble-ament-cmake &&\
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Setup the environment for ROS 2
 RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc
+RUN rosdep init && rosdep update
 
 # Create and set the working directory
 WORKDIR /ros2_ws
 
 # Copy and set permissions for the run script
-COPY ./run.sh ./ros2_ws/run.sh
-RUN chmod +x ./ros2_ws/run.sh
-
-# Run the setup script (if you need it to run in build time)
-RUN ./ros2_ws/run.sh
+COPY /run.sh /ros2_ws/run.sh
+COPY /src /ros2_ws/src
+RUN chmod +x ./run.sh
 
 # Set bash as the entrypoint
 ENTRYPOINT ["/bin/bash"]
