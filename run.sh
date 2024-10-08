@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Exit on any error
-set -e
+set -eu
 
 # Define your workspace directory
 WORKSPACE_DIR="$(pwd)"
