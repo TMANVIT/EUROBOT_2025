@@ -42,19 +42,18 @@ def markers_detection():
     transMatrixDictionary = {}
     corners, ids, rejected = cv2.aruco.detectMarkers(imgToProduse, arucoDict, parameters=arucoParams)
     
+    
     if ids is not None:
+        ids = list(map(lambda x: x[0], ids))
         for i in range(len(ids)):
-            index = fromArucIDtoIndex(ids[i][0], arucoIdDictionary)
+            index = fromArucIDtoIndex(ids[i], arucoIdDictionary)
             rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners[index], 0.025, camera_matrix, dist_coefs)
             cv2.drawFrameAxes(img, camera_matrix, dist_coefs, rvec, tvec, length=0.025)
 
-            tvecDictionary[index] = tvec
-            
+            tvecDictionary[index] = tvec[0][0]
             transMatrixDictionary[index] = cv2.Rodrigues(rvec)
-            transMatrixDictionary[index][0][1] = [-i for i in np.array(transMatrixDictionary[index][0])[1]]
-            transMatrixDictionary[index][0][2] = [-i for i in np.array(transMatrixDictionary[index][0])[2]]
             
-            cv2.putText(img, str(ids[i][0]),(int(corners[index][0][0][0]), int(corners[index][0][0][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            cv2.putText(img, str(ids[i]),(int(corners[index][0][0][0]), int(corners[index][0][0][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
         cv2.aruco.drawDetectedMarkers(img, corners)
     
     return ids, arucoIdDictionary, transMatrixDictionary, tvecDictionary
