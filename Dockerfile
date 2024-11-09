@@ -31,8 +31,9 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o 
 RUN apt-get update && \
     apt-get install -y ros-humble-desktop && \
     apt-get install -y ros-dev-tools && \
-    apt-get install -y python3-colcon-common-extensions &&\
-    apt-get install ros-humble-ament-cmake &&\
+    apt-get install -y python3-colcon-common-extensions && \
+    apt-get install ros-humble-ament-cmake && \
+    apt-get install -y ros-humble-micro-ros-msgs && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

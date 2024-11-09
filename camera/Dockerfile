@@ -31,10 +31,16 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o 
 RUN apt-get update && \
     apt-get install -y ros-humble-desktop && \
     apt-get install -y ros-dev-tools && \
-    apt-get install -y python3-colcon-common-extensions &&\
-    apt-get install ros-humble-ament-cmake &&\
+    apt-get install -y python3-colcon-common-extensions && \
+    apt-get install ros-humble-ament-cmake && \
+    apt-get install ros-humble-cv-bridge && \
+    apt-get install ros-humble-rviz2 && \
+    apt-get install ros-humble-image-transport && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Install OpenCV Python packages
+RUN pip3 install opencv-contrib-python==4.10.0.84 opencv-python==4.10.0.84
 
 # Setup the environment for ROS 2
 RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc
@@ -43,7 +49,9 @@ RUN rosdep init && rosdep update
 # Create and set the working directory
 WORKDIR /ros2_ws
 
+COPY /run.sh /ros2_ws/run.sh
 COPY /src /ros2_ws/src
+RUN chmod +x ./run.sh
 
 # Set bash as the entrypoint
 ENTRYPOINT ["/bin/bash"]

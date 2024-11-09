@@ -1,0 +1,27 @@
+Panels:
+  - Class: "rviz/Displays"
+    Name: "Displays"
+  - Class: "rviz/Views"
+    Name: "Views"
+
+Global Options:
+  Fixed Frame: "map"
+  Frame Rate: 30
+
+Displays:
+  - Class: "rviz/RobotModel"
+    Name: "Robot Model"
+    Enabled: true
+    Robot Description: "robot_description"
+  
+  - Class: "rviz/LaserScan"
+    Name: "Laser Scan"
+    Enabled: true
+    Topic: "/scan"
+
+  - Class: "rviz/Map"
+    Name: "Map"
+    Enabled: true
+    Topic: "/map"
+
+  # Additional displays can be added here
