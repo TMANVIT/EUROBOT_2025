@@ -1,5 +1,5 @@
 services:
-  ros2_humble:
+  robot:
     image: eurobot_2025:latest
     build:
       context: .
@@ -11,12 +11,25 @@ services:
     environment:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
-      - NVIDIA_DRIVER_CAPABILITIES=all
       - CMAKE_PREFIX_PATH=/opt/ros/humble
     volumes:
       - ./src:/ros2_ws/src
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-    ports:
-    - "127.0.0.1:8000:8000"
-    runtime: nvidia
     command: ./run.sh
+
+  camera:
+    image: eurobot_2025_camera:latest
+    build:
+      context: ./camera/
+      dockerfile: Dockerfile
+    stdin_open: true
+    tty: true
+    network_mode: host
+    ipc: host
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - CMAKE_PREFIX_PATH=/opt/ros/humble
+    volumes:
+      - ./src:/ros2_ws/src
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
