@@ -1,27 +1,97 @@
 Panels:
-  - Class: "rviz/Displays"
-    Name: "Displays"
-  - Class: "rviz/Views"
-    Name: "Views"
-
-Global Options:
-  Fixed Frame: "map"
-  Frame Rate: 30
-
-Displays:
-  - Class: "rviz/RobotModel"
-    Name: "Robot Model"
-    Enabled: true
-    Robot Description: "robot_description"
-  
-  - Class: "rviz/LaserScan"
-    Name: "Laser Scan"
-    Enabled: true
-    Topic: "/scan"
-
-  - Class: "rviz/Map"
-    Name: "Map"
-    Enabled: true
-    Topic: "/map"
-
-  # Additional displays can be added here
+  - Class: rviz/Displays
+    Name: Displays
+  - Class: rviz/Views
+    Name: Views
+  - Class: rviz_common/Displays
+    Help Height: 85
+    Name: Displays
+    Property Tree Widget:
+      Expanded: ~
+      Splitter Ratio: 0.5
+    Tree Height: 142
+  - Class: rviz_common/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+Visualization Manager:
+  Class: ""
+  Displays: ~
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: base_link
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Interact
+      Hide Inactive Objects: true
+    - Class: rviz_default_plugins/Measure
+      Line color: 128; 128; 0
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/PublishPoint
+      Single click: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /clicked_point
+    - Class: rviz_default_plugins/SetGoal
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: goal_pose
+    - Class: rviz_default_plugins/SetInitialPose
+      Covariance x: 0.25
+      Covariance y: 0.25
+      Covariance yaw: 0.06853891909122467
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: initialpose
+  Transformation:
+    Current:
+      Class: rviz_default_plugins/TF
+  Value: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 1.011682391166687
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: 5.101049423217773
+        Y: 4.152703762054443
+        Z: 7.614555835723877
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Pitch: -0.5671283006668091
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz_default_plugins)
+      Yaw: 1.689496636390686
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 780
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd000000010000000000000188000002aafc0200000004fb000000100044006900730070006c0061007900730000000044000001240000008100fffffffb0000000a005600690065007700730000000115000000c90000008100fffffffb000000100044006900730070006c006100790073010000004400000124000000eb00fffffffb0000000a00560069006500770073010000016f0000017f000000b900ffffff000002e9000002aa00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Views:
+    collapsed: false
+  Width: 1144
+  X: 535
+  Y: 97
