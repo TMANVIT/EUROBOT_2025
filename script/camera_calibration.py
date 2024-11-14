@@ -21,7 +21,7 @@ def get_calibration_parameters(img_dir):
     detector = cv2.aruco.ArucoDetector(dictionary, params)
 
     # Возможно придется указать полный путь к файлу
-    image_files = glob.glob('samples_charuco/*.jpg')
+    image_files = glob.glob('C:/coding/git/EUROBOT_2025/script/samples_charuco/*.jpg')
 
     all_charuco_ids = []
     all_charuco_corners = []
@@ -54,6 +54,8 @@ OUTPUT_JSON = 'charuco_board_calibration.json'
 
 mtx, dist = get_calibration_parameters(img_dir='samples_charuco')
 data = {"camera_matrix": mtx.tolist(), "dist_coeff": dist.tolist()}
+
+print(mtx, dist)
 
 with open(OUTPUT_JSON, 'w') as json_file:
     json.dump(data, json_file, indent=4)
