@@ -36,6 +36,7 @@ RUN apt-get update && \
     apt-get install ros-humble-cv-bridge && \
     apt-get install ros-humble-rviz2 && \
     apt-get install ros-humble-image-transport && \
+    apt-get install libqt5gui5  && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -52,6 +53,9 @@ WORKDIR /ros2_ws
 COPY /run.sh /ros2_ws/run.sh
 COPY /src /ros2_ws/src
 RUN chmod +x ./run.sh
+
+# test camera
+COPY camera_test.py /camera_test/camera_test.py
 
 # Set bash as the entrypoint
 ENTRYPOINT ["/bin/bash"]

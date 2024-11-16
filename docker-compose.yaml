@@ -29,8 +29,12 @@ services:
     environment:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
+      - QT_DEBUG_PLUGINS=0
       - CMAKE_PREFIX_PATH=/opt/ros/humble
     volumes:
       - ./camera/src:/ros2_ws/src
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    devices:
+      - /dev/video0:/dev/video0
+
     command: ./run.sh

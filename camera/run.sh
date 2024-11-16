@@ -33,11 +33,13 @@ fi
 source "install/local_setup.bash"
 echo "Waiting for running launch file"
 
+
 #Run example node
 if [ "$RUN_RVIZ" = "False" ]; then
-  ros2 launch camera camera_launch.launch.py rviz:=false
+  # TODO Python and RViz cant use camera at the same time
+  python3 /camera_test/camera_test.py && ros2 launch camera camera_launch.launch.py rviz:=false
 else
-  ros2 launch camera camera_launch.launch.py
+  python3 /camera_test/camera_test.py && ros2 launch camera camera_launch.launch.py
 fi
  
 
