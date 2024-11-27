@@ -1,7 +1,7 @@
 import cv_functions as cvf
 import numpy as np
 
-cvf.camera_initialisation(cameraID = 2, imageHight= 2160, imageWidth= 3840)
+cvf.camera_initialisation(cameraID = 2, imageHight= 2560, imageWidth= 1440)
 
 
 def imgProdussing():
@@ -32,6 +32,7 @@ def tMatrixBuilding(ids, tvecDict, transMatrixDict):
             corners.append(tvecDict[i])
             tMratrexes.append(transMatrixDict[i])
 
+
     if(len(corners) == 4):
         center = sum(np.array(corners))/4
     	
@@ -44,34 +45,53 @@ def tMatrixBuilding(ids, tvecDict, transMatrixDict):
 
         xvec = (corners[2] + corners[3] - corners[1] - corners[0])/2
         yvec = (corners[1] + corners[3] - corners[2] - corners[0])/2
-        zvec = np.cross(xvec, yvec)
+        yvec *= -1
+        yvec[2] *= -1
+        # zvec = np.cross(xvec, yvec)
 
-        tmatrix = np.array(list(map(lambda x: x/np.linalg.norm(x), [xvec, yvec, zvec])))
+        # tmatrix = np.array(list(map(lambda x: x/np.linalg.norm(x), [xvec, yvec, zvec])))
         
-        # tmatrix = sum(np.array(tMratrexes))/4
+        tmatrix = sum(np.array(tMratrexes))/4
+
+        # print(tmatrix, sum(np.array(tMratrexes))/4, "jopa", sep="\n")
 
     return tmatrix, center
 
 
 def robotsTracking(ids, transMatrixDict, tvecDict, tmatrix, center):
-    robotCoords = []
-    angles = []
+    robotCoords = None
+    angles = None
 
     for i in ids:
         if i in range(1,10):
-            robotCoords.append(np.dot(np.linalg.inv(tmatrix),np.array(tvecDict[i] - center)))
-            angles.append(angleBetweenVectors(transMatrixDict[i][0], tmatrix[0]))
+            a = tvecDict[i]
+            print(a.reshape((1,3)))
+            if robotCoords ==  None:
+                robotCoords = [np.dot(np.linalg.inv(tmatrix),np.array(tvecDict[i] - center))]
+                angles = [angleBetweenVectors(transMatrixDict[i][0], tmatrix[0])]
+            else:
+                robotCoords.append(np.dot(np.linalg.inv(tmatrix),np.array(tvecDict[i] - center)))
+                angles.append(angleBetweenVectors(transMatrixDict[i][0], tmatrix[0]))
 
     return robotCoords, angles
 
+tmatrix = None
 
-
-while  1:
+while tmatrix is None:
     ids, transMatrixDict, tvecDict = imgProdussing()
 
     if ids is not None:
         tmatrix, center = tMatrixBuilding(ids, tvecDict, transMatrixDict)
 
-        if tmatrix is not None:
-            robotCoords, angles = robotsTracking(ids, transMatrixDict, tvecDict, tmatrix, center)
-            print(robotCoords, angles)
+while  1:
+    ids, transMatrixDict, tvecDict = imgProdussing()
+
+    if ids is not None:
+        robotCoords, angles = robotsTracking(ids, transMatrixDict, tvecDict, tmatrix, center)
+        print(robotCoords, angles)
+
+# while  1:
+#     ids, transMatrixDict, tvecDict = imgProdussing()
+
+#     if ids is not None:
+#         robotCoords, angles = robotsTracking(ids, transMatrixDict, tvecDict, np.eye(3), np.array([0,0,0]))
