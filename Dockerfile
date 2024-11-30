@@ -35,6 +35,8 @@ RUN apt-get update && \
     apt-get install -y python3-colcon-common-extensions && \
     apt-get install ros-$ROS_DISTRO-ament-cmake && \
     apt-get install -y ros-$ROS_DISTRO-micro-ros-msgs && \
+    apt-get -y install ros-$ROS_DISTRO-joint-state-publisher-gui && \
+    apt-get -y install ros-$ROS_DISTRO-xacro && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

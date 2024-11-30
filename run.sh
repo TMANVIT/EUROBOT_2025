@@ -13,7 +13,7 @@ fi
 echo "Building the workspace..."
 source /opt/ros/humble/setup.bash
 rosdep install -i --from-path src --rosdistro humble -y
-colcon build
+colcon build --symlink-install
 
 
 # Source the local setup file after building
@@ -22,5 +22,6 @@ source "install/local_setup.bash"
 echo "Waiting for running launch file"
 
 #Run example node
-ros2 launch cpp_pubsub micro_ros_bringup.launch.py
+ros2 launch cpp_pubsub micro_ros_bringup.launch.py & 
+ros2 launch description construct.launch.py
 

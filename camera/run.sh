@@ -18,7 +18,7 @@ fi
 echo "Building the workspace..."
 source /opt/ros/humble/setup.bash
 rosdep install -i --from-path src --rosdistro humble -y
-colcon build
+colcon build --symlink-install
 
 # Check if colcon build was successful before sourcing
 if [ $? -eq 0 ]; then
