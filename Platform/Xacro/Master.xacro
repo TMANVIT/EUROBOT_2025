@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="Maket">
+     <xacro:include filename= "slave.xacro"/>
+
+     <link name = "Maket">
+          <visual>
+               <origin xyz = "0 0 0" rpy = "0 0 0" />
+               <geometry>
+                    <mesh filename="package://Maket/meshes/Maket.STL" />
+               </geometry>
+               <material name="Maket">
+          </visual>
+          <collision>
+               <origin xyz= "0 0 0" rpy="0 0 0" />
+               <geometry>     
+                    <mesh filename="package://Maket/meshes/Maket.STL" />
+               </geometry>
+          </collision>
+          <!-- <inertial> -->
+          <xacro:Maket mass = "2.24483698501812"/>
+          <!-- <inertial/> -->
+     </link>
+     <!-- <Right_Wheel> -->
+     </link name = "Right_Wheel">
+          <visual>
+               <origin xyz = "0 0 0" rpy = "0 0 0" />
+               <geometry>
+                    <mesh filename = "package://Maket/meshes/Right_Wheel.STL"/>
+               </geometry>
+               <material name = "Right_Wheel"/>
+          </visual>
+          <collision>
+               <origin xyz = "0 0 0" rpy = "0 0 0" />
+               <geometry>
+                    <mesh filename = "package://Maket/meshes/Right_Wheel.STL"/>
+               </geometry>
+          </collision>
+          <!-- <inertial> -->
+          <xaccro:Right_Wheel mass = "0.0609278440646647"/>
+          <!-- <inertial/> -->
+     </link>
+     <joint name="RightWheel" type="continuous">
+          <origin
+               xyz="0.040866 -0.2 0.015296"
+               rpy="-1.5708 0 0" 
+          />
+          <parent 
+               link="Maket" />
+          <child  
+               link="Right_Wheel" />
+          <axis   
+               xyz="0 0 1" />
+          <limit  
+               effort="10" 
+               velocity="10" />
+          <dynamics 
+               damping="0.1"
+               friction="0.1" />
+     </joint>
+     <!-- </Right_Wheel> -->
+     <!-- <Left_Wheel> -->
+     </link name = "Left_Wheel">
+          <visual>
+               <origin xyz = "0 0 0" rpy = "0 0 0" />
+               <geometry>
+                    <mesh filename = "package://Maket/meshes/Left_Wheel.STL"/>
+               </geometry>
+               <material name = "Left_Wheel"/>
+          </visual>
+          <collision>
+               <origin xyz = "0 0 0" rpy = "0 0 0" />
+               <geometry>
+                    <mesh filename = "package://Maket/meshes/Left_Wheel.STL"/>
+               </geometry>
+          </collision>
+          <!-- <inertial> -->
+          <xaccro:Left_Wheel mass = "0.0577108531873887"/>
+          <!-- <inertial/> -->
+     </link>
+     <joint name="LeftWheel" type="continuous">
+          <origin
+               xyz="0.040866 -0.2 0.015296"
+               rpy="-1.5708 0 0" 
+          />
+          <parent 
+               link="Maket" />
+          <child  
+               link="Right_Wheel" />
+          <axis   
+               xyz="0 0 1" />
+          <limit  
+               effort="10" 
+               velocity="10" />
+          <dynamics 
+               damping="0.1"
+               friction="0.1" />
+     </joint>
+     <!--</Left_Whell>-->
+     <!-- <Roller> -->
+     </link name = "Roller">
+          <visual>
+               <origin xyz = "0 0 0" rpy = "0 0 0" />
+               <geometry>
+                    <mesh filename = "package://Maket/meshes/Roller.STL"/>
+               </geometry>
+               <material name = "Roller"/>
+          </visual>
+          <collision>
+               <origin xyz = "0 0 0" rpy = "0 0 0" />
+               <geometry>
+                    <mesh filename = "package://Maket/meshes/Roller.STL"/>
+               </geometry>
+          </collision>
+          <!-- <inertial> -->
+          <xaccro:Left_Wheel mass = "0.0106249291862938"/>
+          <!-- <inertial/> -->
+     </link>
+     <joint name="Roller" type="continuous">
+          <origin
+               xyz="-0.055737 0 -0.005"
+               rpy="-1.5708 0 0"  
+          />
+          <parent 
+               link="Maket" />
+          <child  
+               link="Roller" />
+          <axis   
+               xyz="0 0 -1" />
+          <limit  
+               effort="10" 
+               velocity="10" />
+          <dynamics 
+               damping="0.1"
+               friction="0.1" />
+     </joint>
+     <!--</Roller>-->
+</robot>
+
+
+
+
+       
+
+
+     

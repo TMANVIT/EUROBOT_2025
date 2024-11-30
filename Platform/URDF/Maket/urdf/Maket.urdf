@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="Maket">
+  <link
+    name="Maket">
+    <inertial>
+      <origin
+        xyz="0.022152700168409 -0.000809996770580155 0.107200331423198"
+        rpy="0 0 0" />
+      <mass
+        value="2.24483698501812" />
+      <inertia
+        ixx="0.017171108266307"
+        ixy="7.41182378513859E-05"
+        ixz="0.000134548028700423"
+        iyy="0.00556240946464024"
+        iyz="-8.46684644335415E-05"
+        izz="0.0154086578851944" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Maket/meshes/Maket.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.898039215686275 0.8 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Maket/meshes/Maket.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="Right_Wheel">
+    <inertial>
+      <origin
+        xyz="-6.175795070019E-18 -2.42861286636753E-17 0.0116563539649974"
+        rpy="0 0 0" />
+      <mass
+        value="0.0609278440646647" />
+      <inertia
+        ixx="1.61548368325699E-05"
+        ixy="2.20581496687333E-25"
+        ixz="5.46368876626065E-22"
+        iyy="1.61548368325699E-05"
+        iyz="-8.00640302327215E-21"
+        izz="2.55932138713017E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Maket/meshes/Right_Wheel.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.6 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Maket/meshes/Right_Wheel.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RightWheel"
+    type="continuous">
+    <origin
+      xyz="0.040866 -0.2 0.015296"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="Maket" />
+    <child
+      link="Right_Wheel" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      effort="10"
+      velocity="10" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="Left_Wheel">
+    <inertial>
+      <origin
+        xyz="-2.26065295916128E-19 -2.42861286636753E-17 -0.010522332891134"
+        rpy="0 0 0" />
+      <mass
+        value="0.0577108531873887" />
+      <inertia
+        ixx="1.50439026496173E-05"
+        ixy="3.8344358952925E-24"
+        ixz="-7.45264249140294E-23"
+        iyy="1.50439026496173E-05"
+        iyz="1.07315574491882E-20"
+        izz="2.55674779442835E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Maket/meshes/Left_Wheel.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.6 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Maket/meshes/Left_Wheel.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LeftWheel"
+    type="continuous">
+    <origin
+      xyz="0.040866 0.2 0.015296"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="Maket" />
+    <child
+      link="Left_Wheel" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      effort="10"
+      velocity="10" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="Roller">
+    <inertial>
+      <origin
+        xyz="0 -2.16840434497101E-19 -1.24564498913758E-18"
+        rpy="0 0 0" />
+      <mass
+        value="0.0106249291862938" />
+      <inertia
+        ixx="1.45256797391153E-06"
+        ixy="2.30645963814273E-39"
+        ixz="1.03955497655845E-24"
+        iyy="1.45256797391153E-06"
+        iyz="-1.31736089733523E-22"
+        izz="5.42471410392509E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Maket/meshes/Roller.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.6 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Maket/meshes/Roller.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Roller"
+    type="continuous">
+    <origin
+      xyz="-0.055737 0 -0.005"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="Maket" />
+    <child
+      link="Roller" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      effort="10"
+      velocity="10" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+</robot>
