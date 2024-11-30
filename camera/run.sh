@@ -33,8 +33,15 @@ fi
 source "install/local_setup.bash"
 echo "Waiting for running launch file"
 
+# Setup camera driver
+modprobe -r uvcvideo
+modprobe uvcvideo nodrop=1 timeout=5000 quirks=0x80
+
+# run topics "image_raw" and "image_raw/image_compressed"
+ros2 run v4l2_camera v4l2_camera_node --ros-args -p image_size:="[640,480]"
 
 #Run example node
+
 if [ "$RUN_RVIZ" = "False" ]; then
   # TODO Python and RViz cant use camera at the same time
   python3 /camera_test/camera_test.py && ros2 launch camera camera_launch.launch.py rviz:=false

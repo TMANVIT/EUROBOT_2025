@@ -36,6 +36,9 @@ RUN apt-get update && \
     apt-get install ros-humble-cv-bridge && \
     apt-get install ros-humble-rviz2 && \
     apt-get install ros-humble-image-transport && \
+    apt-get install v4l-utils && \
+    apt-get install ros-humble-v4l2-camera && \
+    apt-get install ros-humble-image-transport-plugins && \
     apt-get install libqt5gui5  && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
