@@ -122,3 +122,5 @@ cython_debug/
 # results from notebooks
 notebooks/**
 !notebooks/*.ipynb
+
+*.swp

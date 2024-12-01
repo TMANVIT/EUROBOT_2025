@@ -1,11 +1,17 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="Maket">
      <xacro:include filename= "Slave.xacro"/>
-     <link name = "Maket">
+
+     <link name="dummy"/>  
+     <joint name="dummy_to_base_link=" type="fixed">  
+          <parent link="dummy"/>  
+          <child link="base_link"/>  
+     </joint>
+     <link name = "base_link">
           <visual>
                <origin xyz = "0 0 0" rpy = "0 0 0" />
                <geometry>
-                    <mesh filename="package://Maket/meshes/Maket.STL" />
+                    <mesh filename="./ros2_ws/install/description/share/description/meshes/Maket.stl" />
                </geometry>
                <material name="">
                     <color rgba="1 0.898039215686275 0.8 1" />
@@ -14,7 +20,7 @@
           <collision>
                <origin xyz= "0 0 0" rpy="0 0 0" />
                <geometry>     
-                    <mesh filename="package://Maket/meshes/Maket.STL" />
+                    <mesh filename="./ros2_ws/install/description/share/description/meshes/Maket.stl" />
                </geometry>
           </collision>
           <inertial>
@@ -37,14 +43,14 @@
           <visual>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://Maket/meshes/Right_Wheel.STL"/>
+                    <mesh filename="./ros2_ws/install/description/share/description/meshes/Right_Wheel.stl"/>
                </geometry>
                <material name="Right_Wheel"/>
           </visual>
           <collision>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://Maket/meshes/Right_Wheel.STL"/>
+                    <mesh filename="./ros2_ws/install/description/share/description/meshes/Right_Wheel.stl"/>
                </geometry>
           </collision>
           <!-- <inertial> -->
@@ -61,7 +67,7 @@
                rpy="-1.5708 0 0" 
           />
           <parent 
-               link="Maket" />
+               link="base_link" />
           <child  
                link="Right_Wheel" />
           <axis   
@@ -79,14 +85,14 @@
           <visual>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://Maket/meshes/Left_Wheel.STL"/>
+                    <mesh filename="package://meshes/Left_Wheel.stl"/>
                </geometry>
                <material name="Left_Wheel"/>
           </visual>
           <collision>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://Maket/meshes/Left_Wheel.STL"/>
+                    <mesh filename="package://meshes/Left_Wheel.stl"/>
                </geometry>
           </collision>
           <!-- <inertial> -->
@@ -104,7 +110,7 @@
                rpy="-1.5708 0 0" 
           />
           <parent 
-               link="Maket" />
+               link="base_link" />
           <child  
                link="Left_Wheel" />
           <axis   
@@ -122,14 +128,14 @@
           <visual>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://Maket/meshes/Roller.STL"/>
+                    <mesh filename="package://meshes/Roller.STL"/>
                </geometry>
                <material name="Roller"/>
           </visual>
           <collision>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://Maket/meshes/Roller.STL"/>
+                    <mesh filename="package://meshes/Roller.stl"/>
                </geometry>
           </collision>
           <!-- <inertial> -->
@@ -147,7 +153,7 @@
                rpy="-1.5708 0 0"  
           />
           <parent 
-               link="Maket" />
+               link="base_link" />
           <child  
                link="Roller" />
           <axis   
