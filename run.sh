@@ -23,5 +23,4 @@ echo "Waiting for running launch file"
 
 #Run example node
 ros2 launch cpp_pubsub micro_ros_bringup.launch.py & 
-ros2 launch description construct.launch.py
 

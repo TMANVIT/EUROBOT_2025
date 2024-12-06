@@ -11,7 +11,7 @@
           <visual>
                <origin xyz = "0 0 0" rpy = "0 0 0" />
                <geometry>
-                    <mesh filename="./ros2_ws/install/description/share/description/meshes/Maket.stl" />
+                    <mesh filename="package://description/meshes/Maket.stl" />
                </geometry>
                <material name="">
                     <color rgba="1 0.898039215686275 0.8 1" />
@@ -20,7 +20,7 @@
           <collision>
                <origin xyz= "0 0 0" rpy="0 0 0" />
                <geometry>     
-                    <mesh filename="./ros2_ws/install/description/share/description/meshes/Maket.stl" />
+                    <mesh filename="package://description/meshes/Maket.stl" />
                </geometry>
           </collision>
           <inertial>
@@ -43,14 +43,14 @@
           <visual>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="./ros2_ws/install/description/share/description/meshes/Right_Wheel.stl"/>
+                    <mesh filename="package://description/meshes/Right_Wheel.stl"/>
                </geometry>
                <material name="Right_Wheel"/>
           </visual>
           <collision>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="./ros2_ws/install/description/share/description/meshes/Right_Wheel.stl"/>
+                    <mesh filename="package://description/meshes/Right_Wheel.stl"/>
                </geometry>
           </collision>
           <!-- <inertial> -->
@@ -85,14 +85,14 @@
           <visual>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://meshes/Left_Wheel.stl"/>
+                    <mesh filename="package://description/meshes/Left_Wheel.stl"/>
                </geometry>
                <material name="Left_Wheel"/>
           </visual>
           <collision>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://meshes/Left_Wheel.stl"/>
+                    <mesh filename="package://description/meshes/Left_Wheel.stl"/>
                </geometry>
           </collision>
           <!-- <inertial> -->
@@ -106,7 +106,7 @@
      </link>
      <joint name="LeftWheel" type="continuous">
           <origin
-               xyz="0.040866 -0.2 0.015296"
+               xyz="0.040866 0.2 0.015296"
                rpy="-1.5708 0 0" 
           />
           <parent 
@@ -128,14 +128,14 @@
           <visual>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://meshes/Roller.STL"/>
+                    <mesh filename="package://description/meshes/Roller.stl"/>
                </geometry>
                <material name="Roller"/>
           </visual>
           <collision>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://meshes/Roller.stl"/>
+                    <mesh filename="package://description/meshes/Roller.stl"/>
                </geometry>
           </collision>
           <!-- <inertial> -->
