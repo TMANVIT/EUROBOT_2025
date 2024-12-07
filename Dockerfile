@@ -35,6 +35,7 @@ RUN apt-get update && \
     apt-get install -y python3-colcon-common-extensions && \
     apt-get install ros-$ROS_DISTRO-ament-cmake && \
     apt-get install -y ros-$ROS_DISTRO-micro-ros-msgs && \
+    apt-get install -y ros-$ROS_DISTRO-robot-localization && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

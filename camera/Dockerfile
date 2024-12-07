@@ -33,12 +33,15 @@ RUN apt-get update && \
     apt-get install -y ros-$ROS_DISTRO-desktop && \
     apt-get install -y ros-dev-tools && \
     apt-get install -y python3-colcon-common-extensions && \
-    apt-get install ros-$ROS_DISTRO-ament-cmake && \
-    apt-get install ros-$ROS_DISTRO-cv-bridge && \
-    apt-get install ros-$ROS_DISTRO-rviz2 && \
-    apt-get install ros-$ROS_DISTRO-image-transport && \
-    apt-get -y install ros-$ROS_DISTRO-joint-state-publisher-gui && \
-    apt-get -y install ros-$ROS_DISTRO-xacro && \
+    apt-get install -y ros-$ROS_DISTRO-ament-cmake && \
+    apt-get install -y ros-$ROS_DISTRO-cv-bridge && \
+    apt-get install -y ros-$ROS_DISTRO-rviz2 && \
+    apt-get install -y ros-$ROS_DISTRO-image-transport && \
+    apt-get install -y ros-$ROS_DISTRO-joint-state-publisher-gui && \
+    apt-get install -y ros-$ROS_DISTRO-xacro && \
+    apt-get install -y ros-$ROS_DISTRO-robot-localization && \
+    apt-get install -y ros-humble-navigation2 && \
+    apt-get install -y ros-humble-nav2-bringup && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

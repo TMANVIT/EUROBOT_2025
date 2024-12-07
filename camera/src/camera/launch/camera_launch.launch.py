@@ -38,28 +38,12 @@ def generate_launch_description():
         arguments=['-d', rviz_cfg],
         condition=IfCondition(rviz_use)
     )
-
-    ###### ONLY FOR TEST ######
-
-    pub_node = Node(
-        package='camera',
-        executable='talker',
-    )
-
-    listen_node = Node(
-        package='camera',
-        executable='listener',
-    )
-
-    ############################
     
     ld = LaunchDescription()
     ld.add_action(declare_config_path_cmd)
     ld.add_action(declare_rviz_cmd)
     ld.add_action(declare_rviz_config_path_cmd)
 
-    ld.add_action(pub_node)
-    ld.add_action(listen_node)
     ld.add_action(rviz_node)
 
     return ld
