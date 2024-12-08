@@ -4,9 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Odometry1/Topic1
-        - /Odometry1/Covariance1/Position1
-        - /Odometry1/Covariance1/Orientation1
+        - /TF1/Frames1
       Splitter Ratio: 0.5
     Tree Height: 692
   - Class: rviz_common/Selection
@@ -48,6 +46,20 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
+    - Class: rviz_default_plugins/Image
+      Enabled: false
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Image
+      Normalize Range: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: ""
+      Value: false
     - Class: rviz_default_plugins/TF
       Enabled: true
       Frame Timeout: 15
@@ -58,18 +70,18 @@ Visualization Manager:
         Right_Wheel:
           Value: true
         Roller:
-          Value: true
+          Value: false
+        base_footprint:
+          Value: false
         base_link:
           Value: true
-        dummy:
-          Value: false
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        dummy:
+        base_footprint:
           base_link:
             Left_Wheel:
               {}
@@ -112,15 +124,15 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        base_footprint:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        dummy:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
       Mass Properties:
         Inertia: false
         Mass: false
@@ -129,20 +141,6 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
-    - Class: rviz_default_plugins/Image
-      Enabled: false
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: Image
-      Normalize Range: true
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: ""
-      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz_default_plugins/Odometry
       Covariance:
@@ -160,7 +158,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -180,8 +178,8 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /odom/unfiltered
-      Value: true
+        Value: ""
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -228,25 +226,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 1.1594077348709106
+      Distance: 2.4299733638763428
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.08948781341314316
-        Y: -0.06720329076051712
-        Z: -0.08654050529003143
+        X: -0.17339211702346802
+        Y: -0.08399786055088043
+        Z: -0.044311411678791046
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.535398542881012
+      Pitch: -0.06020289659500122
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.116783142089844
+      Yaw: 5.00494384765625
     Saved: ~
 Window Geometry:
   Displays:

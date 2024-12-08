@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="Maket">
-     <xacro:include filename= "Slave.xacro"/>
+     <xacro:include filename= "inertials.xacro"/>
 
      <link name="base_footprint"/>  
      <joint name="base_to_footprint" type="fixed">
@@ -8,6 +8,7 @@
           <child link="base_link"/>
           <origin xyz="0 0 0" rpy="0 0 0"/>
     </joint>
+
      <link name = "base_link">
           <visual>
                <origin xyz = "0 0 0" rpy = "0 0 0" />
@@ -24,21 +25,8 @@
                     <mesh filename="package://description/meshes/Maket.stl" />
                </geometry>
           </collision>
-          <inertial>
-               <origin
-                    xyz="0.022152700168409 -0.000809996770580155 0.107200331423198"
-                    rpy="0 0 0" />
-               <mass value="2.24483698501812" />
-               <inertia 
-                    ixx="0.017171108266307"
-                    ixy="7.41182378513859E-05"
-                    ixz="0.000134548028700423"
-                    iyy="0.00556240946464024"
-                    iyz="-8.46684644335415E-05"
-                    izz="0.0154086578851944" 
-               />
-          </inertial>
      </link>
+
      <!-- <Right_Wheel> -->
      <link name="Right_Wheel">
           <visual>
@@ -54,18 +42,11 @@
                     <mesh filename="package://description/meshes/Right_Wheel.stl"/>
                </geometry>
           </collision>
-          <!-- <inertial> -->
-          <xacro:Right_Wheel mass="0.0609278440646647">
-               <origin 
-                    xyz="-6.175795070019E-18 -2.42861286636753E-17 0.0116563539649974" 
-                    rpy="0 0 0" />
-          </xacro:Right_Wheel>
-          <!-- <inertial/> -->
      </link>
      <joint name="RightWheel" type="continuous">
           <origin
                xyz="0.040866 -0.2 0.015296"
-               rpy="-1.5708 0 0" 
+               rpy="1.5708 0 0" 
           />
           <parent 
                link="base_link" />
@@ -73,14 +54,15 @@
                link="Right_Wheel" />
           <axis   
                xyz="0 0 1" />
-          <limit  
+          <!-- <limit  
                effort="10" 
-               velocity="10" />
-          <dynamics 
+               velocity="10" /> -->
+          <!-- <dynamics 
                damping="0.1"
-               friction="0.1" />
+               friction="0.1" /> -->
      </joint>
      <!-- </Right_Wheel> -->
+
      <!-- <Left_Wheel> -->
      <link name="Left_Wheel">
           <visual>
@@ -96,14 +78,6 @@
                     <mesh filename="package://description/meshes/Left_Wheel.stl"/>
                </geometry>
           </collision>
-          <!-- <inertial> -->
-          <xacro:Left_Wheel mass="0.0577108531873887">
-               <origin
-                    xyz="-2.26065295916128E-19 -2.42861286636753E-17 -0.010522332891134"
-                    rpy="0 0 0" 
-               />
-          </xacro:Left_Wheel>
-          <!-- <inertial/> -->
      </link>
      <joint name="LeftWheel" type="continuous">
           <origin
@@ -116,14 +90,15 @@
                link="Left_Wheel" />
           <axis   
                xyz="0 0 1" />
-          <limit  
+          <!-- <limit  
                effort="10" 
                velocity="10" />
           <dynamics 
                damping="0.1"
-               friction="0.1" />
+               friction="0.1" /> -->
      </joint>
      <!--</Left_Whell>-->
+
      <!-- <Roller> -->
      <link name="Roller">
           <visual>
@@ -139,14 +114,6 @@
                     <mesh filename="package://description/meshes/Roller.stl"/>
                </geometry>
           </collision>
-          <!-- <inertial> -->
-          <xacro:Roller mass="0.0106249291862938">
-          <origin
-               xyz="0 -2.16840434497101E-19 -1.24564498913758E-18"
-               rpy="0 0 0" 
-          />
-          </xacro:Roller>
-          <!-- <inertial/> -->
      </link>
      <joint name="Roller" type="continuous">
           <origin
@@ -159,12 +126,12 @@
                link="Roller" />
           <axis   
                xyz="0 0 -1" />
-          <limit  
+          <!-- <limit  
                effort="10" 
                velocity="10" />
           <dynamics 
                damping="0.1"
-               friction="0.1" />
+               friction="0.1" /> -->
      </joint>
      <!--</Roller>-->
 </robot>

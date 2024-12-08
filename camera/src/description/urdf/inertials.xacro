@@ -4,11 +4,6 @@
     <!-- This file is not a robot in and of itself, it just contains some useful tags that could be included in any robot -->
 
     <!-- Specify some colours -->
-    <!--<material name="Maket">
-        <color
-          rgba="1 0.898039215686275 0.8 1" />
-      </material>
--->
     <material name="Right_Wheel">
         <color 
           rgba="1 0.6 0.2 1" />
@@ -28,22 +23,25 @@
 
     <!-- Specify some standard inertial calculations https://en.wikipedia.org/wiki/List_of_moments_of_inertia -->
     <!-- These make use of xacro's mathematical functionality -->
-<!--
-    <xacro:macro name = "Maket" params = "mass *origin">
+
+    <!-- <base_link> -->
+    <!-- <xacro:macro name = "base_link" params = "mass *origin">
         <inertial>
-            <xacro:insert_block name="origin"/>
-            <mass value="${mass}" />
-            <inertia 
-                ixx="0.017171108266307"
-                ixy="7.41182378513859E-05"
-                ixz="0.000134548028700423"
-                iyy="0.00556240946464024"
-                iyz="-8.46684644335415E-05"
-                izz="0.0154086578851944" 
-            />
-        </inertial>
-    </xacro:macro> 
-    --> 
+               <origin
+                    xyz="0.022152700168409 -0.000809996770580155 0.107200331423198"
+                    rpy="0 0 0" />
+               <mass value="2.24483698501812" />
+               <inertia 
+                    ixx="0.017171108266307"
+                    ixy="7.41182378513859E-05"
+                    ixz="0.000134548028700423"
+                    iyy="0.00556240946464024"
+                    iyz="-8.46684644335415E-05"
+                    izz="0.0154086578851944" 
+               />
+          </inertial>
+    </xacro:macro> -->
+
     <!-- <Right_Wheel> -->
     <xacro:macro name = "Right_Wheel" params = "mass *origin">
         <inertial>
@@ -60,6 +58,7 @@
         </inertial>
     </xacro:macro>
     <!-- </Right_Wheel> -->
+
     <!-- <Left_Wheel> -->
     <xacro:macro name = "Left_Wheel" params = "mass *origin">
         <inertial>
@@ -76,6 +75,7 @@
         </inertial>
     </xacro:macro>
     <!-- </Left_Wheel> -->
+    
     <!-- <Roller_Wheel> -->
     <xacro:macro name = "Roller" params = "mass *origin">
         <inertial>
@@ -92,4 +92,5 @@
         </inertial>
     </xacro:macro>
     <!-- </Roller_Wheel> -->
+
 </robot>
