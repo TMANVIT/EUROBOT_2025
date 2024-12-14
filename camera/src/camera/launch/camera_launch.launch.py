@@ -43,7 +43,7 @@ def generate_launch_description():
 
     pub_node = Node(
         package='camera',
-        executable='cam_pose_publisher',
+        executable='talker',
     )
     
 
