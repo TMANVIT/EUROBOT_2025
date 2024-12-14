@@ -7,7 +7,7 @@ class BVEPosePublisher(Node):
 
     def __init__(self):
         super().__init__('bve_pose_publisher')
-        self.publisher_ = self.create_publisher(Pose, 'camera_topic', 10)
+        self.publisher_ = self.create_publisher(Pose, 'bve_pose', 10)
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
