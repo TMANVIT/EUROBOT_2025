@@ -38,10 +38,8 @@ ros2 launch description construct.launch.py &
 
 #Run example node
 
-if [ "$RUN_RVIZ" = "False" ]; then
-  ros2 launch camera camera_launch.launch.py rviz:=false &
-else
-  ros2 launch camera camera_launch.launch.py 
-fi
-
-
+# if [ "$RUN_RVIZ" = "False" ]; then
+#   ros2 launch camera camera_launch.launch.py rviz:=false &
+# else
+#   ros2 launch camera camera_launch.launch.py 
+# fi

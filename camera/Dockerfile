@@ -59,12 +59,13 @@ RUN rosdep init && rosdep update
 # Create and set the working directory
 WORKDIR /ros2_ws
 
+# Build packages
+RUN colcon build
+
 COPY /run.sh /ros2_ws/run.sh
 COPY /src /ros2_ws/src
 RUN chmod +x ./run.sh
 
-# test camera
-COPY camera_test.py /camera_test/camera_test.py
 
 # Set bash as the entrypoint
 ENTRYPOINT ["/bin/bash"]
