@@ -40,8 +40,12 @@ RUN apt-get update && \
     apt-get install -y ros-$ROS_DISTRO-joint-state-publisher-gui && \
     apt-get install -y ros-$ROS_DISTRO-xacro && \
     apt-get install -y ros-$ROS_DISTRO-robot-localization && \
-    apt-get install -y ros-humble-navigation2 && \
-    apt-get install -y ros-humble-nav2-bringup && \
+    apt-get install -y ros-$ROS_DISTRO-navigation2 && \
+    apt-get install -y ros-$ROS_DISTRO-nav2-bringup && \
+    apt-get install -y v4l-utils && \
+    apt-get install -y ros-$ROS_DISTRO-v4l2-camera && \
+    apt-get install -y ros-$ROS_DISTRO-image-transport-plugins && \
+    apt-get install -y libqt5gui5  && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -55,9 +59,13 @@ RUN rosdep init && rosdep update
 # Create and set the working directory
 WORKDIR /ros2_ws
 
+# Build packages
+RUN colcon build
+
 COPY /run.sh /ros2_ws/run.sh
 COPY /src /ros2_ws/src
 RUN chmod +x ./run.sh
+
 
 # Set bash as the entrypoint
 ENTRYPOINT ["/bin/bash"]

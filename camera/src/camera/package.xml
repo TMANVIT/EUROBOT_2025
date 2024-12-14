@@ -3,17 +3,16 @@
 <package format="3">
   <name>camera</name>
   <version>0.0.0</version>
-  <description>Examples of minimal publisher/subscriber using rclcpp</description>
-  <maintainer email="you@email.com">Your Name</maintainer>
-  <license>Apache License 2.0</license>
-
-  <buildtool_depend>ament_cmake</buildtool_depend>
-  <depend>rclcpp</depend>
-  <depend>std_msgs</depend>
+  <description>TODO: Package description</description>
+  <maintainer email="sergey@todo.todo">sergey</maintainer>
+  <license>TODO: License declaration</license>
 
   <exec_depend>ros2launch</exec_depend>
+  
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
 
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type>ament_python</build_type>
   </export>
 </package>

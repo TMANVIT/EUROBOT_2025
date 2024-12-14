@@ -12,7 +12,7 @@ def generate_launch_description():
     package_path = get_package_share_directory('camera')
 
     default_config_path = os.path.join(
-        package_path, 'camera_config', 'camera_calibration_config.yaml')
+        package_path, 'config', 'camera_calibration_config.yaml')
     default_rviz_config_path = os.path.join(
         package_path, 'rviz_cfg', 'eurobot.rviz')
 
@@ -38,12 +38,28 @@ def generate_launch_description():
         arguments=['-d', rviz_cfg],
         condition=IfCondition(rviz_use)
     )
+
+    ###### ONLY FOR TEST ######
+
+    pub_node = Node(
+        package='camera',
+        executable='cam_pose_publisher',
+    )
+    
+
+    # listen_node = Node(
+    #     package='camera',
+    #     executable='listener',
+    # )
+
+    ############################
     
     ld = LaunchDescription()
     ld.add_action(declare_config_path_cmd)
     ld.add_action(declare_rviz_cmd)
     ld.add_action(declare_rviz_config_path_cmd)
 
+    ld.add_action(pub_node)
     ld.add_action(rviz_node)
 
     return ld
