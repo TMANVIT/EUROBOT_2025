@@ -25,7 +25,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'talker = camera.position:main'
+            'camera_bev_pose = camera.position:main'
         ],
     },
 )
