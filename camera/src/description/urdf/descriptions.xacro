@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="Maket">
+     <xacro:include filename= "inertials.xacro"/>
+
+     <link name="base_footprint"/>  
+     <joint name="base_to_footprint" type="fixed">
+          <parent link="base_footprint"/>
+          <child link="base_link"/>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+     <link name = "base_link">
+          <visual>
+               <origin xyz = "0 0 0" rpy = "0 0 0" />
+               <geometry>
+                    <mesh filename="package://description/meshes/Maket.stl" />
+               </geometry>
+               <material name="">
+                    <color rgba="1 0.898039215686275 0.8 1" />
+               </material>
+          </visual>
+          <collision>
+               <origin xyz= "0 0 0" rpy="0 0 0" />
+               <geometry>     
+                    <mesh filename="package://description/meshes/Maket.stl" />
+               </geometry>
+          </collision>
+     </link>
+
+     <!-- <Right_Wheel> -->
+     <link name="Right_Wheel">
+          <visual>
+               <origin xyz="0 0 0" rpy="0 0 0" />
+               <geometry>
+                    <mesh filename="package://description/meshes/Right_Wheel.stl"/>
+               </geometry>
+               <material name="Right_Wheel"/>
+          </visual>
+          <collision>
+               <origin xyz="0 0 0" rpy="0 0 0" />
+               <geometry>
+                    <mesh filename="package://description/meshes/Right_Wheel.stl"/>
+               </geometry>
+          </collision>
+     </link>
+     <joint name="RightWheel" type="continuous">
+          <origin
+               xyz="0.040866 -0.2 0.015296"
+               rpy="1.5708 0 0" 
+          />
+          <parent 
+               link="base_link" />
+          <child  
+               link="Right_Wheel" />
+          <axis   
+               xyz="0 0 1" />
+          <!-- <limit  
+               effort="10" 
+               velocity="10" /> -->
+          <!-- <dynamics 
+               damping="0.1"
+               friction="0.1" /> -->
+     </joint>
+     <!-- </Right_Wheel> -->
+
+     <!-- <Left_Wheel> -->
+     <link name="Left_Wheel">
+          <visual>
+               <origin xyz="0 0 0" rpy="0 0 0" />
+               <geometry>
+                    <mesh filename="package://description/meshes/Left_Wheel.stl"/>
+               </geometry>
+               <material name="Left_Wheel"/>
+          </visual>
+          <collision>
+               <origin xyz="0 0 0" rpy="0 0 0" />
+               <geometry>
+                    <mesh filename="package://description/meshes/Left_Wheel.stl"/>
+               </geometry>
+          </collision>
+     </link>
+     <joint name="LeftWheel" type="continuous">
+          <origin
+               xyz="0.040866 0.2 0.015296"
+               rpy="-1.5708 0 0" 
+          />
+          <parent 
+               link="base_link" />
+          <child  
+               link="Left_Wheel" />
+          <axis   
+               xyz="0 0 1" />
+          <!-- <limit  
+               effort="10" 
+               velocity="10" />
+          <dynamics 
+               damping="0.1"
+               friction="0.1" /> -->
+     </joint>
+     <!--</Left_Whell>-->
+
+     <!-- <Roller> -->
+     <link name="Roller">
+          <visual>
+               <origin xyz="0 0 0" rpy="0 0 0" />
+               <geometry>
+                    <mesh filename="package://description/meshes/Roller.stl"/>
+               </geometry>
+               <material name="Roller"/>
+          </visual>
+          <collision>
+               <origin xyz="0 0 0" rpy="0 0 0" />
+               <geometry>
+                    <mesh filename="package://description/meshes/Roller.stl"/>
+               </geometry>
+          </collision>
+     </link>
+     <joint name="Roller" type="continuous">
+          <origin
+               xyz="-0.055737 0 -0.005"
+               rpy="-1.5708 0 0"  
+          />
+          <parent 
+               link="base_link" />
+          <child  
+               link="Roller" />
+          <axis   
+               xyz="0 0 -1" />
+          <!-- <limit  
+               effort="10" 
+               velocity="10" />
+          <dynamics 
+               damping="0.1"
+               friction="0.1" /> -->
+     </joint>
+     <!--</Roller>-->
+</robot>
+
+
+
+
+       
+
+
+     

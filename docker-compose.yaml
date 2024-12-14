@@ -15,6 +15,9 @@ services:
     volumes:
       - ./src:/ros2_ws/src
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    #devices:
+      #- /dev/ttyACM0:/dev/ttyACM0
+      #- /dev/ttyACM1:/dev/ttyACM1
     command: ./run.sh
 
   camera:

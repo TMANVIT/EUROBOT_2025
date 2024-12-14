@@ -18,7 +18,7 @@ fi
 echo "Building the workspace..."
 source /opt/ros/humble/setup.bash
 rosdep install -i --from-path src --rosdistro humble -y
-colcon build
+colcon build --symlink-install
 
 # Check if colcon build was successful before sourcing
 if [ $? -eq 0 ]; then
@@ -33,20 +33,15 @@ fi
 source "install/local_setup.bash"
 echo "Waiting for running launch file"
 
-# Setup camera driver
-modprobe -r uvcvideo
-modprobe uvcvideo nodrop=1 timeout=5000 quirks=0x80
-
-# run topics "image_raw" and "image_raw/image_compressed"
-ros2 run v4l2_camera v4l2_camera_node --ros-args -p image_size:="[640,480]"
+echo "Running description file"
+ros2 launch description construct.launch.py &
 
 #Run example node
 
 if [ "$RUN_RVIZ" = "False" ]; then
-  # TODO Python and RViz cant use camera at the same time
-  python3 /camera_test/camera_test.py && ros2 launch camera camera_launch.launch.py rviz:=false
+  ros2 launch camera camera_launch.launch.py rviz:=false &
 else
-  python3 /camera_test/camera_test.py && ros2 launch camera camera_launch.launch.py
+  ros2 launch camera camera_launch.launch.py 
 fi
- 
+
 

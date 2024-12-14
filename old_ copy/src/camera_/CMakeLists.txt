@@ -32,7 +32,7 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY
-  launch
+  launch rviz_cfg
   DESTINATION share/${PROJECT_NAME}
 )
 
