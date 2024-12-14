@@ -8,7 +8,6 @@
   <license>TODO: License declaration</license>
 
   <exec_depend>ros2launch</exec_depend>
-  
   <exec_depend>rclpy</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
 

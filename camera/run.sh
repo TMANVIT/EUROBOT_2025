@@ -18,7 +18,7 @@ fi
 echo "Building the workspace..."
 source /opt/ros/humble/setup.bash
 rosdep install -i --from-path src --rosdistro humble -y
-colcon build --symlink-install
+colcon build #--symlink-install
 
 # Check if colcon build was successful before sourcing
 if [ $? -eq 0 ]; then
@@ -34,7 +34,7 @@ source "install/local_setup.bash"
 echo "Waiting for running launch file"
 
 # run topics "image_raw" and "image_raw/image_compressed"
-ros2 run v4l2_camera v4l2_camera_node --ros-args -p image_size:="[640,480]"
+ros2 run v4l2_camera v4l2_camera_node &
 
 echo "Running description file"
 ros2 launch description construct.launch.py &

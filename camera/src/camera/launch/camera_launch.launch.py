@@ -59,7 +59,7 @@ def generate_launch_description():
     ld.add_action(declare_rviz_cmd)
     ld.add_action(declare_rviz_config_path_cmd)
 
-    ld.add_action(pub_node)
+    #ld.add_action(pub_node)
     ld.add_action(rviz_node)
 
     return ld
