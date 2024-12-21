@@ -21,6 +21,3 @@ source "install/local_setup.bash"
 
 echo "Waiting for running launch file"
 
-#Run example node
-ros2 launch robot_bringup robot_bringup.launch.py 
-

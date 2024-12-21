@@ -33,7 +33,6 @@ fi
 source "install/local_setup.bash"
 echo "Waiting for running launch file"
 
-
 # run topics "image_raw" and "image_raw/image_compressed"
 ros2 run v4l2_camera v4l2_camera_node &
 

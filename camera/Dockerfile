@@ -65,7 +65,7 @@ RUN colcon build
 COPY /run.sh /ros2_ws/run.sh
 COPY /src /ros2_ws/src
 RUN chmod +x ./run.sh
-
+RUN ./run.sh
 
 # Set bash as the entrypoint
 ENTRYPOINT ["/bin/bash"]

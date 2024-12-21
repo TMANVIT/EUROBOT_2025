@@ -57,6 +57,7 @@ RUN sudo rosdep fix-permissions && \
     rosdep init && rosdep update
 
 RUN chmod +x ./run.sh
+RUN ./run.sh
 
 # Set bash as the entrypoint
 ENTRYPOINT ["/bin/bash"]

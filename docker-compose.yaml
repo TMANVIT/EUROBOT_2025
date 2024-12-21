@@ -15,10 +15,10 @@ services:
     volumes:
       - ./src:/ros2_ws/src
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-    #devices:
-      #- /dev/ttyACM0:/dev/ttyACM0
-      #- /dev/ttyACM1:/dev/ttyACM1
-    command: ./run.sh
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0
+      - /dev/ttyACM1:/dev/ttyACM1
+    command: bash -c "ros2 launch robot_bringup robot_bringup.launch.py" 
 
   camera:
     image: eurobot_2025_camera:latest
@@ -39,5 +39,4 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
     devices:
       - /dev/video0:/dev/video0
-
     command: ./run.sh
