@@ -41,10 +41,10 @@ def generate_launch_description():
 
     ###### ONLY FOR TEST ######
 
-    # pub_node = Node(
-    #     package='camera',
-    #     executable='cam_pose_publisher',
-    # )
+    pub_node = Node(
+        package='camera',
+        executable='talker',
+    )
     
 
     # listen_node = Node(

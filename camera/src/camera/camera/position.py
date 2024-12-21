@@ -14,26 +14,29 @@ class CameraPublisher(Node):
 
     def timer_callback(self):
         msg = Pose()
-        msg.position.x = 1
-        msg.position.y = 2
-        msg.position.z = 3
-        msg.orientation.x = 11
-        msg.orientation.y = 12
-        msg.orientation.z = 13
-        msg.orientation.w = 14
+        msg.position.x = 1.0
+        msg.position.y = 2.0
+        msg.position.z = 3.0
+        msg.orientation.x = 11.0
+        msg.orientation.y = 12.0
+        msg.orientation.z = 13.0
+        msg.orientation.w = 14.0
         self.publisher_.publish(msg)
-        self.get_logger().info('Publishing: "%s"' % msg.data)
+        self.get_logger().info('Publishing: "aaa"')
         self.i += 1
 
 
 def main(args=None):
     rclpy.init(args=args)
 
-    minimal_publisher = CameraPublisher()
+    camera_publisher = CameraPublisher()
 
-    rclpy.spin(minimal_publisher)
+    rclpy.spin(camera_publisher)
 
-    minimal_publisher.destroy_node()
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    camera_publisher.destroy_node()
     rclpy.shutdown()
 
 
