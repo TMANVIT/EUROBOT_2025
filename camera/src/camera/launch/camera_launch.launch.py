@@ -14,7 +14,7 @@ def generate_launch_description():
     default_config_path = os.path.join(
         package_path, 'config', 'camera_calibration_config.yaml')
     default_rviz_config_path = os.path.join(
-        package_path, 'rviz_cfg', 'eurobot.rviz')
+        package_path, 'rviz_cfg', 'odometry.rviz')
 
     rviz_use = LaunchConfiguration('rviz')
     rviz_cfg = LaunchConfiguration('rviz_cfg')
@@ -39,12 +39,17 @@ def generate_launch_description():
         condition=IfCondition(rviz_use)
     )
 
+    v4l2_node = Node(
+        package='v4l2_camera',
+        executable='v4l2_camera_node'
+    )
+
     ###### ONLY FOR TEST ######
 
-    pub_node = Node(
-        package='camera',
-        executable='talker',
-    )
+    # pub_node = Node(
+    #     package='camera',
+    #     executable='talker',
+    # )
     
 
     # listen_node = Node(
@@ -61,5 +66,6 @@ def generate_launch_description():
 
     #ld.add_action(pub_node)
     ld.add_action(rviz_node)
+    ld.add_action(v4l2_node)
 
     return ld

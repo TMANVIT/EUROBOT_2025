@@ -9,13 +9,6 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     
-    camera_launch_path = PathJoinSubstitution(
-        [FindPackageShare('camera'), 'launch', 'camera_launch.launch.py']
-    )
-    
-    construct_launch_path = PathJoinSubstitution(
-        [FindPackageShare('description'), 'launch', 'construct.launch.py']
-    )
     
     slam_launch_path = PathJoinSubstitution(
         [FindPackageShare('slam_toolbox'), 'launch', 'online_async_launch.py']
@@ -61,12 +54,4 @@ def generate_launch_description():
                 slam_param_name: slam_config_path
             }.items()
         ),
-        
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(camera_launch_path),
-        ),
-        
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(construct_launch_path),
-        )
     ])

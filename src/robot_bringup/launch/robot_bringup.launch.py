@@ -36,7 +36,7 @@ def generate_launch_description():
             remappings=[("odometry/filtered", LaunchConfiguration("odom_topic"))]
         ),
         
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(micro_ros_launch_path),
-        ),
+        # IncludeLaunchDescription(
+        #     PythonLaunchDescriptionSource(micro_ros_launch_path),
+        # ),
     ])
