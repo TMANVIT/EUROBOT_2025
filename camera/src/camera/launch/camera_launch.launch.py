@@ -43,22 +43,7 @@ def generate_launch_description():
         package='v4l2_camera',
         executable='v4l2_camera_node'
     )
-
-    ###### ONLY FOR TEST ######
-
-    # pub_node = Node(
-    #     package='camera',
-    #     executable='talker',
-    # )
-    
-
-    # listen_node = Node(
-    #     package='camera',
-    #     executable='listener',
-    # )
-
-    ############################
-    
+   
     ld = LaunchDescription()
     ld.add_action(declare_config_path_cmd)
     ld.add_action(declare_rviz_cmd)

@@ -37,6 +37,6 @@ services:
     volumes:
       - ./camera/src:/ros2_ws/src
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-    devices:
-      - /dev/video0:/dev/video0
+    # devices:
+    #   - /dev/video0:/dev/video0
     command: ./run.sh

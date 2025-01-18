@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:macro name="imu">
     <link name="imu_link"/>
@@ -10,7 +11,7 @@
   </xacro:macro>
 
   <xacro:macro name="laser" params="*origin">
-    <link name="${frame_id}">
+    <link name="lidar">
       <visual>
         <origin xyz="0 0 -0.025" rpy="0 0 0"/>
         <geometry>
@@ -27,10 +28,19 @@
         </geometry>
       </collision>
 
-      <joint name="${frame_id}_to_base_link" type="fixed">
-        <parent link="base_link"/>
-        <child link="${frame_id}"/>
-        <xacro:insert_block name="origin" />
-      </joint>
-    </xacro:macro>
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.1"/>
+        <inertia ixx="${(2/5) * 0.1 * (0.0375 * 0.0375)}" ixy="0" ixz="0"
+                 iyy="${(2/5) * 0.1 * (0.0375 * 0.0375)}" iyz="0"
+                 izz="${(2/5) * 0.1 * (0.0375 * 0.0375)}" />
+      </inertial>
+    </link>
+
+    <joint name="lidar_to_base_link" type="fixed">
+      <parent link="base_link"/>
+      <child link="lidar"/>
+      <xacro:insert_block name="origin" />
+    </joint>
+  </xacro:macro>
 </robot>
