@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="Maket">
      <xacro:include filename= "inertials.xacro"/>
-     <xacro:include filename= "sensors.xacro"/>
+     <xacro:include filename= "sensors.urdf.xacro"/>
 
      <link name="base_footprint"/>  
      <joint name="base_to_footprint" type="fixed">
@@ -136,7 +136,25 @@
      </joint>
      <!--</Roller>-->
 
-      <xacro:imu/>
+     <xacro:imu/>
+
+     <xacro:generic_laser>
+          <xacro:macro name="generic_laser" params="*origin">
+          <xacro:laser
+               update_rate="10"
+               ray_count="360"
+               min_angle="-3.1416"
+               max_angle="3.1416"
+               min_range="0.08"
+               max_range="12.0"
+               frame_id="laser"
+               topic_name="scan"
+          >
+               <xacro:insert_block name="origin" />
+          </xacro:laser>
+          </xacro:macro>
+          <xacro:insert_block name="laser_pose" />
+     </xacro:generic_laser>
 
 </robot>
 
