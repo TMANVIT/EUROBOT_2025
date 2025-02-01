@@ -63,8 +63,8 @@ run-all-stack:
 
 run-pi:
 	@echo "Running rpi4 script"
-	chmod +x script/rpi4_launch.sh
-	cd $(ROOT_DIR) && rpi4_launch/rpi4_launch.sh
+	chmod +x rpi_launch/rpi4_launch.sh
+	cd $(ROOT_DIR)/rpi_launch && ./rpi4_launch.sh
 
 # ------------------------------------------------------------------------------
 #                             AUXILIARY COMMANDS
