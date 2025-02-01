@@ -9,8 +9,12 @@ from launch.conditions import IfCondition
 
 def generate_launch_description():
     
-    micro_ros_launch_path = PathJoinSubstitution(
-        [FindPackageShare('robot_bringup'), 'launch', 'micro_ros_agent.launch.py']
+    # micro_ros_launch_path = PathJoinSubstitution(
+    #     [FindPackageShare('robot_bringup'), 'launch', 'micro_ros_agent.launch.py']
+    # )   
+    
+    description_launch_path = PathJoinSubstitution(
+        [FindPackageShare('description'), 'launch', 'construct.launch.py']
     )   
     
     ekf_config_path = PathJoinSubstitution(
@@ -36,7 +40,7 @@ def generate_launch_description():
             remappings=[("odometry/filtered", LaunchConfiguration("odom_topic"))]
         ),
         
-        # IncludeLaunchDescription(
-        #     PythonLaunchDescriptionSource(micro_ros_launch_path),
-        # ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(description_launch_path),
+        ),
     ])

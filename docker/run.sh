@@ -19,6 +19,8 @@ colcon build --symlink-install
 # Source the local setup file after building
 source "install/local_setup.bash"
 
-echo "Waiting for running launch file"
+echo "Waiting for running bringup launch file"
 
-ros2 launch robot_bringup robot_bringup.launch.py
+ros2 launch robot_bringup robot_bringup.launch.py &
+
+ros2 launch navigation slam.launch.py
