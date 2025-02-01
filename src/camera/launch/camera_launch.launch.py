@@ -41,7 +41,7 @@ def generate_launch_description():
 
     pub_node = Node(
         package='camera',
-        executable='camera_bev_pose',
+        executable='camera_bve_pose',
     )
 
     v4l2_node = Node(
