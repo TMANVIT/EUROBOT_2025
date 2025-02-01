@@ -1,6 +1,7 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration, Command, PathJoinSubstitution, EnvironmentVariable
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import IfCondition
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -10,6 +11,10 @@ def generate_launch_description():
 
     urdf_path = PathJoinSubstitution(
         [FindPackageShare("description"), "urdf", "robot.urdf.xacro"]
+    )
+
+    camera_launch_path = PathJoinSubstitution(
+        [FindPackageShare('camera'), 'launch', 'camera_launch.launch.py']
     )
 
     return LaunchDescription([
@@ -53,5 +58,9 @@ def generate_launch_description():
                     'robot_description': Command(['xacro ', LaunchConfiguration('urdf')])
                 }
             ]
+        ),
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(camera_launch_path),
         ),
     ])

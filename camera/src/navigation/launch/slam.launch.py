@@ -8,6 +8,8 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
+    
+    
     slam_launch_path = PathJoinSubstitution(
         [FindPackageShare('slam_toolbox'), 'launch', 'online_async_launch.py']
     )
@@ -52,5 +54,4 @@ def generate_launch_description():
                 slam_param_name: slam_config_path
             }.items()
         ),
-
     ])

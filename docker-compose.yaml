@@ -15,9 +15,9 @@ services:
     volumes:
       - ./src:/ros2_ws/src
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-    #devices:
-      #- /dev/ttyACM0:/dev/ttyACM0
-      #- /dev/ttyACM1:/dev/ttyACM1
+    # devices:
+    #   - /dev/ttyACM0:/dev/ttyACM0
+    #   - /dev/ttyACM1:/dev/ttyACM1
     command: ./run.sh
 
   camera:
@@ -37,7 +37,6 @@ services:
     volumes:
       - ./camera/src:/ros2_ws/src
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-    devices:
-      - /dev/video0:/dev/video0
-
+    # devices:
+    #   - /dev/video0:/dev/video0
     command: ./run.sh

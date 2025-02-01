@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="Maket">
      <xacro:include filename= "inertials.xacro"/>
+     <xacro:include filename= "sensors.urdf.xacro"/>
 
      <link name="base_footprint"/>  
      <joint name="base_to_footprint" type="fixed">
@@ -134,6 +135,12 @@
                friction="0.1" /> -->
      </joint>
      <!--</Roller>-->
+
+     <xacro:imu/>
+
+     <xacro:laser>
+          <origin xyz="0 0 0.33" rpy="0 0 0"/>
+     </xacro:laser>
 </robot>
 
 

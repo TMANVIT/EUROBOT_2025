@@ -60,9 +60,7 @@ RUN rosdep init && rosdep update
 WORKDIR /ros2_ws
 
 COPY /run.sh /ros2_ws/run.sh
-COPY /src /ros2_ws/src
 RUN chmod +x ./run.sh
-
 
 # Set bash as the entrypoint
 ENTRYPOINT ["/bin/bash"]
