@@ -22,7 +22,7 @@ class BEVPosePublisher(Node):
         msg.orientation.z = 13.0
         msg.orientation.w = 14.0
         self.publisher_.publish(msg)
-        self.get_logger().info('Publishing: "%s"' % msg)
+        #self.get_logger().info('Publishing: "%s"' % msg)
         self.i += 1
 
 

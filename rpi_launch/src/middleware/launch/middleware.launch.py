@@ -31,6 +31,6 @@ def generate_launch_description():
         
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(lidar_launch_path),
-            launch_arguments={'frame': 'lidar'}.items(),
+            launch_arguments={'frame_id': 'lidar'}.items(),
         ),
     ])
