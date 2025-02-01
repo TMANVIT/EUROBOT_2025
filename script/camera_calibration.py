@@ -21,7 +21,7 @@ def get_calibration_parameters(img_dir):
     detector = cv2.aruco.ArucoDetector(dictionary, params)
 
     # Возможно придется указать полный путь к файлу
-    image_files = glob.glob('C:/coding/git/EUROBOT_2025/script/samples_charuco/*.jpg')
+    image_files = glob.glob('C:/coding/git/EUROBOT_2025/script/samples_chessboard/*.jpg')
 
     all_charuco_ids = []
     all_charuco_corners = []
@@ -34,7 +34,7 @@ def get_calibration_parameters(img_dir):
         image_copy = image.copy()
         marker_corners, marker_ids, rejectedCandidates = detector.detectMarkers(image)
 
-        if marker_ids is not None:  # If at least one marker is detected
+        if len(marker_ids) > 0:  # If at least one marker is detected
             cv2.aruco.drawDetectedMarkers(image_copy, marker_corners, marker_ids)
             ret, charucoCorners, charucoIds = cv2.aruco.interpolateCornersCharuco(marker_corners, marker_ids, image,
                                                                                   board)
@@ -42,6 +42,7 @@ def get_calibration_parameters(img_dir):
             if charucoIds is not None and len(charucoCorners) > 3:
                 all_charuco_corners.append(charucoCorners)
                 all_charuco_ids.append(charucoIds)
+                print("hello")
 
     # Calibrate camera with extracted information
     result, mtx, dist, rvecs, tvecs = cv2.aruco.calibrateCameraCharuco(all_charuco_corners, all_charuco_ids, board,
@@ -49,12 +50,10 @@ def get_calibration_parameters(img_dir):
     return mtx, dist
 
 
-OUTPUT_JSON = 'C:/coding/git/EUROBOT_2025/script/charuco_board_calibration.json'
+OUTPUT_JSON = 'C:/coding/git/EUROBOT_2025/script/charuco_board_calibration_new.json'
 
 mtx, dist = get_calibration_parameters(img_dir='samples_charuco')
 data = {"camera_matrix": mtx.tolist(), "dist_coeff": dist.tolist()}
-
-print(mtx, dist)
 
 with open(OUTPUT_JSON, 'w') as json_file:
     json.dump(data, json_file, indent=4)
