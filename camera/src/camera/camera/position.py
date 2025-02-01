@@ -3,11 +3,11 @@ from rclpy.node import Node
 
 from geometry_msgs.msg import Pose
 
-class CameraPublisher(Node):
+class BVEPosePublisher(Node):
 
     def __init__(self):
-        super().__init__('camera_publisher')
-        self.publisher_ = self.create_publisher(Pose, 'camera_topic', 10)
+        super().__init__('bve_pose_publisher')
+        self.publisher_ = self.create_publisher(Pose, 'bve_pose', 10)
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
@@ -22,21 +22,21 @@ class CameraPublisher(Node):
         msg.orientation.z = 13.0
         msg.orientation.w = 14.0
         self.publisher_.publish(msg)
-        self.get_logger().info('Publishing: "aaa"')
+        self.get_logger().info('Publishing: "%s"' % msg)
         self.i += 1
 
 
 def main(args=None):
     rclpy.init(args=args)
 
-    camera_publisher = CameraPublisher()
+    bve_pose_publisher = BVEPosePublisher()
 
-    rclpy.spin(camera_publisher)
+    rclpy.spin(bve_pose_publisher)
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    camera_publisher.destroy_node()
+    bve_pose_publisher.destroy_node()
     rclpy.shutdown()
 
 

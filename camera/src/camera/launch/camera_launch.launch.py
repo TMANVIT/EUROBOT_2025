@@ -39,17 +39,22 @@ def generate_launch_description():
         condition=IfCondition(rviz_use)
     )
 
+    pub_node = Node(
+        package='camera',
+        executable='camera_bev_pose',
+    )
+
     v4l2_node = Node(
         package='v4l2_camera',
         executable='v4l2_camera_node'
     )
-   
+  
     ld = LaunchDescription()
     ld.add_action(declare_config_path_cmd)
     ld.add_action(declare_rviz_cmd)
     ld.add_action(declare_rviz_config_path_cmd)
 
-    #ld.add_action(pub_node)
+    ld.add_action(pub_node)
     ld.add_action(rviz_node)
     ld.add_action(v4l2_node)
 
