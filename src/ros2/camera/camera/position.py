@@ -3,8 +3,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Pose
 from cv_bridge import CvBridge
-from .cvFunctions import (
-    camera_initialisation, video_capture, markers_detection, imgDrawing)
+from cvFunctions.cvf import (camera_initialisation, markers_detection)
 import numpy as np
 
 CAMERA_CONFIG_PATH = "/ros2_ws/src/camera/config/camera_calibration_config.yaml"
@@ -57,7 +56,6 @@ class BEVPosePublisher(Node):
         """
         # Replace cvf.video_capture() with the provided image
         ids, transMatrixDict, tvecDict = markers_detection(cv_image)
-        imgDrawing(cv_image)
         return ids, transMatrixDict, tvecDict
 
     def angle_between_vectors(self, vector1, vector2):

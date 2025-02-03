@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import yaml
 
-
 def camera_initialisation(config_path, cameraID = 0, imageWidth = 1920, imageHight = 1080):
     global camera, newcameramtx, camera_matrix, dist_coefs, detector, arucoDict, arucoParams
  
@@ -65,4 +64,3 @@ def imgDrawing(imageWidth = 1920, imageHight = 1080):
     cv2.resizeWindow("Object_detection", width=imageWidth, height=imageHight)
     cv2.imshow("Object_detection", img)
     cv2.waitKey(1)
-
