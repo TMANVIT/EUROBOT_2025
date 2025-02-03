@@ -17,5 +17,5 @@ services:
       - $ROOT_DIR/data:/data
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
     devices:
-      - /dev/video1:/dev/video0
-    #command: ./run.sh
+      - /dev/video0:/dev/video0
+    command: ./run.sh

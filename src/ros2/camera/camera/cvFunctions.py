@@ -6,10 +6,12 @@ import yaml
 def camera_initialisation(config_path, cameraID = 0, imageWidth = 1920, imageHight = 1080):
     global camera, newcameramtx, camera_matrix, dist_coefs, detector, arucoDict, arucoParams
  
-    data = yaml.safe_load(config_path)
+    # Load YAML configuration
+    with open(config_path, 'r') as file:
+        data = yaml.safe_load(file)
 
-    camera_matrix = np.array(data["camera_matrix"])
-    dist_coefs = np.array(data["dist_coeff"])
+    camera_matrix = np.array(data["camera_matrix"], dtype=np.float64)
+    dist_coefs = np.array(data["dist_coeff"], dtype=np.float64)
     newcameramtx, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coefs, (imageWidth, imageHight), 1, (imageWidth, imageHight))
 
     camera = cv2.VideoCapture(cameraID, cv2.CAP_DSHOW)
