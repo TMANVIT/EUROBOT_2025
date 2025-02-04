@@ -2,65 +2,89 @@ import cv2
 import numpy as np
 import yaml
 
-def camera_initialisation(config_path, cameraID = 0, imageWidth = 1920, imageHight = 1080):
-    global camera, newcameramtx, camera_matrix, dist_coefs, detector, arucoDict, arucoParams
- 
+def read_config(config):
     # Load YAML configuration
-    with open(config_path, 'r') as file:
-        data = yaml.safe_load(file)
+    with open(config, 'r') as file:
+        data = yaml.safe_load(file)  
+    return data  
 
-    camera_matrix = np.array(data["camera_matrix"], dtype=np.float64)
-    dist_coefs = np.array(data["dist_coeff"], dtype=np.float64)
-    newcameramtx, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coefs, (imageWidth, imageHight), 1, (imageWidth, imageHight))
+def angle_between_vectors(vector1, vector2):
+    cos = np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
+    sin = np.linalg.norm(np.cross(vector1, vector2)) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
+    angle = np.angle(cos + sin * 1.j, deg=True)
+    return angle
 
-    camera = cv2.VideoCapture(cameraID, cv2.CAP_DSHOW)
-    camera.set(cv2.CAP_PROP_FRAME_WIDTH, imageWidth+10)
-    camera.set(cv2.CAP_PROP_FRAME_HEIGHT, imageHight+10)
+class Camera():
+    def __init__(self, config_path: str):
+        self.config = read_config(config_path)
+        self.camera_matrix = np.array(self.config["camera_matrix"], dtype=np.float64)
+        self.dist_coefs = np.array(self.config["dist_coeff"], dtype=np.float64)
+        self.robot_id = self.config["robot_id"]
 
-    arucoParams = cv2.aruco.DetectorParameters()
-    arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)
-    detector = cv2.aruco.ArucoDetector(arucoDict, arucoParams)
-
-def video_capture():
-    global img, imgToProduse, gray
-
-    good, img = camera.read()
-
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    gray = cv2.normalize(gray, None, 1.0, 255, cv2.NORM_MINMAX, dtype = cv2.CV_8U)
-    gray = cv2.medianBlur(gray, 3)
-    ret, gray = cv2.threshold(gray, 200,220,cv2.THRESH_BINARY)
-    imgToProduse = gray
-
-def markers_detection():
-    tvecDictionary = {}
-    transMatrixDictionary = {}
-    corners, ids, rejected = cv2.aruco.detectMarkers(imgToProduse, arucoDict, parameters=arucoParams)
+        self.arucoParams = cv2.aruco.DetectorParameters()
+        self.arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)
+        self.detector = cv2.aruco.ArucoDetector(self.arucoDict, self.arucoParams)
     
+    def prepare_image(self, img):
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        gray = cv2.normalize(gray, None, 1.0, 255, cv2.NORM_MINMAX, dtype = cv2.CV_8U)
+        gray = cv2.medianBlur(gray, 3)
+        ret, prepared_img = cv2.threshold(gray, 200,220,cv2.THRESH_BINARY)
+        return prepared_img
     
-    if ids is not None:
-        ids = list(map(lambda x: x[0], ids))
-        for i in range(len(ids)):
-            if ids[i] in range(10):
-                marker_length = 0.069
-            else:
-                marker_length = 0.1
-
-            rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], marker_length, cameraMatrix=camera_matrix, distCoeffs= None)
-            tvecDictionary[ids[i]] = tvec[0][0]
-            
-            transMatrixDictionary[ids[i]] = cv2.Rodrigues(rvec)[0]
-            
-            cv2.drawFrameAxes(img, camera_matrix, dist_coefs, rvec, tvec, length=0.1)
-            
-            cv2.putText(img, str(ids[i]),(int(corners[i][0][0][0]), int(corners[i][0][0][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-        cv2.aruco.drawDetectedMarkers(img, corners)
+    def detect_markers(self, img):
+        tvecDictionary = {}
+        transMatrixDictionary = {}
+        imgToProduse = self.prepare_image(img)
+        corners, ids, rejected = cv2.aruco.detectMarkers(imgToProduse, self.arucoDict, parameters=self.arucoParams)
     
-    return ids, transMatrixDictionary, tvecDictionary
+        if ids is not None:
+            ids = list(map(lambda x: x[0], ids))
+            for i in range(len(ids)):
+                if ids[i] in range(10):
+                    marker_length = 0.069
+                else:
+                    marker_length = 0.1
 
-def imgDrawing(imageWidth = 1920, imageHight = 1080):
+                rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], marker_length, cameraMatrix=self.camera_matrix, distCoeffs= None)
+                tvecDictionary[ids[i]] = tvec[0][0]
+                
+                transMatrixDictionary[ids[i]] = cv2.Rodrigues(rvec)[0]
+        
+        return ids, transMatrixDictionary, tvecDictionary  
+    
+    def t_matrix_building(self, ids, tvecDict, transMatrixDict):
+        corners = []
+        tMatrices = []
+        tmatrix = None
+        center = None
+        for i in ids:
+            if i in range(11, 51) and i != 47:
+                corners.append(tvecDict[i])
+                tMatrices.append(transMatrixDict[i])
 
-    cv2.namedWindow("Object_detection", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("Object_detection", width=imageWidth, height=imageHight)
-    cv2.imshow("Object_detection", img)
-    cv2.waitKey(1)
+        if len(corners) == 4:
+            center = sum(np.array(corners)) / 4
+            corners = sorted(list(map(lambda x: x.tolist(), corners)))
+            corners[:2] = [x for _, x in sorted(zip(list(map(lambda x: x[1], corners[:2])), corners[:2]))]
+            corners[2:4] = [x for _, x in sorted(zip(list(map(lambda x: x[1], corners[2:4])), corners[2:4]))]
+
+            for i in range(4):
+                corners[i] = np.array(corners[i])
+
+            xvec = (corners[2] + corners[3] - corners[1] - corners[0]) / 2
+            yvec = (corners[1] + corners[3] - corners[2] - corners[0]) / 2
+            xvec *= -1
+            zvec = np.cross(xvec, yvec)
+
+            tmatrix = sum(np.array(tMatrices)) / 4
+
+        return tmatrix, center 
+    
+    def robots_tracking(self, ids, transMatrixDict, tvecDict, tmatrix, center):
+        for i in ids:
+            if i is self.robot_id:
+                robotCoord = np.dot(np.linalg.inv(tmatrix), np.array(tvecDict[i] - center)) * 100
+                angle = angle_between_vectors(transMatrixDict[i][0], tmatrix[0])
+                return robotCoord, angle
+        return None, None
