@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import yaml
+from scipy.spatial.transform import Rotation as R
 
 def read_config(config):
     # Load YAML configuration
@@ -82,9 +83,9 @@ class Camera():
         return tmatrix, center 
     
     def robots_tracking(self, ids, transMatrixDict, tvecDict, tmatrix, center):
-        for i in ids:
-            if i is self.robot_id:
-                robotCoord = np.dot(np.linalg.inv(tmatrix), np.array(tvecDict[i] - center)) * 100
-                angle = angle_between_vectors(transMatrixDict[i][0], tmatrix[0])
-                return robotCoord, angle
-        return None, None
+        if self.robot_id in ids:
+            robotCoord = np.dot(np.linalg.inv(tmatrix), np.array(tvecDict[self.robot_id] - center)) * 100
+            #angle = angle_between_vectors(transMatrixDict[self.robot_id][0], tmatrix[0])
+            r = R.from_matrix(np.dot(transMatrixDict[self.robot_id], np.linalg.inv(tmatrix)))
+            quaternion = r.as_quat()
+            return robotCoord, quaternion

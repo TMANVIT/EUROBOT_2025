@@ -38,16 +38,17 @@ class BEVPosePublisher(Node):
             tmatrix_new, center_new = self.camera.t_matrix_building(ids, tvecDict, transMatrixDict)
             if tmatrix_new is not None:
                 self.tmatrix, self.center = tmatrix_new, center_new
-
-            robotCoord, angle = self.camera.robots_tracking(ids, transMatrixDict, tvecDict, self.tmatrix, self.center)
+            robotCoord, quat = self.camera.robots_tracking(ids, transMatrixDict, tvecDict, self.tmatrix, self.center)
             if robotCoord is not None:
                 msg = Pose()
                 msg.position.x = float(robotCoord[0])
                 msg.position.y = float(robotCoord[1])
                 msg.position.z = float(robotCoord[2])
-                msg.orientation.z = float(angle)
+                msg.orientation.x = quat[0]
+                msg.orientation.y = quat[1]
+                msg.orientation.z = quat[2]
+                msg.orientation.w = quat[3]
                 self.publisher_.publish(msg)
-                self.get_logger().info(f'Publishing: {msg}')
 
 def main(args=None):
     rclpy.init(args=args)
