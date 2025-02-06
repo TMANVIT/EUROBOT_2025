@@ -89,3 +89,5 @@ class Camera():
             r = R.from_matrix(np.dot(transMatrixDict[self.robot_id], np.linalg.inv(tmatrix)))
             quaternion = r.as_quat()
             return robotCoord, quaternion
+        else:
+            return None, None
