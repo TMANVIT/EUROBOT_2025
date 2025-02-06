@@ -13,7 +13,7 @@ services:
       - QT_X11_NO_MITSHM=1
       - CMAKE_PREFIX_PATH=/opt/ros/humble
     volumes:
-      - $ROOT_DIR/src:/ros2_ws/src
+      - $ROOT_DIR/src/ros2:/ros2_ws/src
       - $ROOT_DIR/data:/data
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
     devices:

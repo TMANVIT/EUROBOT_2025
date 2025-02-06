@@ -337,7 +337,7 @@ local_costmap:
 map_server:
   ros__parameters:
     use_sim_time: false
-    yaml_filename: "playground.yaml"
+    yaml_filename: "battlefield.yaml"
 
 map_saver:  
   ros__parameters:

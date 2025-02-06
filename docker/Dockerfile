@@ -51,8 +51,9 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Install OpenCV Python packages
-RUN pip3 install opencv-contrib-python==4.10.0.84 opencv-python==4.10.0.84
+WORKDIR /packages
+COPY ./src/python .
+RUN bash -c "pip install ./cvFunctions"    
 
 # Create and set the working directory
 WORKDIR /ros2_ws

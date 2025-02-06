@@ -9,7 +9,7 @@ from launch_ros.actions import Node
 from launch.conditions import IfCondition, UnlessCondition
 
 
-MAP_NAME='playground' #change to the name of your own map here
+MAP_NAME='battlefield' #change to the name of your own map here
 
 def generate_launch_description():
 
