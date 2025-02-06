@@ -14,7 +14,7 @@ def generate_launch_description():
     default_config_path = os.path.join(
         package_path, 'config', 'camera_calibration_config.yaml')
     default_rviz_config_path = os.path.join(
-        package_path, 'rviz_cfg', 'odometry.rviz')
+        package_path, 'rviz_cfg', 'eurobot.rviz')
     
     camera_config_path = os.path.join(
         package_path, 'config', 'camera_config.yaml')
