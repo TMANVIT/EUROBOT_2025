@@ -1,5 +1,5 @@
-<?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="Maket">
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="Maket">
      <xacro:include filename="inertials.xacro" />
      <xacro:include filename="sensors.urdf.xacro" />
 
@@ -10,125 +10,101 @@
           <origin xyz="0 0 0" rpy="0 0 0" />
      </joint>
 
-     <link name="base_link">
-          <visual>
-               <origin xyz="0 0 0" rpy="0 0 0" />
-               <geometry>
-                    <mesh filename="package://description/meshes/Maket.stl" />
-               </geometry>
-               <material name="">
-                    <color rgba="1 0.898039215686275 0.8 1" />
-               </material>
-          </visual>
-          <collision>
-               <origin xyz="0 0 0" rpy="0 0 0" />
-               <geometry>
-                    <mesh filename="package://description/meshes/Maket.stl" />
-               </geometry>
-          </collision>
-     </link>
 
-     <!-- <Right_Wheel> -->
-     <link name="Right_Wheel">
+     <link name = "base_link">
           <visual>
-               <origin xyz="0 0 0" rpy="0 0 0" />
+               <origin xyz = "0 0 0" rpy = "0 0 0" />
                <geometry>
-                    <mesh filename="package://description/meshes/Right_Wheel.stl" />
+                    <mesh filename="package://Maket/meshes/base_link.STL" />
                </geometry>
-               <material name="Right_Wheel" />
+               <material name="Maket">
           </visual>
           <collision>
-               <origin xyz="0 0 0" rpy="0 0 0" />
-               <geometry>
-                    <mesh filename="package://description/meshes/Right_Wheel.stl" />
+               <origin xyz= "0 0 0" rpy="0 0 0" />
+               <geometry>     
+                    <mesh filename="package://Maket/meshes/base_link.STL" />
                </geometry>
           </collision>
+          <!-- <inertial> -->
+          <xacro:Maket mass = "4"/>
+          <!-- <inertial/> -->
+     </link>
+     <!-- <Right_Wheel> -->
+     </link name = "Right_Wheel">
+          <visual>
+               <origin xyz = "0 0 0" rpy = "0 0 0" />
+               <geometry>
+                    <mesh filename = "package://Maket/meshes/right_wheel.STL"/>
+               </geometry>
+               <material name = "Right_Wheel"/>
+          </visual>
+          <collision>
+               <origin xyz = "0 0 0" rpy = "0 0 0" />
+               <geometry>
+                    <mesh filename = "package://Maket/meshes/right_wheel.STL"/>
+               </geometry>
+          </collision>
+          <!-- <inertial> -->
+          <xaccro:Right_Wheel mass = "0.077714"/>
+          <!-- <inertial/> -->
      </link>
      <joint name="RightWheel" type="continuous">
           <origin
-               xyz="0.040866 -0.2 0.015296"
-               rpy="1.5708 0 0"
+               xyz="0.059148 -0.2 0.021"
+               rpy="-1.5708 0 0" 
           />
-          <parent
+          <parent 
                link="base_link" />
-          <child
+          <child  
                link="Right_Wheel" />
-          <axis
+          <axis   
                xyz="0 0 1" />
-          <!-- <limit  
-               effort="10" 
-               velocity="10" /> -->
-          <!-- <dynamics 
-               damping="0.1"
-               friction="0.1" /> -->
-     </joint>
-     <!-- </Right_Wheel> -->
-
-     <!-- <Left_Wheel> -->
-     <link name="Left_Wheel">
-          <visual>
-               <origin xyz="0 0 0" rpy="0 0 0" />
-               <geometry>
-                    <mesh filename="package://description/meshes/Left_Wheel.stl" />
-               </geometry>
-               <material name="Left_Wheel" />
-          </visual>
-          <collision>
-               <origin xyz="0 0 0" rpy="0 0 0" />
-               <geometry>
-                    <mesh filename="package://description/meshes/Left_Wheel.stl" />
-               </geometry>
-          </collision>
-     </link>
-     <joint name="LeftWheel" type="continuous">
-          <origin
-               xyz="0.040866 0.2 0.015296"
-               rpy="-1.5708 0 0"
-          />
-          <parent
-               link="base_link" />
-          <child
-               link="Left_Wheel" />
-          <axis
-               xyz="0 0 1" />
-          <!-- <limit  
+          <limit  
                effort="10" 
                velocity="10" />
           <dynamics 
                damping="0.1"
-               friction="0.1" /> -->
+               friction="0.1" />
      </joint>
-     <!--</Left_Whell>-->
-
-     <!-- <Roller> -->
-     <link name="Roller">
+     <!-- </Right_Wheel> -->
+     <!-- <Left_Wheel> -->
+     </link name = "Left_Wheel">
           <visual>
-               <origin xyz="0 0 0" rpy="0 0 0" />
+               <origin xyz = "0 0 0" rpy = "0 0 0" />
                <geometry>
-                    <mesh filename="package://description/meshes/Roller.stl" />
+                    <mesh filename = "package://Maket/meshes/left_wheel.STL"/>
                </geometry>
-               <material name="Roller" />
+               <material name = "Left_Wheel"/>
           </visual>
           <collision>
-               <origin xyz="0 0 0" rpy="0 0 0" />
+               <origin xyz = "0 0 0" rpy = "0 0 0" />
                <geometry>
-                    <mesh filename="package://description/meshes/Roller.stl" />
+                    <mesh filename = "package://Maket/meshes/left_wheel.STL"/>
                </geometry>
           </collision>
+          <!-- <inertial> -->
+          <xaccro:Left_Wheel mass = "0.077714"/>
+          <!-- <inertial/> -->
      </link>
-     <joint name="Roller" type="continuous">
+     <joint name="LeftWheel" type="continuous">
           <origin
-               xyz="-0.055737 0 -0.005"
-               rpy="-1.5708 0 0"
+               xyz="0.059148 0.2 0.021"
+               rpy="-1.5708 0 0" 
           />
-          <parent
+          <parent 
                link="base_link" />
-          <child
-               link="Roller" />
-          <axis
-               xyz="0 0 -1" />
+          <child  
+               link="Left_Wheel" />
+          <axis   
+               xyz="0 0 1" />
+          <limit  
+               effort="10" 
+               velocity="10" />
+          <dynamics 
+               damping="0.1"
+               friction="0.1" />
      </joint>
-     <!--</Roller>-->
+     <!--</Left_Whell>-->
 
      <xacro:imu />
 
@@ -159,12 +135,5 @@
           <origin xyz="-0.09 0 0.26" rpy="0 0 0" />
      </joint>
 
-</robot>
 
-
-
-
-       
-
-
-     
+</robot>    
