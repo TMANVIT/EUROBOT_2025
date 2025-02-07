@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+    <!-- This file is not a robot in and of itself, it just contains some useful tags that could be included in any robot -->
+
+    <!-- Specify some colours -->
+    <material name="Maket">
+        <color
+          rgba="1.0 0.1 0.1 1.0" />
+      </material>
+
+    <material name="Right_Wheel">
+        <color 
+          rgba="0.1 0.1 1.0 1.0" />
+      </material>
+
+    <material name="Left_Wheel">
+        <color
+          rgba="0.1 0.1 1.0 1.0" />
+      </material>
+
+    <!-- Specify some standard inertial calculations https://en.wikipedia.org/wiki/List_of_moments_of_inertia -->
+    <!-- These make use of xacro's mathematical functionality -->
+
+    <xacro:macro name="base_link" params="mass *origin">
+        <inertial>
+            <xacro:insert_block name="origin"/>
+            <mass value="${mass}" />
+            <inertia 
+                ixx="0.013117"
+                ixy="0.00012016"
+                ixz="0.00018351"
+                iyy="0.0036472"
+                iyz="-0.00011926"
+                izz="0.012625" 
+            />
+        </inertial>
+        <origin
+            xyz="0.045317 0.00098805 0.11116"
+            rpy="0 0 0" 
+        />
+    </xacro:macro>  
+    <!-- <Right_Wheel> -->
+    <xacro:Macro name = "Right_Wheel" params = "mass *origin">
+        <inertial>
+            <xacro:insert_block name = "origin"/>
+            <mass value = "${mass}"/>
+            <inertia 
+                ixx="3.6651E-05"
+                ixy="1.1064E-20"
+                ixz="1.0295E-19"
+                iyy="3.6651E-05"
+                iyz="2.3912E-21"
+                izz="5.4175E-05" 
+            />
+        </inertial>
+        <origin 
+            xyz="7.9797E-17 -3.4694E-18 0.013353" 
+            rpy="0 0 0" 
+        />
+    </xacro:Macro>
+    <!-- </Right_Wheel> -->
+    <!-- <Left_Wheel> -->
+    <xacro:Macro name = "Left_Wheel" params = "mass *origin">
+        <inertial>
+            <xacro:insert_block name = "origin"/>
+            <mass value = "${mass}"/>
+            <inertia
+                ixx="3.6651E-05"
+                ixy="-1.3584E-21"
+                ixz="-9.0384E-18"
+                iyy="3.6651E-05"
+                iyz="7.1785E-19"
+                izz="5.4175E-05" 
+            />
+        </inertial>
+        <origin
+            xyz="6.8834E-15 -5.5164E-16 -0.013353"
+            rpy="0 0 0" 
+        />
+    </xacro:Macro>
+    <!-- </Left_Wheel> -->
+</robot>
