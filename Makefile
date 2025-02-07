@@ -9,15 +9,13 @@ DISPLAY ?= :1
 
 # ------------------------------------------------------------------------------
 
-ROBOT_IMAGE := \
+COMPUTER_IMAGE = \
 	robot
-CAMERA_IMAGE := \
-	camera
 
 DOCKER_COMPOSE_FILES := \
-	-f docker-compose.yaml
+	-f ./docker/docker-compose.yaml
 
-BASE_IMAGES := $(ROBOT_IMAGE) $(CAMERA_IMAGE)
+BASE_IMAGES := $(COMPUTER_IMAGE)
 
 # ------------------------------------------------------------------------------
 
@@ -29,9 +27,9 @@ BASE_PARAMETERS := \
 
 # ------------------------------------------------------------------------------
 
-BUILD_COMMAND := docker compose $(DOCKER_COMPOSE_FILES) build
+BUILD_COMMAND := $(BASE_PARAMETERS) docker compose $(DOCKER_COMPOSE_FILES) build
 
-RUN_COMMAND := docker compose $(DOCKER_COMPOSE_FILES) up
+RUN_COMMAND := $(BASE_PARAMETERS) docker compose $(DOCKER_COMPOSE_FILES) up
 
 # ------------------------------------------------------------------------------
 #                              BUILDING COMMANDS
@@ -41,11 +39,7 @@ RUN_COMMAND := docker compose $(DOCKER_COMPOSE_FILES) up
 
 build-robot:
 	@echo "Building robot"
-	cd $(ROOT_DIR) && $(BASE_PARAMETERS) $(BUILD_COMMAND) $(ROBOT_IMAGE)
-
-build-camera:
-	@echo "Building camera"
-	cd $(ROOT_DIR) && $(BASE_PARAMETERS) $(BUILD_COMMAND) $(CAMERA_IMAGE)
+	cd $(ROOT_DIR) && $(BUILD_COMMAND) $(COMPUTER_IMAGE)
 
 build-all:
 	@echo "Building all"
@@ -60,17 +54,17 @@ build-all:
 run-robot-stack: 
 	@echo "Running robot stack"
 	cd $(ROOT_DIR) && \
-	$(RUN_COMMAND) $(ROBOT_IMAGE)
-
-run-camera-stack: prepare-for-visualization
-	@echo "Running camera stack"
-	cd $(ROOT_DIR) && \
-	$(RUN_COMMAND) $(CAMERA_IMAGE)
+	$(RUN_COMMAND) $(COMPUTER_IMAGE)
 
 run-all-stack:
 	@echo "Running all stack"
 	cd $(ROOT_DIR) && \
 	$(RUN_COMMAND) $(BASE_IMAGES)
+
+run-pi:
+	@echo "Running rpi4 script"
+	chmod +x rpi_launch/rpi4_launch.sh
+	cd $(ROOT_DIR)rpi_launch && ./rpi4_launch.sh
 
 # ------------------------------------------------------------------------------
 #                             AUXILIARY COMMANDS
@@ -83,7 +77,3 @@ prepare-for-visualization:
 	DISPLAY=$(DISPLAY) xhost +local: && \
 	DISPLAY=$(DISPLAY) xhost + && \
 	export RCUTILS_COLORIZED_OUTPUT=1
-
-prepare-for-build:
-	@echo "Initializing git submodules"
-	git submodule init

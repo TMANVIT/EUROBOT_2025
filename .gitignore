@@ -1,5 +1,7 @@
 data/**
 !data/.gitkeep
+./build
+./install
 
 .env
 
