@@ -23,4 +23,10 @@ echo "Waiting for running bringup launch file"
 
 ros2 launch robot_bringup robot_bringup.launch.py &
  
-ros2 launch navigation slam.launch.py
+if [ "${MAKE_MAP}" == True ]; then
+  echo "Launch map creating"
+  ros2 launch navigation slam.launch.py
+else
+  echo "Launch navigation"
+  ros2 launch navigation navigation.launch.py map:=/ros2_ws/src/navigation/map/battlefield.yaml
+fi
