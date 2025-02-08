@@ -24,7 +24,7 @@ RENDER_DISPLAY := $(DISPLAY)
 
 BASE_PARAMETERS := \
 	ROOT_DIR=$(ROOT_DIR) \
-	RENDER_DISPLAY=$(DISPLAY) \ 
+	RENDER_DISPLAY=$(DISPLAY) \
 	MAKE_MAP=$(MAKE_MAP)
 
 # ------------------------------------------------------------------------------
