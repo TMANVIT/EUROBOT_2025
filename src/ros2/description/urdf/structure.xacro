@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
     <!-- Specify some colours -->
-    <material name="base_link">
+    <material name="base_material">
         <color
           rgba="1 0 0 1" />
     </material>
 
-    <material name="right_wheel">
+    <material name="wheel_material">
         <color 
           rgba="0 0 1 1" />
     </material>
 
-    <material name="left_wheel">
-        <color
-          rgba="0 0 1 1" />
-    </material>
     <!-- Macros for base_link--> 
-    <xacro:macro name="base_link" params="name mass filename *origin *inertia">
-        <link name = "${name}">
+    <xacro:macro name="base_m" params="name mass filename *origin *inertia">
+        <link name="${name}">
             <visual>
                 <origin
                     xyz="0 0 0"
@@ -26,7 +22,7 @@
                 <geometry>
                     <mesh filename="${filename}" />
                 </geometry>
-                <material name="base_link" />
+                <material name="base_material" />
             </visual>
             <collision>
                 <origin
@@ -34,28 +30,28 @@
                     rpy="0 0 0" 
                 />
                 <geometry>
-                    <mesh filename = "${filename}" />
+                    <mesh filename="${filename}" />
                 </geometry>
             </collision>
             <inertial>
-                <xacro:insert_block name = "origin" />
-                <mass value = "${mass}" />
-                <xacro:insert_block name = "inertia" />
+                <xacro:insert_block name="origin" />
+                <mass value="${mass}" />
+                <xacro:insert_block name="inertia" />
             </inertial>
         </link>
     </xacro:macro>
     <!-- Macros for wheels links & joints-->
-    <xacro:macro name = "wheel_link" params="name_link filename mass *origin *inertia" >
-          <link name = "${name_link}">
+    <xacro:macro name="wheel_link" params="name_link filename mass *origin *inertia" >
+          <link name="${name_link}">
                <visual>
                     <origin 
                         xyz="0 0 0" 
                         rpy="0 0 0" 
                     />
                     <geometry>
-                         <mesh filename = "${filename}" />
+                         <mesh filename="${filename}" />
                     </geometry>
-                    <material name = "${name_link}" />
+                    <material name="wheel_material" />
                </visual>
                <collision>
                     <origin     
@@ -63,22 +59,22 @@
                         rpy="0 0 0" 
                     />
                     <geometry>
-                         <mesh filename = "${filename}" />
+                         <mesh filename="${filename}" />
                     </geometry>
                </collision>
                <inertial>
                     <xacro:insert_block name="origin" />
-                    <mass = "${mass}" />
+                    <mass value="${mass}" />
                     <xacro:insert_block name="inertia" />
                </inertial>
           </link>
      </xacro:macro>
 
-     <xacro:macro name = "wheel_joint" params = "name name_link *origin">
-          <joint name = "${name}" type = "continuous">
+     <xacro:macro name="wheel_joint" params="name name_link *origin">
+          <joint name="${name}" type="continuous">
                <xacro:insert_block name="origin" />
-               <parent link = "base_link" />
-               <child link = "${name_link}" />
+               <parent link="base_link" />
+               <child link="${name_link}" />
                <axis xyz="0 0 1" />
                <limit
                     effort="0"
@@ -91,19 +87,19 @@
           </joint>
      </xacro:macro>  
     <!-- Macros for aruco link--> 
-    <xacro:macro name = "aruco" params ="*box *origin">
+    <xacro:macro name="aruco_str" params ="material *origin">
         <link name="aruco">
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
-                    <xacro:insert_block name="box" />
+                    <box size="0.10 0.10 0.02" />
                 </geometry>
-                <material name="right_wheel" />
+                <material name="wheel_material" />
             </visual>
             <collision>
                 <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
-                        <xacro:insert_block name="box" />
+                        <box size="0.10 0.10 0.02" />
                 </geometry>
             </collision>
         </link>

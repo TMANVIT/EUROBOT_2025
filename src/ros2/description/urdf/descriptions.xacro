@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="Maket">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
      <xacro:include filename="structure.xacro" />
      <xacro:include filename="sensors.xacro" />
 
@@ -10,7 +10,10 @@
           <origin xyz="0 0 0" rpy="0 0 0" />
      </joint>
 
-     <xacro:base_link name="base_lnk" mass="5" filename="//description/meshes/base_link.STL">
+     <xacro:base_m 
+          name="base_link" 
+          mass="5" 
+          filename="package://description/meshes/base_link.STL">
           <origin
                xyz="0.055795 0.00111 0.11345"
                rpy="0 0 0" 
@@ -23,12 +26,12 @@
                iyz="-0.00011927"
                izz="0.012455"
           />
-     </xacro:base_link>
+     </xacro:base_m>
      <!-- <Right_Wheel> -->
      <xacro:wheel_link 
           name_link="right_wheel" 
           filename="package://description/meshes/right_wheel.STL"
-          mass="0.08" >
+          mass="0.08">
           <origin
                xyz="8.3267E-17 0 0.013353"
                rpy="0 0 0" 
@@ -44,7 +47,7 @@
      </xacro:wheel_link>
      <xacro:wheel_joint
           name="rightwheel"
-          name_link ="right_wheel"> 
+          name_link="right_wheel"> 
           <origin
                xyz="0.059148 -0.2 0.021"
                rpy="-1.5708 0 0" 
@@ -55,7 +58,7 @@
      <xacro:wheel_link 
           name_link="left_wheel" 
           filename="package://description/meshes/left_wheel.STL"
-          mass="0.08" >
+          mass="0.08">
           <origin
                xyz="3.8886E-14 3.645E-14 0.38665"
                rpy="0 0 0" 
@@ -82,9 +85,9 @@
      <xacro:imu/>
      <!-- <IMU> -->
      <!-- <Lidar> -->
-     <xacro:lidar_link 
+     <xacro:lidar_m 
           filename="package://description/meshes/lidar_link.STL" 
-          mass = "0.25" >
+          mass="0.25" >
           <origin
                xyz="0.00012979 -6.6734E-06 -0.0079009"
                rpy="0 0 0" 
@@ -97,7 +100,7 @@
                iyz="6.3454E-09"
                izz="1.7083E-05" 
           />
-     </xacro:lidar_link>
+     </xacro:lidar_m>
      <xacro:lidar_joint>
           <origin
                xyz="0.005563 0.002859 0.30015"
@@ -106,10 +109,8 @@
      </xacro:lidar_joint>
      <!-- <Lidar> -->
      <!-- <Aruco> -->
-     <xacro:aruco>
-          <box size="0.10 0.10 0.02" />
+     <xacro:aruco_m>
           <origin xyz="-0.09 0 0.26" rpy="0 0 0" />
-     </xacro:aruco>
+     </xacro:aruco_m>
      <!-- <Aruco> -->
-
 </robot>    
