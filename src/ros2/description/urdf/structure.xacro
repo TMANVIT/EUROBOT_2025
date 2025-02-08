@@ -16,7 +16,7 @@
           rgba="0 0 1 1" />
     </material>
     <!-- Macros for base_link--> 
-    <xacro:macro name="base_link" params="name mass *origin *inertia">
+    <xacro:macro name="base_link" params="name mass filename *origin *inertia">
         <link name = "${name}">
             <visual>
                 <origin
@@ -24,7 +24,7 @@
                     rpy="0 0 0" 
                 />
                 <geometry>
-                    <mesh filename="package://Макет/meshes/base_link.STL" />
+                    <mesh filename="${filename}" />
                 </geometry>
                 <material name="base_link" />
             </visual>

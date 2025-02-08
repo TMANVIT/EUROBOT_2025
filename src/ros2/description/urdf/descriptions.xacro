@@ -10,7 +10,7 @@
           <origin xyz="0 0 0" rpy="0 0 0" />
      </joint>
 
-     <xacro:base_link name="base_link" mass="5">
+     <xacro:base_link name="base_lnk" mass="5" filename="//description/meshes/base_link.STL">
           <origin
                xyz="0.055795 0.00111 0.11345"
                rpy="0 0 0" 
@@ -27,7 +27,7 @@
      <!-- <Right_Wheel> -->
      <xacro:wheel_link 
           name_link="right_wheel" 
-          filename="package://Макет/meshes/right_wheel.STL"
+          filename="package://description/meshes/right_wheel.STL"
           mass="0.08" >
           <origin
                xyz="8.3267E-17 0 0.013353"
@@ -54,7 +54,7 @@
      <!-- <Left_Wheel> -->
      <xacro:wheel_link 
           name_link="left_wheel" 
-          filename="package://Макет/meshes/left_wheel.STL"
+          filename="package://description/meshes/left_wheel.STL"
           mass="0.08" >
           <origin
                xyz="3.8886E-14 3.645E-14 0.38665"
@@ -83,7 +83,7 @@
      <!-- <IMU> -->
      <!-- <Lidar> -->
      <xacro:lidar_link 
-          filename="package://Макет/meshes/lidar_link.STL" 
+          filename="package://description/meshes/lidar_link.STL" 
           mass = "0.25" >
           <origin
                xyz="0.00012979 -6.6734E-06 -0.0079009"
