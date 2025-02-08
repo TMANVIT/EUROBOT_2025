@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
+    <!-- Specify some colours -->
+    <material name="base_link">
+        <color
+          rgba="1 0 0 1" />
+    </material>
+
+    <material name="right_wheel">
+        <color 
+          rgba="0 0 1 1" />
+    </material>
+
+    <material name="left_wheel">
+        <color
+          rgba="0 0 1 1" />
+    </material>
+    <!-- Macros for base_link--> 
+    <xacro:macro name="base_link" params="name mass *origin *inertia">
+        <link name = "${name}">
+            <visual>
+                <origin
+                    xyz="0 0 0"
+                    rpy="0 0 0" 
+                />
+                <geometry>
+                    <mesh filename="package://Макет/meshes/base_link.STL" />
+                </geometry>
+                <material name="base_link" />
+            </visual>
+            <collision>
+                <origin
+                    xyz="0 0 0" 
+                    rpy="0 0 0" 
+                />
+                <geometry>
+                    <mesh filename = "${filename}" />
+                </geometry>
+            </collision>
+            <inertial>
+                <xacro:insert_block name = "origin" />
+                <mass value = "${mass}" />
+                <xacro:insert_block name = "inertia" />
+            </inertial>
+        </link>
+    </xacro:macro>
+    <!-- Macros for wheels links & joints-->
+    <xacro:macro name = "wheel_link" params="name_link filename mass *origin *inertia" >
+          <link name = "${name_link}">
+               <visual>
+                    <origin 
+                        xyz="0 0 0" 
+                        rpy="0 0 0" 
+                    />
+                    <geometry>
+                         <mesh filename = "${filename}" />
+                    </geometry>
+                    <material name = "${name_link}" />
+               </visual>
+               <collision>
+                    <origin     
+                        xyz="0 0 0" 
+                        rpy="0 0 0" 
+                    />
+                    <geometry>
+                         <mesh filename = "${filename}" />
+                    </geometry>
+               </collision>
+               <inertial>
+                    <xacro:insert_block name="origin" />
+                    <mass = "${mass}" />
+                    <xacro:insert_block name="inertia" />
+               </inertial>
+          </link>
+     </xacro:macro>
+
+     <xacro:macro name = "wheel_joint" params = "name name_link *origin">
+          <joint name = "${name}" type = "continuous">
+               <xacro:insert_block name="origin" />
+               <parent link = "base_link" />
+               <child link = "${name_link}" />
+               <axis xyz="0 0 1" />
+               <limit
+                    effort="0"
+                    velocity="10" 
+               />
+               <dynamics
+                    damping="0"
+                    friction="0" 
+               />
+          </joint>
+     </xacro:macro>  
+    <!-- Macros for aruco link--> 
+    <xacro:macro name = "aruco" params ="*box *origin">
+        <link name="aruco">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <xacro:insert_block name="box" />
+                </geometry>
+                <material name="right_wheel" />
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                        <xacro:insert_block name="box" />
+                </geometry>
+            </collision>
+        </link>
+        <joint name="aruco" type="fixed">
+          <parent link="base_link" />
+          <child link="aruco" />
+          <xacro:insert_block name="origin" />
+        </joint>
+    </xacro:macro>
+</robot>

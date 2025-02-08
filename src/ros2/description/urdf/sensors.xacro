@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <material name = "lidar">
+    <color
+      rgba = "0 1 0 1" />
+  </material>
+  
+  <xacro:macro name="imu">
+    <link name="imu_link"/>
+    
+    <joint name="imu_to_base_link" type="fixed">
+      <parent link="base_link"/>
+      <child link="imu_link"/>
+      <origin xyz="0 0 0" rpy="3.14 0 0"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="lidar_link" params="filename mass *origin *inertia">
+    <link name="lidar_link">
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" 
+        />
+        <geometry>
+          <mesh filename="${filename}" />
+        </geometry>
+        <material name = "lidar"/>
+      </visual>
+      <collision>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" 
+        />
+        <geometry>
+          <mesh filename="${filename}" />
+        </geometry>
+      </collision>
+      <inertial>
+        <xacro:insert_block name="origin" />
+        <mass value="${mass}"/>
+        <xacro:insert_block name="inertia" />
+      </inertial>
+    </link>
+  </xacro:macro>
+  
+  <xacro:macro name = "lidar_joint" params = "*origin">
+    <joint name="lidar_to_base" type="fixed">
+      <parent link="base_link"/>
+      <child link="lidar_link"/>
+      <xacro:insert_block name="origin" />
+      <axis xyz="0 0 0" />
+      <limit 
+        effort="0"  
+        velocity="0" 
+      />
+      <dynamics
+        damping="0"
+        friction="0" 
+      />
+    </joint>
+  </xacro:macro>
+</robot>
