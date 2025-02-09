@@ -2,7 +2,7 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <material name="lidar_material">
     <color
-      rgba="0 1 0 1" />
+      rgba="1 1 1 1" />
   </material>
   
   <xacro:macro name="imu">
@@ -15,7 +15,7 @@
     </joint>
   </xacro:macro>
 
-  <xacro:macro name="lidar_m" params="filename mass *origin *inertia">
+  <xacro:macro name="lidar_link_m" params="filename mass *origin *inertia">
     <link name="lidar_link">
       <visual>
         <origin
@@ -44,20 +44,11 @@
     </link>
   </xacro:macro>
   
-  <xacro:macro name="lidar_joint" params="*origin">
+  <xacro:macro name="lidar_joint_m" params="*origin">
     <joint name="lidar_to_base" type="fixed">
       <parent link="base_link"/>
       <child link="lidar_link"/>
       <xacro:insert_block name="origin" />
-      <axis xyz="0 0 0" />
-      <limit 
-        effort="0"  
-        velocity="0" 
-      />
-      <dynamics
-        damping="0"
-        friction="0" 
-      />
     </joint>
   </xacro:macro>
 </robot>

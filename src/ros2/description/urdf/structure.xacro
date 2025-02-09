@@ -11,6 +11,10 @@
           rgba="0 0 1 1" />
     </material>
 
+    <material name="aruco_material">
+        <color
+            rgba="0 1 0 1" />
+    </material>
     <!-- Macros for base_link--> 
     <xacro:macro name="base_m" params="name mass filename *origin *inertia">
         <link name="${name}">
@@ -87,26 +91,34 @@
           </joint>
      </xacro:macro>  
     <!-- Macros for aruco link--> 
-    <xacro:macro name="aruco_str" params ="material *origin">
-        <link name="aruco">
+    <xacro:macro name="aruco_link_m" params ="filename mass *origin *inertia">
+        <link name="aruco_link">
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
-                    <box size="0.10 0.10 0.02" />
+                    <mesh filename="${filename}" />
                 </geometry>
-                <material name="wheel_material" />
+                <material name="aruco_material" />
             </visual>
             <collision>
                 <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
-                        <box size="0.10 0.10 0.02" />
+                    <mesh filename="${filename}" />
                 </geometry>
             </collision>
+            <inertial>
+                <xacro:insert_block name="origin" />
+                <mass value="${mass}" />
+                <xacro:insert_block name="inertia" />
+            </inertial>
         </link>
-        <joint name="aruco" type="fixed">
-          <parent link="base_link" />
-          <child link="aruco" />
-          <xacro:insert_block name="origin" />
+    </xacro:macro>
+    <xacro:macro name="aruco_joint_m" params="*origin">
+        <joint name="aruco_to_base" type="fixed">
+            <xacro:insert_block name="origin" />
+            <parent link="base_link" />
+            <child link="aruco_link" />
+            <axis xyz="0 0 0" />
         </joint>
     </xacro:macro>
 </robot>
