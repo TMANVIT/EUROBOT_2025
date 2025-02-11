@@ -10,7 +10,7 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description():
 
     urdf_path = PathJoinSubstitution(
-        [FindPackageShare("description"), "urdf", "robot.urdf.xacro"]
+        [FindPackageShare("description"), "urdf", "robot.xacro"]
     )
 
     camera_launch_path = PathJoinSubstitution(

@@ -6,7 +6,7 @@ MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR := $(dir $(MKFILE_PATH))
 ROOT_DIR := $(MKFILE_DIR)
 DISPLAY ?= :1
-MAKE_MAP ?= True
+MAKE_MAP ?= false
 
 # ------------------------------------------------------------------------------
 
@@ -24,7 +24,7 @@ RENDER_DISPLAY := $(DISPLAY)
 
 BASE_PARAMETERS := \
 	ROOT_DIR=$(ROOT_DIR) \
-	RENDER_DISPLAY=$(DISPLAY) \ 
+	RENDER_DISPLAY=$(DISPLAY) \
 	MAKE_MAP=$(MAKE_MAP)
 
 # ------------------------------------------------------------------------------
