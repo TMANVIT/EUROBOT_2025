@@ -16,6 +16,10 @@ def generate_launch_description():
     camera_launch_path = PathJoinSubstitution(
         [FindPackageShare('camera'), 'launch', 'camera_launch.launch.py']
     )
+    
+    camera_localization_launch_path = PathJoinSubstitution(
+        [FindPackageShare('camera_localization'), 'launch', 'camera_localization.launch.py']
+    )
 
     return LaunchDescription([
         
@@ -62,5 +66,9 @@ def generate_launch_description():
 
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(camera_launch_path),
+            #PythonLaunchDescriptionSource(camera_localization_launch_path)
+        ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(camera_localization_launch_path)
         ),
     ])

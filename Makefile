@@ -6,7 +6,7 @@ MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR := $(dir $(MKFILE_PATH))
 ROOT_DIR := $(MKFILE_DIR)
 DISPLAY ?= :1
-MAKE_MAP ?= true
+MAKE_MAP ?= false
 
 # ------------------------------------------------------------------------------
 
