@@ -3,7 +3,7 @@ import os
 from glob import glob
 
 
-package_name = 'camera_localization'
+package_name = 'lidar_localization'
 
 setup(
     name=package_name,
@@ -24,7 +24,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'camera_localization_node = camera_localization.map_to_odom_tf:main'
+            'lidar_localization_node = lidar_localization.lidar_localization_function:main'
         ],
     },
 )

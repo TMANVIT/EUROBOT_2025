@@ -30,12 +30,12 @@ echo "Waiting for running bringup launch file..."
 ros2 launch robot_bringup robot_bringup.launch.py &
 
 # # TODO ADD launch file of localization
-# ros2 run obstacle_detector obstacle_extractor_node &
+#ros2 launch lidar_localization lidar_localization.launch.py
 
-if [ "$MAKE_MAP" == true ]; then
-  echo "Launching map creation..."
-  ros2 launch navigation slam.launch.py
-else
-  echo "Launching navigation with map..."
-  ros2 launch navigation navigation.launch.py
-fi
+# if [ "$MAKE_MAP" == true ]; then
+#   echo "Launching map creation..."
+#   ros2 launch navigation slam.launch.py
+# else
+#   echo "Launching navigation with map..."
+#   ros2 launch navigation navigation.launch.py
+# fi
