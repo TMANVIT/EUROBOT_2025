@@ -29,7 +29,7 @@ class Camera():
     def prepare_image(self, img):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         gray = cv2.normalize(gray, None, 1.0, 255, cv2.NORM_MINMAX, dtype = cv2.CV_8U)
-        gray = cv2.medianBlur(gray, 3)
+        # gray = cv2.medianBlur(gray, 3)
         ret, prepared_img = cv2.threshold(gray, 200,220,cv2.THRESH_BINARY)
         return prepared_img
     
