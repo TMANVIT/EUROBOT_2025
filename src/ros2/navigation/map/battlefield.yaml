@@ -1,4 +1,4 @@
-image: battlefield.pgm  # Название PGM-файла
+image: /ros2_ws/src/navigation/map/battlefield.pgm  # Название PGM-файла
 resolution: 0.005  # Разрешение (0.5 см на пиксель)
 origin: [-1.05, -1.55, 0.0]  # Смещение (центр карты)
 occupied_thresh: 0.65  # Порог занятости

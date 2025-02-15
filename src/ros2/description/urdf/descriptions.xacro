@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="Maket">
-     <xacro:include filename= "inertials.xacro"/>
-     <xacro:include filename= "sensors.urdf.xacro"/>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="Maket">
+     <xacro:include filename="inertials.xacro" />
+     <xacro:include filename="sensors.xacro" />
 
-     <link name="base_footprint"/>  
+     <link name="base_footprint" />
      <joint name="base_to_footprint" type="fixed">
-          <parent link="base_footprint"/>
-          <child link="base_link"/>
-          <origin xyz="0 0 0" rpy="0 0 0"/>
-    </joint>
+          <parent link="base_footprint" />
+          <child link="base_link" />
+          <origin xyz="0 0 0" rpy="0 0 0" />
+     </joint>
 
-     <link name = "base_link">
+     <link name="base_link">
           <visual>
-               <origin xyz = "0 0 0" rpy = "0 0 0" />
+               <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
                     <mesh filename="package://description/meshes/Maket.stl" />
                </geometry>
@@ -21,8 +21,8 @@
                </material>
           </visual>
           <collision>
-               <origin xyz= "0 0 0" rpy="0 0 0" />
-               <geometry>     
+               <origin xyz="0 0 0" rpy="0 0 0" />
+               <geometry>
                     <mesh filename="package://description/meshes/Maket.stl" />
                </geometry>
           </collision>
@@ -33,27 +33,27 @@
           <visual>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://description/meshes/Right_Wheel.stl"/>
+                    <mesh filename="package://description/meshes/Right_Wheel.stl" />
                </geometry>
-               <material name="Right_Wheel"/>
+               <material name="Right_Wheel" />
           </visual>
           <collision>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://description/meshes/Right_Wheel.stl"/>
+                    <mesh filename="package://description/meshes/Right_Wheel.stl" />
                </geometry>
           </collision>
      </link>
      <joint name="RightWheel" type="continuous">
           <origin
                xyz="0.040866 -0.2 0.015296"
-               rpy="1.5708 0 0" 
+               rpy="1.5708 0 0"
           />
-          <parent 
+          <parent
                link="base_link" />
-          <child  
+          <child
                link="Right_Wheel" />
-          <axis   
+          <axis
                xyz="0 0 1" />
           <!-- <limit  
                effort="10" 
@@ -69,27 +69,27 @@
           <visual>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://description/meshes/Left_Wheel.stl"/>
+                    <mesh filename="package://description/meshes/Left_Wheel.stl" />
                </geometry>
-               <material name="Left_Wheel"/>
+               <material name="Left_Wheel" />
           </visual>
           <collision>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://description/meshes/Left_Wheel.stl"/>
+                    <mesh filename="package://description/meshes/Left_Wheel.stl" />
                </geometry>
           </collision>
      </link>
      <joint name="LeftWheel" type="continuous">
           <origin
                xyz="0.040866 0.2 0.015296"
-               rpy="-1.5708 0 0" 
+               rpy="-1.5708 0 0"
           />
-          <parent 
+          <parent
                link="base_link" />
-          <child  
+          <child
                link="Left_Wheel" />
-          <axis   
+          <axis
                xyz="0 0 1" />
           <!-- <limit  
                effort="10" 
@@ -105,42 +105,60 @@
           <visual>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://description/meshes/Roller.stl"/>
+                    <mesh filename="package://description/meshes/Roller.stl" />
                </geometry>
-               <material name="Roller"/>
+               <material name="Roller" />
           </visual>
           <collision>
                <origin xyz="0 0 0" rpy="0 0 0" />
                <geometry>
-                    <mesh filename="package://description/meshes/Roller.stl"/>
+                    <mesh filename="package://description/meshes/Roller.stl" />
                </geometry>
           </collision>
      </link>
      <joint name="Roller" type="continuous">
           <origin
                xyz="-0.055737 0 -0.005"
-               rpy="-1.5708 0 0"  
+               rpy="-1.5708 0 0"
           />
-          <parent 
+          <parent
                link="base_link" />
-          <child  
+          <child
                link="Roller" />
-          <axis   
+          <axis
                xyz="0 0 -1" />
-          <!-- <limit  
-               effort="10" 
-               velocity="10" />
-          <dynamics 
-               damping="0.1"
-               friction="0.1" /> -->
      </joint>
      <!--</Roller>-->
 
-     <xacro:imu/>
+     <xacro:imu />
 
      <xacro:laser>
-          <origin xyz="0 0 0.33" rpy="0 0 0"/>
+          <origin xyz="0 0 0.33" rpy="0 0 3.14" />
      </xacro:laser>
+
+     <link name="aruco">
+          <visual>
+               <origin xyz="0 0 0" rpy="0 0 0" />
+               <geometry>
+                    <box size="0.10 0.10 0.02" />
+               </geometry>
+               <material name="blue">
+                    <color rgba="0 0 1 1.0" />
+               </material>
+          </visual>
+          <collision>
+               <origin xyz="0 0 0" rpy="0 0 0" />
+               <geometry>
+                    <box size="0.10 0.10 0.02" />
+               </geometry>
+          </collision>
+     </link>
+     <joint name="aruco" type="fixed">
+          <parent link="base_link" />
+          <child link="aruco" />
+          <origin xyz="-0.09 0 0.26" rpy="0 0 0" />
+     </joint>
+
 </robot>
 
 

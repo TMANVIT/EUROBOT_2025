@@ -1,11 +1,11 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from geometry_msgs.msg import Pose
 from cv_bridge import CvBridge
 from cvFunctions.cvf import Camera
+from geometry_msgs.msg import PoseStamped
+from std_msgs.msg import Header
 
-import numpy as np
 
 CAMERA_CONFIG_PATH = "/ros2_ws/src/camera/config/camera_calibration_config.yaml"
 
@@ -13,8 +13,9 @@ class BEVPosePublisher(Node):
 
     def __init__(self):
         super().__init__('bev_pose_publisher')
-        self.publisher_ = self.create_publisher(Pose, '/bev_pose', 10)
-        self.initial_pose_publisher = self.create_publisher(Pose, '/initial_pose', 10)
+        self.pose_publisher = self.create_publisher(PoseStamped, '/bev_pose', 10)
+        self.initial_pose_publisher = self.create_publisher(PoseStamped, '/initial_pose', 10)
+        self.counter = 0
         
         self.image_subscription = self.create_subscription(Image, '/image_raw', self.image_callback, 10)
         
@@ -41,18 +42,23 @@ class BEVPosePublisher(Node):
             tmatrix_new, center_new = self.camera.t_matrix_building(ids, tvecDict, transMatrixDict)
             if tmatrix_new is not None:
                 self.tmatrix, self.center = tmatrix_new, center_new
+            #self.get_logger().error(f"{ids}")
             if self.tmatrix is not None:
                 self.robotCoord, self.quat = self.camera.robots_tracking(ids, transMatrixDict, tvecDict, self.tmatrix, self.center)
             if self.robotCoord is not None:
-                msg = Pose()
-                msg.position.x = float(self.robotCoord[0])
-                msg.position.y = float(self.robotCoord[1])
-                msg.position.z = float(self.robotCoord[2])
-                msg.orientation.x = self.quat[0]
-                msg.orientation.y = self.quat[1]
-                msg.orientation.z = self.quat[2]
-                msg.orientation.w = self.quat[3]
-                self.publisher_.publish(msg)
+                msg = PoseStamped()
+                msg.header = Header(frame_id='aruco', stamp=self.get_clock().now().to_msg())
+                msg.pose.position.x = float(self.robotCoord[0])
+                msg.pose.position.y = float(self.robotCoord[1])
+                msg.pose.position.z = float(self.robotCoord[2])
+                msg.pose.orientation.x = self.quat[0]
+                msg.pose.orientation.y = self.quat[1]
+                msg.pose.orientation.z = self.quat[2]
+                msg.pose.orientation.w = self.quat[3]
+                if self.counter == 0:
+                    self.initial_pose_publisher.publish(msg)
+                    self.counter = 1
+                self.pose_publisher.publish(msg)
 
 def main(args=None):
     rclpy.init(args=args)

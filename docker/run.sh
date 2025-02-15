@@ -9,18 +9,30 @@ if [ ! -d "$WORKSPACE_DIR/src" ]; then
   exit 1
 fi
 
-# Build the workspace using colcon
-echo "Building the workspace..."
-source /opt/ros/humble/setup.bash
-rosdep install -i --from-path src --rosdistro humble -y
-colcon build --symlink-install
+# Initialize MAKE_MAP variable
+MAKE_MAP=${MAKE_MAP:-false}
 
+# Build the workspace using colcon
+echo "Sourcing ROS setup..."
+source /opt/ros/humble/setup.bash
+
+echo "Installing dependencies..."
+rosdep install -i --from-path src --rosdistro humble -y || { echo "rosdep install failed"; exit 1; }
+
+echo "Building the workspace..."
+colcon build --symlink-install || { echo "colcon build failed"; exit 1; }
 
 # Source the local setup file after building
 source "install/local_setup.bash"
 
-echo "Waiting for running bringup launch file"
+echo "Waiting for running bringup launch file..."
 
 ros2 launch robot_bringup robot_bringup.launch.py &
- 
-ros2 launch navigation slam.launch.py
+
+if [ "$MAKE_MAP" == true ]; then
+  echo "Launching map creation..."
+  ros2 launch navigation slam.launch.py
+else
+  echo "Launching navigation with map..."
+  ros2 launch navigation navigation.launch.py
+fi
