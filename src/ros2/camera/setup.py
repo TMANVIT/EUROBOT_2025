@@ -25,7 +25,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'camera_bve_pose = camera.position:main'
+            'camera_bve_pose = camera.position:main',
+            'image_raw_publisher = camera.image_raw_publisher:main'
         ],
     },
 )
