@@ -28,7 +28,7 @@ class ImageRawPublisher(Node):
       self.publisher_.publish(self.br.cv2_to_imgmsg(frame, "bgr8"))
  
     # Display the message on the console
-    self.get_logger().info('Publishing video frame')
+    # self.get_logger().info('Publishing video frame')
   
 def main(args=None):
     rclpy.init(args=args)
