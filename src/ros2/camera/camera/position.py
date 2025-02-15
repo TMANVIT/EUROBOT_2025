@@ -24,6 +24,9 @@ class BEVPosePublisher(Node):
         
         self.tmatrix = None
         self.center = None
+        
+        self.robotCoord = None
+        self.quat = None
 
     def image_callback(self, msg):
         """
@@ -39,18 +42,19 @@ class BEVPosePublisher(Node):
             tmatrix_new, center_new = self.camera.t_matrix_building(ids, tvecDict, transMatrixDict)
             if tmatrix_new is not None:
                 self.tmatrix, self.center = tmatrix_new, center_new
-            #self.get_logger().error(f"{ids}")    
-            robotCoord, quat = self.camera.robots_tracking(ids, transMatrixDict, tvecDict, self.tmatrix, self.center)
-            if robotCoord is not None:
+            #self.get_logger().error(f"{ids}")
+            if self.tmatrix is not None:
+                self.robotCoord, self.quat = self.camera.robots_tracking(ids, transMatrixDict, tvecDict, self.tmatrix, self.center)
+            if self.robotCoord is not None:
                 msg = PoseStamped()
                 msg.header = Header(frame_id='aruco', stamp=self.get_clock().now().to_msg())
-                msg.pose.position.x = float(robotCoord[0])
-                msg.pose.position.y = float(robotCoord[1])
-                msg.pose.position.z = float(robotCoord[2])
-                msg.pose.orientation.x = quat[0]
-                msg.pose.orientation.y = quat[1]
-                msg.pose.orientation.z = quat[2]
-                msg.pose.orientation.w = quat[3]
+                msg.pose.position.x = float(self.robotCoord[0])
+                msg.pose.position.y = float(self.robotCoord[1])
+                msg.pose.position.z = float(self.robotCoord[2])
+                msg.pose.orientation.x = self.quat[0]
+                msg.pose.orientation.y = self.quat[1]
+                msg.pose.orientation.z = self.quat[2]
+                msg.pose.orientation.w = self.quat[3]
                 if self.counter == 0:
                     self.initial_pose_publisher.publish(msg)
                     self.counter = 1

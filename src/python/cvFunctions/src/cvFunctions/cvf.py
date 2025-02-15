@@ -84,7 +84,7 @@ class Camera():
     
     def robots_tracking(self, ids, transMatrixDict, tvecDict, tmatrix, center):
         if self.robot_id in ids:
-            robotCoord = np.dot(np.linalg.inv(tmatrix), np.array(tvecDict[self.robot_id] - center)) * 100
+            robotCoord = np.dot(np.linalg.inv(tmatrix), np.array(tvecDict[self.robot_id] - center)) * -1#00
             #angle = angle_between_vectors(transMatrixDict[self.robot_id][0], tmatrix[0])
             r = R.from_matrix(np.dot(transMatrixDict[self.robot_id], np.linalg.inv(tmatrix)))
             quaternion = r.as_quat()
