@@ -65,6 +65,7 @@ def generate_launch_description():
 
     ld.add_action(bve_pose_node)
     ld.add_action(rviz_node)
+    ld.add_action(image_raw_pub_node)
     # ld.add_action(v4l2_node)
 
     return ld
