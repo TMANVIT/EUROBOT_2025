@@ -17,7 +17,7 @@ echo "Sourcing ROS setup..."
 source /opt/ros/humble/setup.bash
 
 echo "Installing dependencies..."
-rosdep install -i --from-path src --rosdistro humble -y || { echo "rosdep install failed"; exit 1; }
+rosdep install -i --from-path src --rosdistro humble -y
 
 echo "Building the workspace..."
 colcon build --symlink-install || { echo "colcon build failed"; exit 1; }
@@ -29,10 +29,13 @@ echo "Waiting for running bringup launch file..."
 
 ros2 launch robot_bringup robot_bringup.launch.py &
 
-if [ "$MAKE_MAP" == true ]; then
-  echo "Launching map creation..."
-  ros2 launch navigation slam.launch.py
-else
-  echo "Launching navigation with map..."
-  ros2 launch navigation navigation.launch.py
-fi
+# # TODO ADD launch file of localization
+#ros2 launch lidar_localization lidar_localization.launch.py
+
+# if [ "$MAKE_MAP" == true ]; then
+#   echo "Launching map creation..."
+#   ros2 launch navigation slam.launch.py
+# else
+#   echo "Launching navigation with map..."
+#   ros2 launch navigation navigation.launch.py
+# fi

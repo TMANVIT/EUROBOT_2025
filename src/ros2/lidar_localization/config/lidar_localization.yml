@@ -1,0 +1,7 @@
+lidar_localization:
+  ros__parameters:
+    side: 0
+    debug_mode: false
+    visualize_candidate: true
+    likelihood_threshold: 0.001
+    consistency_threshold: 0.85

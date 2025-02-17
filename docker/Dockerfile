@@ -13,6 +13,7 @@ RUN apt-get update && \
     locales \
     build-essential \
     git \
+    cmake \
     wget \
     curl \
     lsb-release \

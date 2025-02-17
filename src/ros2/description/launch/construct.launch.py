@@ -66,6 +66,10 @@ def generate_launch_description():
 
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(camera_launch_path),
+            #PythonLaunchDescriptionSource(camera_localization_launch_path)
+        ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(camera_localization_launch_path)
         ),
         
         IncludeLaunchDescription(

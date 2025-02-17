@@ -31,7 +31,7 @@ class Camera():
         gray = cv2.normalize(gray, None, 1.0, 255, cv2.NORM_MINMAX, dtype = cv2.CV_8U)
         # gray = cv2.medianBlur(gray, 3)
         ret, prepared_img = cv2.threshold(gray, 200,220,cv2.THRESH_BINARY)
-        return prepared_img
+        return gray
     
     def detect_markers(self, img):
         tvecDictionary = {}

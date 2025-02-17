@@ -20,17 +20,23 @@ def generate_launch_description():
             default_value='/dev/ttyACM0',
             description='Pico 1'
         ),
+        
+        DeclareLaunchArgument(
+            name='micro_ros_baudrate', 
+            default_value='115200',
+            description='micro-ROS baudrate'
+        ),
 
         Node(
             package='micro_ros_agent',
             executable='micro_ros_agent',
             name='micro_ros_agent',
             output='screen',
-            arguments=['serial', '--dev', LaunchConfiguration("Pico 1")]
+            arguments=['serial', '--dev', LaunchConfiguration("Pico 1"), '--baudrate', LaunchConfiguration("micro_ros_baudrate")]
         ),
         
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(lidar_launch_path),
-            launch_arguments={'frame_id': 'lidar'}.items(),
+            launch_arguments={'frame_id': 'lidar', 'serial_baudrate': "115200"}.items(),
         ),
     ])
