@@ -26,6 +26,12 @@ def generate_launch_description():
             default_value='115200',
             description='micro-ROS baudrate'
         ),
+        
+        DeclareLaunchArgument(
+            name='lidar_baudrate',
+            default_value='115200',
+            description='Baudrate for the Lidar serial communication'
+        ),
 
         Node(
             package='micro_ros_agent',
@@ -37,6 +43,9 @@ def generate_launch_description():
         
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(lidar_launch_path),
-            launch_arguments={'frame_id': 'lidar', 'serial_baudrate': "115200"}.items(),
+            launch_arguments={
+                'frame_id': 'lidar',
+                'serial_baudrate': LaunchConfiguration("lidar_baudrate")
+            }.items(),
         ),
     ])
