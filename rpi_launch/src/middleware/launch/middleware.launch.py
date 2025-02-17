@@ -35,6 +35,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             name='angle_compensate',
             default_value='false',
+            description='Baudrate for the Lidar serial communication'
         ),
 
         Node(
@@ -48,7 +49,7 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(lidar_launch_path),
             launch_arguments={
-                'frame_id': 'lidar',
+                'frame_id': 'laser',
                 'serial_baudrate': LaunchConfiguration("lidar_baudrate"),
                 'angle_compensate': LaunchConfiguration("angle_compensate")
             }.items(),
