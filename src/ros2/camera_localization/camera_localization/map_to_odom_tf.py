@@ -10,7 +10,7 @@ class MapToOdomTF(Node):
     def __init__(self):
         super().__init__('map_to_odom_tf')
         
-        self.create_subscription(PoseStamped, '/initial_pose', self.initial_pose_callback, 10)
+        self.create_subscription(PoseStamped, '/bev_pose', self.initial_pose_callback, 10)
 
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
 
@@ -26,15 +26,15 @@ class MapToOdomTF(Node):
         # t.transform.translation.z = msg.pose.position.z
         t.transform.translation.z = 0.0
 
-        # t.transform.rotation.x = msg.pose.orientation.x
-        # t.transform.rotation.y = msg.pose.orientation.y
-        # t.transform.rotation.z = msg.pose.orientation.z
-        # t.transform.rotation.w = msg.pose.orientation.w
+        t.transform.rotation.x = msg.pose.orientation.x
+        t.transform.rotation.y = msg.pose.orientation.y
+        t.transform.rotation.z = msg.pose.orientation.z
+        t.transform.rotation.w = msg.pose.orientation.w
         
-        t.transform.rotation.x = 1.0
-        t.transform.rotation.y = 0.0
-        t.transform.rotation.z = 0.0
-        t.transform.rotation.w = 0.0  
+        # t.transform.rotation.x = 1.0
+        # t.transform.rotation.y = 0.0
+        # t.transform.rotation.z = 0.0
+        # t.transform.rotation.w = 0.0  
 
         self.tf_broadcaster.sendTransform(t)
         

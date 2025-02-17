@@ -74,17 +74,21 @@ class Camera():
                 corners[i] = np.array(corners[i])
 
             xvec = (corners[2] + corners[3] - corners[1] - corners[0]) / 2
+            xvec = xvec/np.linalg.norm(xvec)
             yvec = (corners[1] + corners[3] - corners[2] - corners[0]) / 2
+            yvec = xvec/np.linalg.norm(yvec)
             xvec *= -1
             zvec = np.cross(xvec, yvec)
+            
+            tmatrix = np.array([xvec, yvec, zvec])
 
-            tmatrix = sum(np.array(tMatrices)) / 4
+            # tmatrix = sum(np.array(tMatrices)) / 4
 
         return tmatrix, center 
     
     def robots_tracking(self, ids, transMatrixDict, tvecDict, tmatrix, center):
         if self.robot_id in ids:
-            robotCoord = np.dot(np.linalg.inv(tmatrix), np.array(tvecDict[self.robot_id] - center)) * -1#00
+            robotCoord = np.dot(np.linalg.inv(tmatrix), np.array(tvecDict[self.robot_id] - center)) #* -100
             #angle = angle_between_vectors(transMatrixDict[self.robot_id][0], tmatrix[0])
             r = R.from_matrix(np.dot(transMatrixDict[self.robot_id], np.linalg.inv(tmatrix)))
             quaternion = r.as_quat()
