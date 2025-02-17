@@ -7,9 +7,9 @@ import os
 ARUCO_DICT = cv2.aruco.DICT_5X5_1000  # Dictionary ID
 SQUARES_VERTICALLY = 6  # Number of squares vertically
 SQUARES_HORIZONTALLY = 9  # Number of squares horizontally
-SQUARE_LENGTH = 64  # Square side length (in pixels)
-MARKER_LENGTH = 48  # ArUco marker side length (in pixels)
-MARGIN_PX = 20  # Margins size (in pixels)
+SQUARE_LENGTH = 66  # Square side length (in pixels)
+MARKER_LENGTH = 49  # ArUco marker side length (in pixels)
+MARGIN_PX = 8  # Margins size (in pixels)
 
 
 def get_calibration_parameters(img_dir):
