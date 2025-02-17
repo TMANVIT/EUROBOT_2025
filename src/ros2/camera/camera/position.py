@@ -43,7 +43,7 @@ class BEVPosePublisher(Node):
             if tmatrix_new is not None:
                 self.tmatrix, self.center = tmatrix_new, center_new
             #self.get_logger().error(f"{ids}")
-            if self.tmatrix is not None:    
+            if self.tmatrix is not None:
                 self.robotCoord, self.quat = self.camera.robots_tracking(ids, transMatrixDict, tvecDict, self.tmatrix, self.center)
             if self.robotCoord is not None:
                 msg = PoseStamped()
