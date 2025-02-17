@@ -4,7 +4,6 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, Pyth
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-from launch.conditions import IfCondition
 
 
 def generate_launch_description():
@@ -32,6 +31,11 @@ def generate_launch_description():
             default_value='115200',
             description='Baudrate for the Lidar serial communication'
         ),
+        
+        DeclareLaunchArgument(
+            name='angle_compensate',
+            default_value='false',
+        ),
 
         Node(
             package='micro_ros_agent',
@@ -45,7 +49,8 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(lidar_launch_path),
             launch_arguments={
                 'frame_id': 'lidar',
-                'serial_baudrate': LaunchConfiguration("lidar_baudrate")
+                'serial_baudrate': LaunchConfiguration("lidar_baudrate"),
+                'angle_compensate': LaunchConfiguration("angle_compensate")
             }.items(),
         ),
     ])
