@@ -46,12 +46,6 @@ def generate_launch_description():
         package='camera',
         executable='camera_bve_pose',
     )
-
-    # v4l2_node = Node(
-    #     package='v4l2_camera',
-    #     executable='v4l2_camera_node',
-    #     parameters=[camera_config_path],
-    # )
     
     image_raw_pub_node = Node(
         package='camera',
@@ -66,6 +60,5 @@ def generate_launch_description():
     ld.add_action(bve_pose_node)
     ld.add_action(rviz_node)
     ld.add_action(image_raw_pub_node)
-    # ld.add_action(v4l2_node)
 
     return ld
