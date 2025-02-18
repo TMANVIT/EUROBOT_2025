@@ -7,6 +7,8 @@ MKFILE_DIR := $(dir $(MKFILE_PATH))
 ROOT_DIR := $(MKFILE_DIR)
 DISPLAY ?= :1
 MAKE_MAP ?= false
+RMW_IMPLEMENTATION ?= rmw_cyclonedds_cpp
+CYCLONEDDS_URI ?= /ros2_ws/cyclonedds.xml
 
 # ------------------------------------------------------------------------------
 
@@ -25,7 +27,9 @@ RENDER_DISPLAY := $(DISPLAY)
 BASE_PARAMETERS := \
 	ROOT_DIR=$(ROOT_DIR) \
 	RENDER_DISPLAY=$(DISPLAY) \
-	MAKE_MAP=$(MAKE_MAP)
+	MAKE_MAP=$(MAKE_MAP) \
+	RMW_IMPLEMENTATION=$(RMW_IMPLEMENTATION) \
+	CYCLONEDDS_URI=$(CYCLONEDDS_URI)
 
 # ------------------------------------------------------------------------------
 

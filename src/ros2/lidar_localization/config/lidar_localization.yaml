@@ -1,6 +1,6 @@
 lidar_localization:
   ros__parameters:
-    side: 0
+    side: 0 # 0 - Blue, 1 - Yellow
     debug_mode: false
     visualize_candidate: true
     likelihood_threshold: 0.001

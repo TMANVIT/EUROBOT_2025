@@ -13,6 +13,8 @@ services:
       - QT_X11_NO_MITSHM=1
       - CMAKE_PREFIX_PATH=/opt/ros/humble
       - MAKE_MAP=$MAKE_MAP
+      - RMW_IMPLEMENTATION=$RMW_IMPLEMENTATION
+      - CYCLONEDDS_URI=$CYCLONEDDS_URI
     volumes:
       - $ROOT_DIR/src/ros2:/ros2_ws/src
       - $ROOT_DIR/data:/data

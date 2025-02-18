@@ -48,6 +48,7 @@ RUN apt-get update && \
     apt-get install -y v4l-utils && \
     apt-get install -y ros-$ROS_DISTRO-v4l2-camera && \
     apt-get install -y ros-$ROS_DISTRO-image-transport-plugins && \
+    apt-get install -y ros-$ROS_DISTRO-rmw-cyclonedds-cpp && \
     apt-get install -y libqt5gui5  && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -58,6 +59,7 @@ RUN bash -c "pip install ./cvFunctions"
 
 # Create and set the working directory
 WORKDIR /ros2_ws
+COPY ./cyclonedds.xml /ros2_ws/cyclonedds.xml
 
 # Setup the environment for ROS 2
 RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc

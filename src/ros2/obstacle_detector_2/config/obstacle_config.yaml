@@ -3,12 +3,13 @@ obstacle_detector:
     active: true
     use_scan: true 
     use_pcl: false 
+    ranges_num: 1
     use_sim_time: false
     use_split_and_merge: true 
     circles_from_visibles: true 
     discard_converted_segments: true 
     transform_coordinates: true 
-    min_group_points: 10 
+    min_group_points: 45
     max_group_distance: 0.1 
     distance_proportion: 0.00628 
     max_split_distance: 0.2 
@@ -16,4 +17,4 @@ obstacle_detector:
     max_merge_spread: 0.2 
     max_circle_radius: 0.6 
     radius_enlargement: 0.3 
-    frame_id: robot_predict 
+    frame_id: robot_predict

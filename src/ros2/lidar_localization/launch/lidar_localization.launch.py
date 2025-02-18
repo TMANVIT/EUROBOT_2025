@@ -16,6 +16,7 @@ def generate_launch_description():
     lidar_localization_params = PathJoinSubstitution(
         [FindPackageShare('lidar_localization'), 'config', 'lidar_localization.yaml']
     )
+    
 
     return LaunchDescription([
                
@@ -30,5 +31,12 @@ def generate_launch_description():
             executable='obstacle_extractor_node',
             parameters=[obstacle_detector_params]
         ),
+        
+        Node(
+            package="tf2_ros",
+            executable = "static_transform_publisher",
+            arguments = ["0", "0", "0", "0", "0", "0", "lidar", "robot_predict"],
+            name = "obstacle_detector_to_lidar"
+        )
         
     ])

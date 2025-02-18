@@ -26,14 +26,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        
-        Node(
-            package="tf2_ros",
-            executable = "static_transform_publisher",
-            arguments = ["0", "0", "0", "0", "0", "0", "world", "map"],
-            name = "world_to_map_static"
-        ),
-        
+                
         DeclareLaunchArgument(
             name='sim', 
             default_value='false',
