@@ -9,12 +9,6 @@ def read_config(config):
         data = yaml.safe_load(file)  
     return data  
 
-def angle_between_vectors(vector1, vector2):
-    cos = np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
-    sin = np.linalg.norm(np.cross(vector1, vector2)) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
-    angle = np.angle(cos + sin * 1.j, deg=True)
-    return angle
-
 class Camera():
     def __init__(self, config_path: str):
         self.config = read_config(config_path)
@@ -55,41 +49,27 @@ class Camera():
         return ids, transMatrixDictionary, tvecDictionary  
     
     def t_matrix_building(self, ids, tvecDict, transMatrixDict):
-        corners = []
-        tMatrices = []
         tmatrix = None
         center = None
-        for i in ids:
-            if i in range(11, 51) and i != 47:
-                corners.append(tvecDict[i])
-                tMatrices.append(transMatrixDict[i])
 
-        if len(corners) == 4:
-            center = sum(np.array(corners)) / 4
-            corners = sorted(list(map(lambda x: x.tolist(), corners)))
-            corners[:2] = [x for _, x in sorted(zip(list(map(lambda x: x[1], corners[:2])), corners[:2]))]
-            corners[2:4] = [x for _, x in sorted(zip(list(map(lambda x: x[1], corners[2:4])), corners[2:4]))]
 
-            for i in range(4):
-                corners[i] = np.array(corners[i])
-
-            xvec = (corners[2] + corners[3] - corners[1] - corners[0]) / 2
-            xvec = xvec/np.linalg.norm(xvec)
-            yvec = (corners[1] + corners[3] - corners[2] - corners[0]) / 2
-            yvec = xvec/np.linalg.norm(yvec)
-            xvec *= -1
-            zvec = np.cross(xvec, yvec)
+        if(set([20,21,22,23]).issubset(ids)):
+            center = (tvecDict[22]+ tvecDict[20] + tvecDict[23] + tvecDict[21])/4
             
+            xvec = (tvecDict[22]+ tvecDict[20] - tvecDict[23] - tvecDict[21])
+            xvec = xvec/np.linalg.norm(xvec)
+            yvec = (tvecDict[22]+ tvecDict[23] - tvecDict[20] - tvecDict[21])
+            yvec = yvec/np.linalg.norm(yvec)
+            zvec = np.cross(xvec, yvec)
+
             tmatrix = np.array([xvec, yvec, zvec])
 
-            # tmatrix = sum(np.array(tMatrices)) / 4
-
         return tmatrix, center 
-    
+        
     def robots_tracking(self, ids, transMatrixDict, tvecDict, tmatrix, center):
         if self.robot_id in ids:
-            robotCoord = np.dot(np.linalg.inv(tmatrix), np.array(tvecDict[self.robot_id] - center)) #* -100
-            #angle = angle_between_vectors(transMatrixDict[self.robot_id][0], tmatrix[0])
+            rvec = tvecDict[self.robot_id]- center
+            robotCoord = [np.dot(rvec, tmatrix[0]), np.dot(rvec, tmatrix[1]), np.dot(rvec, tmatrix[2])]
             r = R.from_matrix(np.dot(transMatrixDict[self.robot_id], np.linalg.inv(tmatrix)))
             quaternion = r.as_quat()
             return robotCoord, quaternion
