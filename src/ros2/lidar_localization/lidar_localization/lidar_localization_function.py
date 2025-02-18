@@ -40,7 +40,6 @@ class LidarLocalization(Node):
                 np.array([3.094, 1.948]),
                 np.array([-0.094, 1.0])
             ]
-
         # set debug mode
         self.beacon_no = 0
 

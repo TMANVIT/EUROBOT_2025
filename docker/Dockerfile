@@ -55,7 +55,17 @@ RUN apt-get update && \
 
 WORKDIR /packages
 COPY ./src/python .
-RUN bash -c "pip install ./cvFunctions"    
+RUN bash -c "pip install ./cvFunctions"  
+
+# Set the working directory and clone Cyclone DDS repository
+WORKDIR /opt
+RUN git clone https://github.com/eclipse-cyclonedds/cyclonedds.git
+
+# Build and install Cyclone DDS
+WORKDIR /opt/cyclonedds
+RUN mkdir build && cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
+    cmake --build . --target install
 
 # Create and set the working directory
 WORKDIR /ros2_ws

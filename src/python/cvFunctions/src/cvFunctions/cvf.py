@@ -56,9 +56,9 @@ class Camera():
         if(set([20,21,22,23]).issubset(ids)):
             center = (tvecDict[22]+ tvecDict[20] + tvecDict[23] + tvecDict[21])/4
             
-            xvec = (tvecDict[22]+ tvecDict[20] - tvecDict[23] - tvecDict[21])
+            xvec = (tvecDict[22]+ tvecDict[20] - tvecDict[23] - tvecDict[21])*-1
             xvec = xvec/np.linalg.norm(xvec)
-            yvec = (tvecDict[22]+ tvecDict[23] - tvecDict[20] - tvecDict[21])
+            yvec = (tvecDict[22]+ tvecDict[23] - tvecDict[20] - tvecDict[21])*-1
             yvec = yvec/np.linalg.norm(yvec)
             zvec = np.cross(xvec, yvec)
 

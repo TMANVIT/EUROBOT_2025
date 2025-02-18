@@ -1,8 +1,6 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
-from launch.substitutions import LaunchConfiguration, Command, PathJoinSubstitution
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.conditions import IfCondition
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -19,16 +17,26 @@ def generate_launch_description():
     
 
     return LaunchDescription([
+        
+        DeclareLaunchArgument(
+            name='active_param', 
+            default_value="true",
+            description='active_param'
+        ),
                
         Node(
             package='lidar_localization',
             executable='lidar_localization_node',
+            name='lidar_localization_node',
+            output='screen',
             parameters=[lidar_localization_params]
         ),
         
         Node(
             package='obstacle_detector',
             executable='obstacle_extractor_node',
+            name='obstacle_extractor_node',
+            output='screen',
             parameters=[obstacle_detector_params]
         ),
         

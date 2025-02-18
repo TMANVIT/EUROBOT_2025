@@ -14,7 +14,7 @@ class BEVPosePublisher(Node):
     def __init__(self):
         super().__init__('bev_pose_publisher')
         self.pose_publisher = self.create_publisher(PoseStamped, '/bev_pose', 10)
-        self.initial_pose_publisher = self.create_publisher(PoseStamped, '/initial_pose', 10)
+        self.initial_pose_publisher = self.create_publisher(PoseStamped, '/initialpose', 10)
         self.counter = 0
         
         self.image_subscription = self.create_subscription(Image, '/image_raw', self.image_callback, 10)

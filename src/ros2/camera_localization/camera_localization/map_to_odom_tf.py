@@ -9,7 +9,7 @@ class MapToOdomTF(Node):
         super().__init__("map_to_odom_tf")
 
         self.create_subscription(
-            PoseStamped, "/initial_pose", self.initial_pose_callback, 10
+            PoseStamped, "/initialpose", self.initial_pose_callback, 10
         )
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
 
