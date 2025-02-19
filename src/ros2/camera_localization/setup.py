@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'camera_localization_node = camera_localization.map_to_odom_tf:main'
+            'camera_odom_node=camera_localization.camera_odom:main'
         ],
     },
 )
