@@ -14,6 +14,7 @@ class Camera():
         self.config = read_config(config_path)
         self.camera_matrix = np.array(self.config["camera_matrix"], dtype=np.float64)
         self.dist_coefs = np.array(self.config["dist_coeff"], dtype=np.float64)
+        # self.newcameramatrix, roi = cv2.getOptimalNewCameraMatrix(self.camera_matrix, self.dist_coefs, (1600, 896), 0.5, (1600, 896))
         self.robot_id = self.config["robot_id"]
 
         self.arucoParams = cv2.aruco.DetectorParameters()
@@ -22,6 +23,7 @@ class Camera():
     
     def prepare_image(self, img):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # gray = cv2.undistort(gray, self.camera_matrix, self.dist_coefs, None, self.newcameramatrix)
         gray = cv2.normalize(gray, None, 1.0, 255, cv2.NORM_MINMAX, dtype = cv2.CV_8U)
         # gray = cv2.medianBlur(gray, 3)
         ret, prepared_img = cv2.threshold(gray, 200,220,cv2.THRESH_BINARY)
@@ -41,7 +43,8 @@ class Camera():
                 else:
                     marker_length = 0.1
 
-                rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], marker_length, cameraMatrix=self.camera_matrix, distCoeffs= None)
+                # rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], marker_length, cameraMatrix=self.camera_matrix, distCoeffs= None )
+                rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], marker_length, cameraMatrix=self.camera_matrix, distCoeffs= self.dist_coefs )
                 tvecDictionary[ids[i]] = tvec[0][0]
                 
                 transMatrixDictionary[ids[i]] = cv2.Rodrigues(rvec)[0]

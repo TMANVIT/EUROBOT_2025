@@ -35,9 +35,9 @@ class MapToOdomTF(Node):
         initial_y = msg.pose.position.y
 
         initial_z = msg.pose.position.z
-        # self.get_logger().info(
-        #     f"Initial pose set: x={initial_x}, y={initial_y}, z={initial_z}"
-        # )
+        self.get_logger().info(
+            f"Initial pose set: x={initial_x}, y={initial_y}, z={initial_z}"
+        )
 
 
 def main(args=None):

@@ -222,7 +222,7 @@ Visualization Manager:
         Durability Policy: Volatile
         Filter size: 10
         History Policy: Keep Last
-        Reliability Policy: Reliable
+        Reliability Policy: Transient Local
         Value: /map
       Update Topic:
         Depth: 5
