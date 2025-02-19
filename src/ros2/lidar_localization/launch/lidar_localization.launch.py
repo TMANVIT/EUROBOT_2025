@@ -33,6 +33,13 @@ def generate_launch_description():
         ),
         
         Node(
+            package='lidar_localization',
+            executable='prediction_pose_node',
+            name='prediction_pose_node',
+            output='screen',
+        ),
+        
+        Node(
             package='obstacle_detector',
             executable='obstacle_extractor_node',
             name='obstacle_extractor_node',
@@ -45,6 +52,27 @@ def generate_launch_description():
             executable = "static_transform_publisher",
             arguments = ["0", "0", "0", "0", "0", "0", "lidar", "robot_predict"],
             name = "obstacle_detector_to_lidar"
+        ),
+        
+        Node(
+            package="tf2_ros",
+            executable = "static_transform_publisher",
+            arguments = ["1.57914", "0.98733", "0", "0", "0", "0", "map", "torch_blue_1"],
+            name = "First_torch_blue_team"
+        ),
+        
+        Node(
+            package="tf2_ros",
+            executable = "static_transform_publisher",
+            arguments = ["1.56546", "-0.880723", "0", "0", "0", "0", "map", "torch_blue_2"],
+            name = "Second_torch_blue_team"
+        ),
+        
+        Node(
+            package="tf2_ros",
+            executable = "static_transform_publisher",
+            arguments = ["-1.55888", "0.00659359", "0", "0", "0", "0", "map", "torch_blue_3"],
+            name = "Third_torch_blue_team"
         )
         
     ])

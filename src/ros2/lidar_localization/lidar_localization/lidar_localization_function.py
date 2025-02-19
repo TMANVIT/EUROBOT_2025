@@ -8,6 +8,8 @@ from std_msgs.msg import ColorRGBA
 
 import numpy as np
 
+NUM_LANDMARKS = 3
+
 class LidarLocalization(Node):
 
     def __init__(self):
@@ -30,23 +32,22 @@ class LidarLocalization(Node):
         # Set the landmarks map based on the side
         if self.side == 0:
             self.landmarks_map = [
-                np.array([-0.094, 0.052]),
-                np.array([-0.094, 1.948]),
-                np.array([3.094, 1.0])
+                np.array([1.50289, 0.993082]),
+                np.array([1.5217, -0.989224]),
+                np.array([-1.5099, -0.0087658])
             ]
         elif self.side == 1:
             self.landmarks_map = [
-                np.array([3.094, 0.052]),
-                np.array([3.094, 1.948]),
-                np.array([-0.094, 1.0])
+                np.array([1.52048, 0.00173703]),
+                np.array([-1.49866, -0.999966]),
+                np.array([-1.49856, 0.994759])
             ]
         # set debug mode
         self.beacon_no = 0
 
-        # ros settings
         self.lidar_pose_pub = self.create_publisher(PoseStamped, '/lidar_pose', 10)
-        # if self.visualize_candidate:
-        #     self.circles_pub = self.create_publisher(MarkerArray, 'candidates', 10)
+        if self.visualize_candidate:
+            self.circles_pub = self.create_publisher(MarkerArray, '/candidates', 10)
         self.subscription = self.create_subscription(
             Obstacles,
             '/raw_obstacles',
@@ -54,13 +55,13 @@ class LidarLocalization(Node):
             10)
         self.subscription = self.create_subscription(
             PoseStamped, 
-            '/lidar_pose',
+            '/pred_pose',
             self.pred_pose_callback,
             10
         )
         self.subscription  # prevent unused variable warning
 
-        self.get_logger().debug('Lidar Localization Node has been initialized')
+        self.get_logger().info('Lidar Localization Node has been initialized')
 
         self.init_landmarks_map(self.landmarks_map)
         self.robot_pose = []
@@ -70,7 +71,7 @@ class LidarLocalization(Node):
         self.lidar_pose_msg = PoseStamped()
     
     def obstacle_callback(self, msg):
-        self.get_logger().debug('obstacle detected')
+        self.get_logger().info('obstacle detected')
         # obstacle operation
         self.obs_raw = []
         for obs in msg.circles:
@@ -78,12 +79,12 @@ class LidarLocalization(Node):
         self.obs_time = msg.header.stamp
         # data processing
         if self.newPose == False: # Check if robot_pose or P_pred is empty
-            self.get_logger().debug("no new robot pose or P_pred")
+            self.get_logger().info("no new robot pose or P_pred")
             return
         self.landmarks_candidate = self.get_landmarks_candidate(self.landmarks_map, self.obs_raw, self.robot_pose, self.P_pred, self.R)
         self.landmarks_set = self.get_landmarks_set(self.landmarks_candidate)
         if len(self.landmarks_set) == 0:
-            self.get_logger().debug("empty landmarks set")
+            self.get_logger().info("empty landmarks set")
             return
         self.lidar_pose, self.lidar_cov = self.get_lidar_pose(self.landmarks_set, self.landmarks_map)
         # clear used data
@@ -92,21 +93,20 @@ class LidarLocalization(Node):
     def pred_pose_callback(self, msg):
         # self.get_logger().debug("Robot pose callback triggered")
         self.newPose = True
-        orientation = euler_from_quaternion(msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w) # raw, pitch, *yaw
-        # check orientation range
+        orientation = euler_from_quaternion(msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w)
+
         if orientation < 0:
             orientation += 2 * np.pi
-        self.robot_pose = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y, orientation])
-        self.P_pred = np.array([
-            [msg.pose.covariance[0], 0, 0],
-            [0, msg.pose.covariance[7], 0],
-            [0, 0, msg.pose.covariance[35]]
-        ])
+        self.robot_pose = np.array([msg.pose.position.x, msg.pose.position.y, orientation])
+        # self.P_pred = np.array([
+        #     [msg.pose.covariance[0], 0, 0],
+        #     [0, msg.pose.covariance[7], 0],
+        #     [0, 0, msg.pose.covariance[35]]
+        # ])
 
     def init_landmarks_map(self, landmarks_map):
         self.landmarks_map = landmarks_map
         self.geometry_description_map = {}
-        NUM_LANDMARKS = len(landmarks_map)
         for i in range(NUM_LANDMARKS):
             for j in range(i + 1, NUM_LANDMARKS):
                 if i == j:
@@ -127,7 +127,7 @@ class LidarLocalization(Node):
         x_r, y_r, phi_r = robot_pose
         x_o, y_o = landmark
         r_prime = np.sqrt((x_o - x_r) ** 2 + (y_o - y_r) ** 2)
-        # theta_rob = np.arctan2(
+
         temp = angle_limit_checking(np.arctan2(y_o - y_r, x_o - x_r)) # limit checking is not necessary right?
         theta_prime = angle_limit_checking(temp - phi_r)
 
@@ -254,7 +254,7 @@ class LidarLocalization(Node):
 
         lidar_pose = np.zeros(3)
         lidar_cov = np.diag([0.05**2, 0.05**2, 0.05**2]) # what should the optimal value be?
-
+        self.get_logger().info(f"landmarks_set: {landmarks_set}")
         # If the most likely set has at least 3 beacons
         if len(landmarks_set[max_likelihood_idx]['beacons']) >= 3:
             beacons = [landmarks_set[max_likelihood_idx]['beacons'][i] for i in range(3)]
@@ -292,29 +292,29 @@ class LidarLocalization(Node):
                 # publish the lidar pose
                 self.lidar_pose_msg.header.stamp = self.get_clock().now().to_msg() # TODO: compensation
                 self.lidar_pose_msg.header.frame_id = 'map' #TODO: param
-                self.lidar_pose_msg.pose.pose.position.x = lidar_pose[0]
-                self.lidar_pose_msg.pose.pose.position.y = lidar_pose[1]
-                self.lidar_pose_msg.pose.pose.position.z = 0.0
-                self.lidar_pose_msg.pose.pose.orientation.x = 0.0
-                self.lidar_pose_msg.pose.pose.orientation.y = 0.0
-                self.lidar_pose_msg.pose.pose.orientation.z = np.sin(lidar_pose[2] / 2)
-                self.lidar_pose_msg.pose.pose.orientation.w = np.cos(lidar_pose[2] / 2)
-                self.lidar_pose_msg.pose.covariance = [
-                    lidar_cov[0, 0], 0.0, 0.0, 0.0, 0.0, 0.0,
-                    0.0, lidar_cov[1, 1], 0.0, 0.0, 0.0, 0.0,
-                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                    0.0, 0.0, 0.0, 0.0, 0.0, lidar_cov[2, 2]
-                ]
-                # self.get_logger().debug(f"lidar_pose: {lidar_pose}")
+                self.lidar_pose_msg.pose.position.x = lidar_pose[0]
+                self.lidar_pose_msg.pose.position.y = lidar_pose[1]
+                self.lidar_pose_msg.pose.position.z = 0.0
+                self.lidar_pose_msg.pose.orientation.x = 0.0
+                self.lidar_pose_msg.pose.orientation.y = 0.0
+                self.lidar_pose_msg.pose.orientation.z = np.sin(lidar_pose[2] / 2)
+                self.lidar_pose_msg.pose.orientation.w = np.cos(lidar_pose[2] / 2)
+                # self.lidar_pose_msg.pose.covariance = [
+                #     lidar_cov[0, 0], 0.0, 0.0, 0.0, 0.0, 0.0,
+                #     0.0, lidar_cov[1, 1], 0.0, 0.0, 0.0, 0.0,
+                #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                #     0.0, 0.0, 0.0, 0.0, 0.0, lidar_cov[2, 2]
+                # ]
+                self.get_logger().info(f"lidar_pose: {lidar_pose}")
                 self.lidar_pose_pub.publish(self.lidar_pose_msg)
                 # self.get_logger().debug("Published lidar_pose message")
 
             except np.linalg.LinAlgError as e:
                 self.get_logger().warn("Linear algebra error: {}".format(e))
         else:
-            self.get_logger().debug("not enough beacons")
+            self.get_logger().info("not enough beacons")
 
         return lidar_pose, lidar_cov
 
@@ -338,26 +338,26 @@ class LidarLocalization(Node):
 
         return consistency
 
-def quaternion_from_euler(ai, aj, ak):
-    ai /= 2.0
-    aj /= 2.0
-    ak /= 2.0
-    ci = np.cos(ai)
-    si = np.sin(ai)
-    cj = np.cos(aj)
-    sj = np.sin(aj)
-    ck = np.cos(ak)
-    sk = np.sin(ak)
-    cc = ci * ck
-    cs = ci * sk
-    sc = si * ck
-    ss = si * sk
-    q = np.empty((4,))
-    q[0] = cj * sc - sj * cs
-    q[1] = cj * ss + sj * cc
-    q[2] = cj * cs - sj * sc
-    q[3] = cj * cc + sj * ss
-    return q
+# def quaternion_from_euler(ai, aj, ak):
+#     ai /= 2.0
+#     aj /= 2.0
+#     ak /= 2.0
+#     ci = np.cos(ai)
+#     si = np.sin(ai)
+#     cj = np.cos(aj)
+#     sj = np.sin(aj)
+#     ck = np.cos(ak)
+#     sk = np.sin(ak)
+#     cc = ci * ck
+#     cs = ci * sk
+#     sc = si * ck
+#     ss = si * sk
+#     q = np.empty((4,))
+#     q[0] = cj * sc - sj * cs
+#     q[1] = cj * ss + sj * cc
+#     q[2] = cj * cs - sj * sc
+#     q[3] = cj * cc + sj * ss
+#     return q
 
 def euler_from_quaternion(x, y, z, w):
     t0 = +2.0 * (w * x + y * z)
