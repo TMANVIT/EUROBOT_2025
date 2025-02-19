@@ -70,7 +70,14 @@ class Camera():
         if self.robot_id in ids:
             rvec = tvecDict[self.robot_id]- center
             robotCoord = [np.dot(rvec, tmatrix[0]), np.dot(rvec, tmatrix[1]), np.dot(rvec, tmatrix[2])]
-            r = R.from_matrix(np.dot(transMatrixDict[self.robot_id], np.linalg.inv(tmatrix)))
+            robotTransMatrix = np.dot(transMatrixDict[self.robot_id], np.linalg.inv(tmatrix))
+            robotTransMatrix[0][2] = 0.0
+            robotTransMatrix[0] = robotTransMatrix[0]/np.linalg.norm(robotTransMatrix[0])
+            robotTransMatrix[1][2] = 0.0
+            robotTransMatrix[1] = robotTransMatrix[1]/np.linalg.norm(robotTransMatrix[1])
+            robotTransMatrix[2] = [0.0, 0.0, 1.0]
+            
+            r = R.from_matrix(robotTransMatrix)
             quaternion = r.as_quat()
             return robotCoord, quaternion
         else:

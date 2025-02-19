@@ -3,4 +3,4 @@ v4l2_camera:
     video_device: '/dev/video0'  # Change to your camera device
     pixel_format: 'YUYV'         # Change as needed
     output_encoding: 'rgb8'       # Change as needed
-    image_size: [2560, 1440]
+    image_size: [1600, 896]
