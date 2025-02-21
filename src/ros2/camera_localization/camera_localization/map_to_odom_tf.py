@@ -2,7 +2,8 @@ import rclpy
 from rclpy.node import Node
 import tf2_ros
 from geometry_msgs.msg import PoseStamped, TransformStamped
-import tf_transformations as tf
+import numpy as np
+from scipy.spatial.transform import Rotation as R
 
 class MapToOdomTF(Node):
     def __init__(self):
@@ -45,41 +46,34 @@ class MapToOdomTF(Node):
             f"Initial pose set: x={initial_x}, y={initial_y}, z={initial_z}"
         )
 
-        
-
-
-    def get_aruco_to_odom_tf(self):
-        aruco_to_odom =  self.tf_buffer.lookup_transform("aruco", "odom", rclpy.time.Time())
-        map_to_odom = self.compose_transforms(self.map_to_aruco, aruco_to_odom)
-        self.tf_broadcaster.sendTransform(map_to_odom)
+    
 
     def compose_transforms(self, first, second):
         composed = TransformStamped()
         composed.header.stamp = self.get_clock().now().to_msg()
-        composed.header.frame_id = first.header.frame_id
-        composed.child_frame_id = second.child_frame_id
+        self.map_to_aruco.header.frame_id = "map"
+        self.map_to_aruco.child_frame_id = "odom"
 
         # Получаем данные
-        first_trans = [first.transform.translation.x,
+        first_trans = np.array([first.transform.translation.x,
                        first.transform.translation.y,
-                       first.transform.translation.z]
-        first_rot = [first.transform.rotation.x,
+                       first.transform.translation.z])
+        first_rot = R.from_quat([first.transform.rotation.x,
                      first.transform.rotation.y,
                      first.transform.rotation.z,
-                     first.transform.rotation.w]
+                     first.transform.rotation.w])
 
-        second_trans = [second.transform.translation.x,
+        second_trans = np.array([second.transform.translation.x,
                         second.transform.translation.y,
-                        second.transform.translation.z]
-        second_rot = [second.transform.rotation.x,
+                        second.transform.translation.z])
+        second_rot = R.from_quat([second.transform.rotation.x,
                       second.transform.rotation.y,
                       second.transform.rotation.z,
-                      second.transform.rotation.w]
+                      second.transform.rotation.w])
 
         # Применяем вращение и трансляцию
-        new_trans = tf.quaternion_multiply(tf.quaternion_multiply(first_rot, second_trans + [0]), tf.quaternion_conjugate(first_rot))[:3]
-        new_trans = [first_trans[i] + new_trans[i] for i in range(3)]
-        new_rot = tf.quaternion_multiply(first_rot, second_rot)
+        new_trans = first_trans+first_rot.apply(second_trans)
+        new_rot = first_rot * second_rot
 
         # Записываем в сообщение
         composed.transform.translation.x = new_trans[0]
