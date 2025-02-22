@@ -71,6 +71,8 @@ Visualization Manager:
           Value: false
         Roller:
           Value: false
+        aruco:
+          Value: true
         base_footprint:
           Value: true
         base_link:
@@ -83,27 +85,31 @@ Visualization Manager:
           Value: true
         odom:
           Value: true
+        world:
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        map:
-          {}
-        odom:
-          base_footprint:
-            base_link:
-              Left_Wheel:
-                {}
-              Right_Wheel:
-                {}
-              Roller:
-                {}
-              imu_link:
-                {}
-              lidar:
-                {}
+        world:
+          map:
+            odom:
+              base_footprint:
+                base_link:
+                  Left_Wheel:
+                    {}
+                  Right_Wheel:
+                    {}
+                  Roller:
+                    {}
+                  aruco:
+                    {}
+                  imu_link:
+                    {}
+                  lidar:
+                    {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -216,7 +222,7 @@ Visualization Manager:
         Durability Policy: Volatile
         Filter size: 10
         History Policy: Keep Last
-        Reliability Policy: Reliable
+        Reliability Policy: Transient Local
         Value: /map
       Update Topic:
         Depth: 5
@@ -239,10 +245,43 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /local_costmap/published_footprint
       Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: MarkerArray
+      Namespaces:
+        raw_obstacles: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /raw_obstacles_visualization
+      Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz_default_plugins/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /global_costmap/costmap
+      Update Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /global_costmap/costmap_updates
+      Use Timestamp: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: odom
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -285,7 +324,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 4.056920528411865
+      Distance: 8.341153144836426
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -300,10 +339,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.47979676723480225
+      Pitch: 1.3497965335845947
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.5222428441047668
+      Yaw: 1.5922423601150513
     Saved: ~
 Window Geometry:
   Displays:

@@ -1,7 +1,9 @@
 data/**
 !data/.gitkeep
 ./build
-./install
+*/install
+*/build
+*/log
 
 .env
 

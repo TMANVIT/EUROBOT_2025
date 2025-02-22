@@ -13,6 +13,7 @@ RUN apt-get update && \
     locales \
     build-essential \
     git \
+    cmake \
     wget \
     curl \
     lsb-release \
@@ -47,16 +48,28 @@ RUN apt-get update && \
     apt-get install -y v4l-utils && \
     apt-get install -y ros-$ROS_DISTRO-v4l2-camera && \
     apt-get install -y ros-$ROS_DISTRO-image-transport-plugins && \
+    apt-get install -y ros-$ROS_DISTRO-rmw-cyclonedds-cpp && \
     apt-get install -y libqt5gui5  && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /packages
 COPY ./src/python .
-RUN bash -c "pip install ./cvFunctions"    
+RUN bash -c "pip install ./cvFunctions"  
+
+# Set the working directory and clone Cyclone DDS repository
+WORKDIR /opt
+RUN git clone https://github.com/eclipse-cyclonedds/cyclonedds.git
+
+# Build and install Cyclone DDS
+WORKDIR /opt/cyclonedds
+RUN mkdir build && cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
+    cmake --build . --target install
 
 # Create and set the working directory
 WORKDIR /ros2_ws
+COPY ./cyclonedds.xml /ros2_ws/cyclonedds.xml
 
 # Setup the environment for ROS 2
 RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc

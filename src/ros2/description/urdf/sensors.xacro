@@ -1,17 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <material name="lidar_material">
-    <color
-      rgba="1 1 1 1" />
-  </material>
-  
   <xacro:macro name="imu">
     <link name="imu_link"/>
     
     <joint name="imu_to_base_link" type="fixed">
       <parent link="base_link"/>
       <child link="imu_link"/>
-      <origin xyz="0 0 0" rpy="3.14 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
     </joint>
   </xacro:macro>
 
@@ -25,7 +20,9 @@
         <geometry>
           <cylinder length="${length}" radius="${radius}" />
         </geometry>
-        <material name="lidar_material"/>
+        <material name="green">
+            <color rgba="0.003 0.639 0.223 1.0"/>
+        </material>
       </visual>
       <collision>
         <origin
@@ -36,6 +33,7 @@
           <cylinder length="${length}" radius="${radius}" />
         </geometry>
       </collision>
+
       <inertial>
         <xacro:insert_block name="origin" />
         <mass value="${mass}"/>

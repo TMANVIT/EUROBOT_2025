@@ -54,9 +54,7 @@
      </xacro:wheel_joint>
      <!-- </Right_Wheel> -->
      <!-- <Left_Wheel> -->
-     <xacro:wheel_link 
-          name_link="left_wheel" 
-          filename="package://description/meshes/left_wheel.STL"
+     <xacro:wheel_link name_link="left_wheel" filename="package://description/meshes/left_wheel.STL"
           mass="0.08">
           <origin
                xyz="4.5103E-17 2.0817E-17 -0.013347"
@@ -81,7 +79,7 @@
      </xacro:wheel_joint>
      <!-- <Left_Wheel> -->
      <!-- <IMU> -->
-     <xacro:imu/>
+     <xacro:imu />
      <!-- <IMU> -->
      <!-- <Lidar> -->
      <xacro:lazer

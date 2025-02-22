@@ -6,7 +6,7 @@ amcl:
     alpha3: 0.2
     alpha4: 0.2
     alpha5: 0.2
-    base_frame_id: "base_footprint"
+    base_frame_id: base_footprint
     beam_skip_distance: 0.5
     beam_skip_error_threshold: 0.9
     beam_skip_threshold: 0.3
@@ -51,7 +51,7 @@ bt_navigator:
   ros__parameters:
     use_sim_time: false
     global_frame: map
-    robot_base_frame: base_link
+    robot_base_frame: base_footprint
     odom_topic: /odom
     bt_loop_duration: 10
     default_server_timeout: 20
@@ -180,14 +180,14 @@ global_costmap:
       update_frequency: 1.0
       publish_frequency: 1.0
       global_frame: map
-      robot_base_frame: base_link
+      robot_base_frame: base_footprint
       robot_radius: 0.22 # radius set and used, so no footprint points
       resolution: 0.05
-      plugins: ["static_layer", "obstacle_layer", "voxel_layer", "inflation_layer"]
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: true
-        observation_sources: scan base_scan
+        observation_sources: scan #base_scan
         footprint_clearing_enabled: true
         max_obstacle_height: 2.0
         combination_method: 1
@@ -203,49 +203,24 @@ global_costmap:
           marking: true
           data_type: "LaserScan"
           inf_is_valid: false
-        base_scan:
-          topic: /base/scan
-          obstacle_max_range: 2.5
-          obstacle_min_range: 0.0
-          raytrace_max_range: 3.0
-          raytrace_min_range: 0.0
-          max_obstacle_height: 2.0
-          min_obstacle_height: 0.0
-          clearing: true
-          marking: true
-          data_type: "LaserScan"
-          inf_is_valid: false
-      voxel_layer:
-        plugin: "nav2_costmap_2d::VoxelLayer"
-        enabled: true
-        footprint_clearing_enabled: true
-        max_obstacle_height: 2.0
-        publish_voxel_map: true
-        origin_z: 0.0
-        z_resolution: 0.05
-        z_voxels: 16
-        max_obstacle_height: 2.0
-        unknown_threshold: 15
-        mark_threshold: 0
-        observation_sources: pointcloud
-        combination_method: 1
-        pointcloud:  # no frame set, uses frame from message
-          topic: /camera/depth/color/points
-          max_obstacle_height: 2.0
-          min_obstacle_height: 0.01
-          obstacle_max_range: 2.5
-          obstacle_min_range: 0.0
-          raytrace_max_range: 3.0
-          raytrace_min_range: 0.0
-          clearing: true
-          marking: true
-          data_type: "PointCloud2"
+        # base_scan:
+        #   topic: /base/scan
+        #   obstacle_max_range: 2.5
+        #   obstacle_min_range: 0.0
+        #   raytrace_max_range: 3.0
+        #   raytrace_min_range: 0.0
+        #   max_obstacle_height: 2.0
+        #   min_obstacle_height: 0.0
+        #   clearing: true
+        #   marking: true
+        #   data_type: "LaserScan"
+        #   inf_is_valid: false
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: true
         enabled: true
         subscribe_to_updates: true
-        transform_tolerance: 0.1
+        transform_tolerance: 100.0
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         enabled: true
@@ -262,14 +237,14 @@ local_costmap:
       update_frequency: 5.0
       publish_frequency: 2.0
       global_frame: odom
-      robot_base_frame: base_link
+      robot_base_frame: base_footprint
       rolling_window: true
       width: 3
       height: 3
       resolution: 0.05
       robot_radius: 0.22 # radius set and used, so no footprint points
       resolution: 0.05
-      plugins: ["obstacle_layer", "voxel_layer", "inflation_layer"]
+      plugins: ["obstacle_layer", "inflation_layer"]
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: true
@@ -301,31 +276,6 @@ local_costmap:
           marking: true
           data_type: "LaserScan"
           inf_is_valid: false
-      voxel_layer:
-        plugin: "nav2_costmap_2d::VoxelLayer"
-        enabled: true
-        footprint_clearing_enabled: true
-        max_obstacle_height: 2.0
-        publish_voxel_map: true
-        origin_z: 0.0
-        z_resolution: 0.05
-        z_voxels: 16
-        max_obstacle_height: 2.0
-        unknown_threshold: 15
-        mark_threshold: 0
-        observation_sources: pointcloud
-        combination_method: 1
-        pointcloud:  # no frame set, uses frame from message
-          topic: /camera/depth/color/points
-          max_obstacle_height: 2.0
-          min_obstacle_height: 0.01
-          obstacle_max_range: 2.5
-          obstacle_min_range: 0.0
-          raytrace_max_range: 3.0
-          raytrace_min_range: 0.0
-          clearing: true
-          marking: true
-          data_type: "PointCloud2"
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         enabled: true
@@ -339,13 +289,13 @@ map_server:
     use_sim_time: false
     yaml_filename: "battlefield.yaml"
 
-map_saver:  
-  ros__parameters:
-    use_sim_time: false
-    save_map_timeout: 5.0
-    free_thresh_default: 0.25
-    occupied_thresh_default: 0.65
-    map_subscribe_transient_local: true
+# map_saver:  
+#   ros__parameters:
+#     use_sim_time: false
+#     save_map_timeout: 5.0
+#     free_thresh_default: 0.25
+#     occupied_thresh_default: 0.65
+#     map_subscribe_transient_local: true
 
 planner_server:
   ros__parameters:
@@ -375,7 +325,7 @@ recoveries_server:
     wait:
       plugin: "nav2_recoveries/Wait"
     global_frame: odom
-    robot_base_frame: base_link
+    robot_base_frame: base_footprint
     transform_timeout: 0.1
     use_sim_time: false
     simulate_ahead_time: 2.0
@@ -383,9 +333,9 @@ recoveries_server:
     min_rotational_vel: 0.4
     rotational_acc_lim: 3.2
 
-# robot_state_publisher:
-#   ros__parameters:
-#     use_sim_time: false
+robot_state_publisher:
+  ros__parameters:
+    use_sim_time: false
 
 waypoint_follower:
   ros__parameters:

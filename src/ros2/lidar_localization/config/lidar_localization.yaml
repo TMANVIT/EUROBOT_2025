@@ -1,0 +1,7 @@
+lidar_localization_node:
+  ros__parameters:
+    side: 0 # 0 - Blue, 1 - Yellow
+    debug_mode: false
+    visualize_candidate: true
+    likelihood_threshold: 0.001
+    consistency_threshold: 0.85
