@@ -4,14 +4,14 @@
     <color
       rgba="1 1 1 1" />
   </material>
-  
+
   <xacro:macro name="imu">
-    <link name="imu_link"/>
-    
+    <link name="imu_link" />
+
     <joint name="imu_to_base_link" type="fixed">
-      <parent link="base_link"/>
-      <child link="imu_link"/>
-      <origin xyz="0 0 0" rpy="3.14 0 0"/>
+      <parent link="base_link" />
+      <child link="imu_link" />
+      <origin xyz="0 0 0" rpy="3.14 0 0" />
     </joint>
   </xacro:macro>
 
@@ -20,17 +20,17 @@
       <visual>
         <origin
           xyz="0 0 0"
-          rpy="0 0 0" 
+          rpy="0 0 0"
         />
         <geometry>
           <mesh filename="${filename}" />
         </geometry>
-        <material name="lidar_material"/>
+        <material name="lidar_material" />
       </visual>
       <collision>
         <origin
           xyz="0 0 0"
-          rpy="0 0 0" 
+          rpy="0 0 0"
         />
         <geometry>
           <mesh filename="${filename}" />
@@ -38,16 +38,16 @@
       </collision>
       <inertial>
         <xacro:insert_block name="origin" />
-        <mass value="${mass}"/>
+        <mass value="${mass}" />
         <xacro:insert_block name="inertia" />
       </inertial>
     </link>
   </xacro:macro>
-  
+
   <xacro:macro name="lidar_joint_m" params="*origin">
     <joint name="lidar_to_base" type="fixed">
-      <parent link="base_link"/>
-      <child link="lidar_link"/>
+      <parent link="base_link" />
+      <child link="lidar_link" />
       <xacro:insert_block name="origin" />
     </joint>
   </xacro:macro>
