@@ -24,7 +24,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'lidar_localization_node = lidar_localization.lidar_localization_function:main'
+            'lidar_localization_node = lidar_localization.lidar_localization_function:main',
+            'prediction_pose_node = lidar_localization.prediction_pose:main',
         ],
     },
 )
