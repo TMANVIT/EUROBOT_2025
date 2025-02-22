@@ -7,6 +7,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 from std_msgs.msg import ColorRGBA
 
 import numpy as np
+from scipy.spatial.transform import Rotation as R 
 
 NUM_LANDMARKS = 3
 
@@ -63,7 +64,7 @@ class LidarLocalization(Node):
 
         self.get_logger().info('Lidar Localization Node has been initialized')
 
-        self.init_landmarks_map(self.landmarks_map)
+        self.geometry_description_map = self.init_landmarks_map()
         self.robot_pose = []
         self.P_pred = []
         self.newPose = False
@@ -81,38 +82,41 @@ class LidarLocalization(Node):
         if self.newPose == False: # Check if robot_pose or P_pred is empty
             self.get_logger().info("no new robot pose or P_pred")
             return
-        self.landmarks_candidate = self.get_landmarks_candidate(self.landmarks_map, self.obs_raw, self.robot_pose, self.P_pred, self.R)
-        self.landmarks_set = self.get_landmarks_set(self.landmarks_candidate)
+        self.get_logger().info(f"New Pose detected x = {self.robot_pose[0]}, y = {self.robot_pose[1]}, yaw = {self.robot_pose[2]}")  
+        self.landmarks_candidate = self.get_landmarks_candidate()
+        self.landmarks_set = self.get_landmarks_set()
         if len(self.landmarks_set) == 0:
             self.get_logger().info("empty landmarks set")
             return
-        self.lidar_pose, self.lidar_cov = self.get_lidar_pose(self.landmarks_set, self.landmarks_map)
+        self.lidar_pose, self.lidar_cov = self.get_lidar_pose()
         # clear used data
         self.clear_data()
     
     def pred_pose_callback(self, msg):
-        # self.get_logger().debug("Robot pose callback triggered")
+        self.get_logger().info("Robot pose callback triggered")
         self.newPose = True
-        orientation = euler_from_quaternion(msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w)
+        yaw = R.from_quat(msg.pose.orientation).as_euler(seq='xyz', degrees=False)[2]
 
-        if orientation < 0:
-            orientation += 2 * np.pi
-        self.robot_pose = np.array([msg.pose.position.x, msg.pose.position.y, orientation])
+
+        if yaw < 0:
+            yaw += 2 * np.pi
+        
+        self.robot_pose = np.array([msg.pose.position.x, msg.pose.position.y, yaw])
         # self.P_pred = np.array([
         #     [msg.pose.covariance[0], 0, 0],
         #     [0, msg.pose.covariance[7], 0],
         #     [0, 0, msg.pose.covariance[35]]
         # ])
 
-    def init_landmarks_map(self, landmarks_map):
-        self.landmarks_map = landmarks_map
-        self.geometry_description_map = {}
+    def init_landmarks_map(self):
+        geometry_description_map = {}
         for i in range(NUM_LANDMARKS):
             for j in range(i + 1, NUM_LANDMARKS):
                 if i == j:
                     continue
-                d_ij = np.linalg.norm(landmarks_map[i] - landmarks_map[j])
-                self.geometry_description_map[(i, j)] = d_ij
+                d_ij = np.linalg.norm(self.landmarks_map[i] - self.landmarks_map[j])
+                geometry_description_map[(i, j)] = d_ij
+        return geometry_description_map
                 
     def clear_data(self):
         self.obs_raw = []
@@ -122,9 +126,9 @@ class LidarLocalization(Node):
         self.landmarks_set = []
         self.newPose = False
 
-    def get_obs_candidate(self, robot_pose, P_pred, R, landmark, obs_raw):
+    def get_obs_candidate(self, landmark):
         obs_candidates = []
-        x_r, y_r, phi_r = robot_pose
+        x_r, y_r, phi_r = self.robot_pose
         x_o, y_o = landmark
         r_prime = np.sqrt((x_o - x_r) ** 2 + (y_o - y_r) ** 2)
 
@@ -135,7 +139,7 @@ class LidarLocalization(Node):
             [-(x_o - x_r) / r_prime, -(y_o - y_r) / r_prime, 0],
             [(y_o - y_r) / r_prime ** 2, -(x_o - x_r) / r_prime ** 2, -1]
         ])
-        S = H @ P_pred @ H.T + R
+        S = H @ self.P_pred @ H.T + self.R
         S_inv = np.linalg.inv(S)
         S_det = np.linalg.det(S)
         normalizer = 1 / np.sqrt((2 * np.pi) ** 2 * S_det)
@@ -143,7 +147,7 @@ class LidarLocalization(Node):
         marker_id = 0
         marker_array = MarkerArray()
 
-        for obs in obs_raw:
+        for obs in self.obs_raw:
             r_z = np.sqrt(obs[0] ** 2 + obs[1] ** 2)
             theta_z = np.arctan2(obs[1], obs[0])
             y = np.array([r_z - r_prime, angle_limit_checking(theta_z - theta_prime)])
@@ -195,34 +199,34 @@ class LidarLocalization(Node):
 
         return obs_candidates
 
-    def get_landmarks_candidate(self, landmarks_map, obs_raw, robot_pose, P_pred, R):
+    def get_landmarks_candidate(self):
         landmarks_candidate = []
         self.beacon_no = 0
-        for landmark in landmarks_map:
+        for landmark in self.landmarks_map:
             self.beacon_no += 1
             candidate = {
                 'landmark': landmark,
-                'obs_candidates': self.get_obs_candidate(robot_pose, P_pred, R, landmark, obs_raw)
+                'obs_candidates': self.get_obs_candidate(landmark)
             }
             landmarks_candidate.append(candidate)
         # print landmarks_candidate for debug
         if self.debug_mode:
             for i, landmark in enumerate(landmarks_candidate):
-                print(f"Landmark {i + 1}: {landmark['landmark']}")
+                self.get_logger().info(f"Landmark {i + 1}: {landmark['landmark']}")
                 for j, obs_candidate in enumerate(landmark['obs_candidates']):
-                    print(f"Obs {j + 1}: {obs_candidate['position']} with probability {obs_candidate['probability']}")
+                    self.get_logger().info(f"Obs {j + 1}: {obs_candidate['position']} with probability {obs_candidate['probability']}")
         return landmarks_candidate
 
-    def get_landmarks_set(self, landmarks_candidate):
+    def get_landmarks_set(self):
         landmarks_set = []
-        for i in range(len(landmarks_candidate[0]['obs_candidates'])):
-            for j in range(len(landmarks_candidate[1]['obs_candidates'])):
-                for k in range(len(landmarks_candidate[2]['obs_candidates'])):
+        for i in range(len(self.landmarks_candidate[0]['obs_candidates'])):
+            for j in range(len(self.landmarks_candidate[1]['obs_candidates'])):
+                for k in range(len(self.landmarks_candidate[2]['obs_candidates'])):
                     set = {
                         'beacons': {
-                            0: landmarks_candidate[0]['obs_candidates'][i]['position'],
-                            1: landmarks_candidate[1]['obs_candidates'][j]['position'],
-                            2: landmarks_candidate[2]['obs_candidates'][k]['position']
+                            0: self.landmarks_candidate[0]['obs_candidates'][i]['position'],
+                            1: self.landmarks_candidate[1]['obs_candidates'][j]['position'],
+                            2: self.landmarks_candidate[2]['obs_candidates'][k]['position']
                         }
                     }
                     # consistency of the set
@@ -231,7 +235,7 @@ class LidarLocalization(Node):
                         self.get_logger().debug(f"Geometry consistency is less than {self.consistency_threshold}: {set['consistency']}")
                         continue
                     # probability of the set
-                    set['probability_set'] = landmarks_candidate[0]['obs_candidates'][i]['probability'] * landmarks_candidate[1]['obs_candidates'][j]['probability'] * landmarks_candidate[2]['obs_candidates'][k]['probability']
+                    set['probability_set'] = self.landmarks_candidate[0]['obs_candidates'][i]['probability'] * self.landmarks_candidate[1]['obs_candidates'][j]['probability'] * self.landmarks_candidate[2]['obs_candidates'][k]['probability']
                     landmarks_set.append(set)
 
         # print landmarks_set for debug
@@ -243,32 +247,32 @@ class LidarLocalization(Node):
 
         return landmarks_set
 
-    def get_lidar_pose(self, landmarks_set, landmarks_map):
-        if not landmarks_set:
+    def get_lidar_pose(self):
+        if not self.landmarks_set:
             raise ValueError("landmarks_set is empty")
         # prefer the set with more beacons
-        landmarks_set = sorted(landmarks_set, key=lambda x: len(x['beacons']), reverse=True)
+        self.landmarks_set = sorted(self.landmarks_set, key=lambda x: len(x['beacons']), reverse=True)
         # with the most beacon possible, prefer the set with the highest probability_set; TODO: better way to sort?
-        max_likelihood = max(set['probability_set'] for set in landmarks_set)
-        max_likelihood_idx = next(i for i, set in enumerate(landmarks_set) if set['probability_set'] == max_likelihood)
+        max_likelihood = max(set['probability_set'] for set in self.landmarks_set)
+        max_likelihood_idx = next(i for i, set in enumerate(self.landmarks_set) if set['probability_set'] == max_likelihood)
 
         lidar_pose = np.zeros(3)
         lidar_cov = np.diag([0.05**2, 0.05**2, 0.05**2]) # what should the optimal value be?
-        self.get_logger().info(f"landmarks_set: {landmarks_set}")
+        self.get_logger().info(f"landmarks_set: {self.landmarks_set}")
         # If the most likely set has at least 3 beacons
-        if len(landmarks_set[max_likelihood_idx]['beacons']) >= 3:
-            beacons = [landmarks_set[max_likelihood_idx]['beacons'][i] for i in range(3)]
+        if len(self.landmarks_set[max_likelihood_idx]['beacons']) >= 3:
+            beacons = [self.landmarks_set[max_likelihood_idx]['beacons'][i] for i in range(3)]
             A = np.zeros((2, 2))
             b = np.zeros(2)
             dist_beacon_robot = [np.linalg.norm(beacon) for beacon in beacons]
 
-            A[0, 0] = 2 * (landmarks_map[0][0] - landmarks_map[2][0])
-            A[0, 1] = 2 * (landmarks_map[0][1] - landmarks_map[2][1])
-            A[1, 0] = 2 * (landmarks_map[1][0] - landmarks_map[2][0])
-            A[1, 1] = 2 * (landmarks_map[1][1] - landmarks_map[2][1])
+            A[0, 0] = 2 * (self.landmarks_set[0][0] - self.landmarks_set[2][0])
+            A[0, 1] = 2 * (self.landmarks_set[0][1] - self.landmarks_set[2][1])
+            A[1, 0] = 2 * (self.landmarks_set[1][0] - self.landmarks_set[2][0])
+            A[1, 1] = 2 * (self.landmarks_set[1][1] - self.landmarks_set[2][1])
 
-            b[0] = (landmarks_map[0][0]**2 - landmarks_map[2][0]**2) + (landmarks_map[0][1]**2 - landmarks_map[2][1]**2) + (dist_beacon_robot[2]**2 - dist_beacon_robot[0]**2)
-            b[1] = (landmarks_map[1][0]**2 - landmarks_map[2][0]**2) + (landmarks_map[1][1]**2 - landmarks_map[2][1]**2) + (dist_beacon_robot[2]**2 - dist_beacon_robot[1]**2)
+            b[0] = (self.landmarks_set[0][0]**2 - self.landmarks_set[2][0]**2) + (self.landmarks_set[0][1]**2 - self.landmarks_set[2][1]**2) + (dist_beacon_robot[2]**2 - dist_beacon_robot[0]**2)
+            b[1] = (self.landmarks_set[1][0]**2 - self.landmarks_set[2][0]**2) + (self.landmarks_set[1][1]**2 - self.landmarks_set[2][1]**2) + (dist_beacon_robot[2]**2 - dist_beacon_robot[1]**2)
 
             try:
                 X = np.linalg.solve(A.T @ A, A.T @ b)
@@ -279,7 +283,7 @@ class LidarLocalization(Node):
                 robot_cos = 0
 
                 for i in range(3):
-                    theta = angle_limit_checking(np.arctan2(landmarks_map[i][1] - lidar_pose[1], landmarks_map[i][0] - lidar_pose[0]) - np.arctan2(beacons[i][1], beacons[i][0]))
+                    theta = angle_limit_checking(np.arctan2(self.landmarks_set[i][1] - lidar_pose[1], self.landmarks_set[i][0] - lidar_pose[0]) - np.arctan2(beacons[i][1], beacons[i][0]))
                     robot_sin += np.sin(theta)
                     robot_cos += np.cos(theta)
 
@@ -337,40 +341,6 @@ class LidarLocalization(Node):
                 # if the index is not found in map, it is probably on the lower triangle of the matrix
 
         return consistency
-
-# def quaternion_from_euler(ai, aj, ak):
-#     ai /= 2.0
-#     aj /= 2.0
-#     ak /= 2.0
-#     ci = np.cos(ai)
-#     si = np.sin(ai)
-#     cj = np.cos(aj)
-#     sj = np.sin(aj)
-#     ck = np.cos(ak)
-#     sk = np.sin(ak)
-#     cc = ci * ck
-#     cs = ci * sk
-#     sc = si * ck
-#     ss = si * sk
-#     q = np.empty((4,))
-#     q[0] = cj * sc - sj * cs
-#     q[1] = cj * ss + sj * cc
-#     q[2] = cj * cs - sj * sc
-#     q[3] = cj * cc + sj * ss
-#     return q
-
-def euler_from_quaternion(x, y, z, w):
-    t0 = +2.0 * (w * x + y * z)
-    t1 = +1.0 - 2.0 * (x * x + y * y)
-    roll_x = np.arctan2(t0, t1)
-    t2 = +2.0 * (w * y - z * x)
-    t2 = +1.0 if t2 > +1.0 else t2
-    t2 = -1.0 if t2 < -1.0 else t2
-    pitch_y = np.arcsin(t2)
-    t3 = +2.0 * (w * z + x * y)
-    t4 = +1.0 - 2.0 * (y * y + z * z)
-    yaw_z = np.arctan2(t3, t4)
-    return yaw_z  # in radians
 
 def angle_limit_checking(theta):
     while theta > np.pi:
