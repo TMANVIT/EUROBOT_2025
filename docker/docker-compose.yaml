@@ -19,6 +19,6 @@ services:
       - $ROOT_DIR/src/ros2:/ros2_ws/src
       - $ROOT_DIR/data:/data
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-    devices:
-      - /dev/video0:/dev/video0
+    # devices:
+    #   - /dev/video0:/dev/video0
     command: ./run.sh
