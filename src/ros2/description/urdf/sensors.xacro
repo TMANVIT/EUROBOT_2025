@@ -1,5 +1,9 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
+   <material name="lazer_material">
+      <color
+        rgba="1 1 1 1" />
+      </material>
   <xacro:macro name="imu">
     <link name="imu_link"/>
     
@@ -20,9 +24,7 @@
         <geometry>
           <cylinder length="${length}" radius="${radius}" />
         </geometry>
-        <material name="green">
-            <color rgba="0.003 0.639 0.223 1.0"/>
-        </material>
+        <material name="lazer_material"/>
       </visual>
       <collision>
         <origin
