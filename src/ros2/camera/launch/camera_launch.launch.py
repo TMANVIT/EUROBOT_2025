@@ -57,7 +57,7 @@ def generate_launch_description():
     ld.add_action(declare_rviz_cmd)
     ld.add_action(declare_rviz_config_path_cmd)
 
-    #ld.add_action(bve_pose_node)
+    ld.add_action(bve_pose_node)
     ld.add_action(rviz_node)
     ld.add_action(image_raw_pub_node)
 

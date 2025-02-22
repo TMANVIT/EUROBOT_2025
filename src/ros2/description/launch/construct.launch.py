@@ -64,12 +64,12 @@ def generate_launch_description():
             ]
         ),
         
-        Node(
-            package="tf2_ros",
-            executable = "static_transform_publisher",
-            arguments = ["0", "0", "0", "0", "0", "0", "map", "odom"],
-            name = "map_to_odom_static"
-        ),
+        # Node(
+        #     package="tf2_ros",
+        #     executable = "static_transform_publisher",
+        #     arguments = ["0", "0", "0", "0", "0", "0", "map", "odom"],
+        #     name = "map_to_odom_static"
+        # ),
         
         # Node(
         #     package="tf2_ros",
@@ -78,12 +78,20 @@ def generate_launch_description():
         #     name = "base_link_to_odom_static"
         # ),
         
-        # Node(
-        #     package="tf2_ros",
-        #     executable = "static_transform_publisher",
-        #     arguments = ["0", "0", "0", "0", "0", "0", "odom", "base_footprint"],
-        #     name = "base_footprint_to_odom_static"
-        # ),
+        Node(
+            package="tf2_ros",
+            executable = "static_transform_publisher",
+            arguments = ["0", "0", "0", "0", "0", "0", "odom", "base_footprint"],
+            name = "base_footprint_to_odom_static"
+        ),
+
+        Node(
+            package="tf2_ros",
+            executable = "static_transform_publisher",
+            arguments = ["0", "0", "0", "0", "0", "0", "aruco_prediction", "base_footprint"],
+            name = "base_footprint_to_odom_static"
+        ),
+
 
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(camera_launch_path),
