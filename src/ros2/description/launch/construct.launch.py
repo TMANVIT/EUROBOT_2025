@@ -64,32 +64,26 @@ def generate_launch_description():
             ]
         ),
         
-        # Node(
-        #     package="tf2_ros",
-        #     executable = "static_transform_publisher",
-        #     arguments = ["0", "0", "0", "0", "0", "0", "map", "odom"],
-        #     name = "map_to_odom_static"
-        # ),
-        
-        # Node(
-        #     package="tf2_ros",
-        #     executable = "static_transform_publisher",
-        #     arguments = ["0", "0", "0", "0", "0", "1", "base_link", "odom"],
-        #     name = "base_link_to_odom_static"
-        # ),
-        
         Node(
             package="tf2_ros",
             executable = "static_transform_publisher",
-            arguments = ["0", "0", "0", "0", "0", "0", "odom", "base_footprint"],
-            name = "base_footprint_to_odom_static"
+            arguments = ["0", "0", "0", "0", "0", "0", "map", "odom"],
+            name = "map_to_odom_static"
         ),
+        
+        
+        # Node(
+        #     package="tf2_ros",
+        #     executable = "static_transform_publisher",
+        #     arguments = ["0", "0", "0", "0", "0", "0", "odom", "aruco_predict"],
+        #     name = "odom_to_aruco_static"
+        # ),
 
         Node(
             package="tf2_ros",
             executable = "static_transform_publisher",
-            arguments = ["0", "0", "0", "0", "0", "0", "aruco_prediction", "base_footprint"],
-            name = "base_footprint_to_odom_static"
+            arguments = ["0", "0", "0", "0", "0", "0", "aruco_predict", "base_footprint"],
+            name = "aruco_to_base_footprint"
         ),
 
 

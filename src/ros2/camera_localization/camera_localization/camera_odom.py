@@ -9,7 +9,7 @@ from scipy.spatial.transform import Rotation as R
 
 class MapToOdomTF(Node):
     def __init__(self):
-        super().__init__("map_to_odom_tf")
+        super().__init__("camera_odom")
 
         self.create_subscription(
             PoseStamped, "/bev_pose", self.odom_calculation, 10
@@ -27,7 +27,7 @@ class MapToOdomTF(Node):
             t = TransformStamped()
             t.header.stamp = self.get_clock().now().to_msg()
             t.header.frame_id = "odom"
-            t.child_frame_id = "aruco_prediction"
+            t.child_frame_id = "base_footprint"
 
             t.transform.translation.x = msg.pose.position.x-self.inital_pose[0]
             t.transform.translation.y = msg.pose.position.y-self.inital_pose[1]
@@ -38,9 +38,9 @@ class MapToOdomTF(Node):
             t.transform.rotation.z = msg.pose.orientation.z
             t.transform.rotation.w = msg.pose.orientation.w
 
-            initial_x = msg.pose.position.x-self.inital_pose[0]
-            initial_y = msg.pose.position.y-self.inital_pose[1]
-            initial_z = msg.pose.position.z-self.inital_pose[2]
+            initial_x = t.transform.translation.x
+            initial_y = t.transform.translation.y
+            initial_z = t.transform.translation.z
 
 
             

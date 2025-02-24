@@ -17,8 +17,10 @@ class MapToOdomTF(Node):
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self, spin_thread = True)
+        self.timer = self.create_timer(0.1, self.broadcast_transforms)
         self.aruco_to_base_link = None
         self.map_to_aruco = None
+        self.map_to_odom = None
 
     def initial_pose_callback(self, msg):
 
@@ -43,8 +45,8 @@ class MapToOdomTF(Node):
     
         self.aruco_to_base_link = self.tf_buffer.lookup_transform("aruco_link", "base_link", rclpy.time.Time(), timeout=rclpy.duration.Duration(seconds=2.0))
 
-        map_to_odom = self.compose_transforms(self.map_to_aruco, self.aruco_to_base_link)
-        self.tf_broadcaster.sendTransform(map_to_odom)
+        self.map_to_odom = self.compose_transforms(self.map_to_aruco, self.aruco_to_base_link)
+        self.tf_broadcaster.sendTransform(self.map_to_odom)
 
 
         self.get_logger().info(
@@ -93,6 +95,15 @@ class MapToOdomTF(Node):
         composed.transform.rotation.w = new_quat[3]
 
         return composed
+    
+    def broadcast_transforms(self):
+        if self.map_to_odom is not None:
+            self.map_to_odom.header.stamp = self.get_clock().now().to_msg()
+            self.tf_broadcaster.sendTransform(self.map_to_odom)
+            # self.get_logger().info(
+            #     f"Initial pose updated"
+            # )
+        
 
 
 
