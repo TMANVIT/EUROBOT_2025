@@ -29,8 +29,8 @@ echo "Waiting for running bringup launch file..."
 
 ros2 launch robot_bringup robot_bringup.launch.py &
 
-# ros2 topic pub /initialpose geometry_msgs/msg/PoseStamped '{header: {frame_id: "map"}, 
-#               pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}' &
+ros2 topic pub /initialpose geometry_msgs/msg/PoseStamped '{header: {frame_id: "map"}, 
+              pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}' &
 
 # TODO ADD launch file of localization
 

@@ -68,10 +68,10 @@ class PredPublisher(Node):
             self.pose_pred.pose.position.x = msg.pose.position.x
             self.pose_pred.pose.position.y = msg.pose.position.y
             self.pose_pred.pose.position.z = msg.pose.position.z
-            self.pose_pred.pose.orientation.x = msg.pose.position.x
-            self.pose_pred.pose.orientation.y = msg.pose.position.y
-            self.pose_pred.pose.orientation.z = msg.pose.position.z
-            self.pose_pred.pose.orientation.w = msg.pose.position.w
+            self.pose_pred.pose.orientation.x = msg.pose.orientation.x
+            self.pose_pred.pose.orientation.y = msg.pose.orientation.y
+            self.pose_pred.pose.orientation.z = msg.pose.orientation.z
+            self.pose_pred.pose.orientation.w = msg.pose.orientation.w
             self.init_pose_detected = True
 
 

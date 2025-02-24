@@ -42,7 +42,7 @@
      <!-- <IMU> -->
      <!-- <Lidar> -->
      <xacro:laser >
-          <origin xyz="-0.0032264 0 0.31758" rpy="0 0 0" />
+          <origin xyz="-0.0032264 0 0.31758" rpy="0 0 3.14" />
           <!-- <inertia ixx="9.5253E-06" ixy="4.0169E-10" ixz="2.4656E-08" iyy="9.4165E-06"
                iyz="-9.4826E-12" izz="1.7083E-05" /> -->
      </xacro:laser>

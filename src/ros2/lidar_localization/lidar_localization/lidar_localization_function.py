@@ -33,8 +33,8 @@ class LidarLocalization(Node):
         # Set the landmarks map based on the side
         if self.side == 0:
             self.landmarks_map = [
-                np.array([1.50289, 0.993082]),
-                np.array([1.5217, -0.989224]),
+                np.array([1.56289, 0.993082]),
+                np.array([1.5617, -0.999224]),
                 np.array([-1.5099, -0.0087658])
             ]
         elif self.side == 1:
@@ -93,15 +93,26 @@ class LidarLocalization(Node):
         self.clear_data()
     
     def pred_pose_callback(self, msg):
-        self.get_logger().info("Robot pose callback triggered")
+        self.get_logger().debug("Robot pose callback triggered")
         self.newPose = True
-        yaw = R.from_quat(msg.pose.orientation).as_euler(seq='xyz', degrees=False)[2]
+        quat = [
+            msg.pose.orientation.x,
+            msg.pose.orientation.y,
+            msg.pose.orientation.z,
+            msg.pose.orientation.w
+        ]
+        yaw = R.from_quat(quat).as_euler(seq='xyz', degrees=False)[2]
 
 
         if yaw < 0:
             yaw += 2 * np.pi
         
         self.robot_pose = np.array([msg.pose.position.x, msg.pose.position.y, yaw])
+        self.P_pred = np.array([
+            [0.1, 0, 0],
+            [0, 0.15, 0],
+            [0, 0, 0.15]
+        ])
         # self.P_pred = np.array([
         #     [msg.pose.covariance[0], 0, 0],
         #     [0, msg.pose.covariance[7], 0],
@@ -139,6 +150,7 @@ class LidarLocalization(Node):
             [-(x_o - x_r) / r_prime, -(y_o - y_r) / r_prime, 0],
             [(y_o - y_r) / r_prime ** 2, -(x_o - x_r) / r_prime ** 2, -1]
         ])
+        self.get_logger().debug(f"P_pred {self.P_pred}")
         S = H @ self.P_pred @ H.T + self.R
         S_inv = np.linalg.inv(S)
         S_det = np.linalg.det(S)
@@ -266,13 +278,13 @@ class LidarLocalization(Node):
             b = np.zeros(2)
             dist_beacon_robot = [np.linalg.norm(beacon) for beacon in beacons]
 
-            A[0, 0] = 2 * (self.landmarks_set[0][0] - self.landmarks_set[2][0])
-            A[0, 1] = 2 * (self.landmarks_set[0][1] - self.landmarks_set[2][1])
-            A[1, 0] = 2 * (self.landmarks_set[1][0] - self.landmarks_set[2][0])
-            A[1, 1] = 2 * (self.landmarks_set[1][1] - self.landmarks_set[2][1])
+            A[0, 0] = 2 * (self.landmarks_map[0][0] - self.landmarks_map[2][0])
+            A[0, 1] = 2 * (self.landmarks_map[0][1] - self.landmarks_map[2][1])
+            A[1, 0] = 2 * (self.landmarks_map[1][0] - self.landmarks_map[2][0])
+            A[1, 1] = 2 * (self.landmarks_map[1][1] - self.landmarks_map[2][1])
 
-            b[0] = (self.landmarks_set[0][0]**2 - self.landmarks_set[2][0]**2) + (self.landmarks_set[0][1]**2 - self.landmarks_set[2][1]**2) + (dist_beacon_robot[2]**2 - dist_beacon_robot[0]**2)
-            b[1] = (self.landmarks_set[1][0]**2 - self.landmarks_set[2][0]**2) + (self.landmarks_set[1][1]**2 - self.landmarks_set[2][1]**2) + (dist_beacon_robot[2]**2 - dist_beacon_robot[1]**2)
+            b[0] = (self.landmarks_map[0][0]**2 - self.landmarks_map[2][0]**2) + (self.landmarks_map[0][1]**2 - self.landmarks_map[2][1]**2) + (dist_beacon_robot[2]**2 - dist_beacon_robot[0]**2)
+            b[1] = (self.landmarks_map[1][0]**2 - self.landmarks_map[2][0]**2) + (self.landmarks_map[1][1]**2 - self.landmarks_map[2][1]**2) + (dist_beacon_robot[2]**2 - dist_beacon_robot[1]**2)
 
             try:
                 X = np.linalg.solve(A.T @ A, A.T @ b)
@@ -283,7 +295,7 @@ class LidarLocalization(Node):
                 robot_cos = 0
 
                 for i in range(3):
-                    theta = angle_limit_checking(np.arctan2(self.landmarks_set[i][1] - lidar_pose[1], self.landmarks_set[i][0] - lidar_pose[0]) - np.arctan2(beacons[i][1], beacons[i][0]))
+                    theta = angle_limit_checking(np.arctan2(self.landmarks_map[i][1] - lidar_pose[1], self.landmarks_map[i][0] - lidar_pose[0]) - np.arctan2(beacons[i][1], beacons[i][0]))
                     robot_sin += np.sin(theta)
                     robot_cos += np.cos(theta)
 
