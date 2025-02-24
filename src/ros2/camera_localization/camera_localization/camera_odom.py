@@ -18,7 +18,8 @@ class MapToOdomTF(Node):
             PoseStamped, "/initialpose", self.initial_pose_initialisation, 10
         )
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
-        self.inital_pose = None
+        self.inital_pose_c = None
+        self.inital_pose_q = None
         self.aruco_to_base_link = None
         self.map_to_aruco = None
 
@@ -29,22 +30,14 @@ class MapToOdomTF(Node):
             t.header.frame_id = "odom"
             t.child_frame_id = "base_footprint"
 
-            t.transform.translation.x = msg.pose.position.x-self.inital_pose[0]
-            t.transform.translation.y = msg.pose.position.y-self.inital_pose[1]
-            t.transform.translation.z = msg.pose.position.z-self.inital_pose[2]
-
-            t.transform.rotation.x = msg.pose.orientation.x
-            t.transform.rotation.y = msg.pose.orientation.y
-            t.transform.rotation.z = msg.pose.orientation.z
-            t.transform.rotation.w = msg.pose.orientation.w
-
-            initial_x = t.transform.translation.x
-            initial_y = t.transform.translation.y
-            initial_z = t.transform.translation.z
+            map_c = np.array([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
+            map_q = R.from_quat(np.array([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w]))
 
 
+
+            odom_to_base_footprint = self.tf_buffer.transform(t, "odom")
             
-            self.tf_broadcaster.sendTransform(t)
+            self.tf_broadcaster.sendTransform(odom_to_base_footprint)
 
 
             self.get_logger().info(
@@ -52,7 +45,8 @@ class MapToOdomTF(Node):
             )
 
     def initial_pose_initialisation(self, msg):
-        self.inital_pose = np.array([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
+        self.inital_pose_c = np.array([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
+        self.inital_pose_q = R.from_quat(np.array([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w]))
 
 
 
