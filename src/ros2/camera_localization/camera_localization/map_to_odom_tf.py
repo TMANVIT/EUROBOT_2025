@@ -61,7 +61,6 @@ class MapToOdomTF(Node):
         composed.header.frame_id = "map"
         composed.child_frame_id = "odom"
 
-        # Получаем данные
         first_trans = np.array([first.transform.translation.x,
                        first.transform.translation.y,
                        first.transform.translation.z])
@@ -78,11 +77,9 @@ class MapToOdomTF(Node):
                       second.transform.rotation.z,
                       second.transform.rotation.w])
 
-        # Применяем вращение и трансляцию
         new_trans = first_trans+first_rot.apply(second_trans)
         new_rot = first_rot * second_rot
 
-        # Записываем в сообщение
         composed.transform.translation.x = new_trans[0]
         composed.transform.translation.y = new_trans[1]
         composed.transform.translation.z = new_trans[2]
