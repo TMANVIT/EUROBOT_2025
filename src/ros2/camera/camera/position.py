@@ -46,7 +46,10 @@ class BEVPosePublisher(Node):
         if ids is not None:
             tmatrix_new, center_new = self.camera.t_matrix_building(ids, tvecDict, transMatrixDict)
             if tmatrix_new is not None:
-                self.tmatrix, self.center = tmatrix_new, center_new
+                if self.tmatrix is None:
+                    self.tmatrix, self.center = tmatrix_new, center_new
+                else:
+                    self.tmatrix, self.center = 0.1*(tmatrix_new-self.tmatrix) + self.tmatrix, 0.1*(center_new-self.center) + self.center
             #self.get_logger().error(f"{ids}")
             if self.tmatrix is not None:
                 self.robotCoord, self.quat, self.ourRobot = self.camera.robots_tracking(ids, transMatrixDict, tvecDict, self.tmatrix, self.center)

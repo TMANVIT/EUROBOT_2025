@@ -84,7 +84,7 @@ class Camera():
                 robotTransMatrix[2] = [0.0, 0.0, 1.0]
                 
                 r = R.from_matrix(robotTransMatrix)
-                quaternion = (r*R.from_euler('z', 90, degrees=True)).as_quat()
+                quaternion = (r*R.from_euler('z', 10, degrees=True)).as_quat()
                 
                 if i == self.robot_id:
                     ourRobot = True

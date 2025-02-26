@@ -20,6 +20,7 @@ class MapToOdomTF(Node):
         self.create_subscription(
             PoseStamped, "/enemy_pose", self.enemy_pose, 10
         )
+        
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
         self.inital_pose_coords = None
         self.inital_pose_rotation = None
