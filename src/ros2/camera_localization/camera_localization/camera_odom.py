@@ -22,17 +22,17 @@ class MapToOdomTF(Node):
         self.inital_pose_rotation = None
 
     def odom_calculation(self, msg):
-        if self.inital_pose_c is not None:
+        if self.inital_pose_coords is not None:
             odom_to_base_footprint = TransformStamped()
             odom_to_base_footprint.header.stamp = self.get_clock().now().to_msg()
             odom_to_base_footprint.header.frame_id = "odom"
             odom_to_base_footprint.child_frame_id = "base_footprint"
 
             map_coodrinats = np.array([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
-            map_rotation = (R.from_quat(np.array([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w]))).as_matrix()
+            map_rotation = np.array((R.from_quat(np.array([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w]))).as_matrix())
 
-            odom_to_base_footprint_coodrs = np.invert(self.inital_pose_rotation) @ (map_coodrinats-self.map_coodrinats)
-            odom_to_base_footprint_quat = (R.from_matrix(map_rotation @ np.invert(self.inital_pose_rotation))).as_matrix()
+            odom_to_base_footprint_coodrs = np.linalg.inv(self.inital_pose_rotation) @ (map_coodrinats-self.inital_pose_coords)
+            odom_to_base_footprint_quat = (R.from_matrix(map_rotation @ np.linalg.inv(self.inital_pose_rotation))).as_quat()
 
             odom_to_base_footprint.transform.translation.x = odom_to_base_footprint_coodrs[0]
             odom_to_base_footprint.transform.translation.y = odom_to_base_footprint_coodrs[1]
@@ -53,7 +53,7 @@ class MapToOdomTF(Node):
 
     def initial_pose_initialisation(self, msg):
         self.inital_pose_coords = np.array([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
-        self.inital_pose_rotation = (R.from_quat(np.array([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w]))).as_matrix()
+        self.inital_pose_rotation = np.array((R.from_quat(np.array([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w]))).as_matrix())
 
 
 

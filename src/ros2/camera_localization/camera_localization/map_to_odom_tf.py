@@ -17,7 +17,6 @@ class MapToOdomTF(Node):
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self, spin_thread = True)
-        self.timer = self.create_timer(0.1, self.broadcast_transforms)
         self.aruco_to_base_link = None
         self.map_to_aruco = None
         self.map_to_odom = None
@@ -49,9 +48,7 @@ class MapToOdomTF(Node):
         self.tf_broadcaster.sendTransform(self.map_to_odom)
 
 
-        self.get_logger().info(
-            f"Initial pose set: x={initial_x}, y={initial_y}, z={initial_z}"
-        )
+        # self.get_logger().info(f"Initial pose set: x={initial_x}, y={initial_y}, z={initial_z}")
 
     
 
@@ -64,28 +61,29 @@ class MapToOdomTF(Node):
         first_trans = np.array([first.transform.translation.x,
                        first.transform.translation.y,
                        first.transform.translation.z])
-        first_rot = R.from_quat([first.transform.rotation.x,
+        first_rot_matrix = np.array((R.from_quat([first.transform.rotation.x,
                      first.transform.rotation.y,
                      first.transform.rotation.z,
-                     first.transform.rotation.w])
+                     first.transform.rotation.w])).as_matrix())
 
         second_trans = np.array([second.transform.translation.x,
                         second.transform.translation.y,
                         second.transform.translation.z])
-        second_rot = R.from_quat([second.transform.rotation.x,
+        second_rot_matrix = np.array((R.from_quat([second.transform.rotation.x,
                       second.transform.rotation.y,
                       second.transform.rotation.z,
-                      second.transform.rotation.w])
+                      second.transform.rotation.w])).as_matrix())
 
-        new_trans = first_trans+first_rot.apply(second_trans)
-        new_rot = first_rot * second_rot
+        new_trans = first_trans+np.linalg.inv(second_rot_matrix) @ second_trans
+        new_rot = R.from_matrix(second_rot_matrix @ first_rot_matrix)
+        new_rot = R.from_matrix(first_rot_matrix)
 
         composed.transform.translation.x = new_trans[0]
         composed.transform.translation.y = new_trans[1]
         composed.transform.translation.z = new_trans[2]
 
-        # new_quat = new_rot.as_quat()
-        new_quat = first_rot.as_quat()
+        new_quat = new_rot.as_quat()
+
         composed.transform.rotation.x = new_quat[0]
         composed.transform.rotation.y = new_quat[1]
         composed.transform.rotation.z = new_quat[2]
@@ -93,13 +91,6 @@ class MapToOdomTF(Node):
 
         return composed
     
-    def broadcast_transforms(self):
-        if self.map_to_odom is not None:
-            self.map_to_odom.header.stamp = self.get_clock().now().to_msg()
-            self.tf_broadcaster.sendTransform(self.map_to_odom)
-            # self.get_logger().info(
-            #     f"Initial pose updated"
-            # )
         
 
 

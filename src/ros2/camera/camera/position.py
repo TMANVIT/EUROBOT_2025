@@ -18,7 +18,8 @@ class BEVPosePublisher(Node):
         self.counter = 0
         
         self.image_subscription = self.create_subscription(Image, '/image_raw', self.image_callback, 10)
-        
+        self.timer = self.create_timer(0.1, self.broadcast_transforms)
+
         self.bridge = CvBridge()
         self.camera = Camera(CAMERA_CONFIG_PATH)
         
@@ -27,6 +28,8 @@ class BEVPosePublisher(Node):
         
         self.robotCoord = None
         self.quat = None
+
+        self.initial_pose_msg = None
 
     def image_callback(self, msg):
         """
@@ -56,9 +59,18 @@ class BEVPosePublisher(Node):
                 msg.pose.orientation.z = self.quat[2]
                 msg.pose.orientation.w = self.quat[3]
                 if self.counter == 0:
+                    self.initial_pose_msg = msg
                     self.initial_pose_publisher.publish(msg)
                     self.counter = 1
                 self.pose_publisher.publish(msg)
+
+    def broadcast_transforms(self):
+        if self.initial_pose_msg is not None:
+            self.initial_pose_msg.header.stamp = self.get_clock().now().to_msg()
+            self.initial_pose_publisher.publish(self.initial_pose_msg)
+            # self.get_logger().info(
+            #     f"Initial pose updated"
+            # )
 
 def main(args=None):
     rclpy.init(args=args)
