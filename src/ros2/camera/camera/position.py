@@ -15,10 +15,11 @@ class BEVPosePublisher(Node):
         super().__init__('bev_pose_publisher')
         self.pose_publisher = self.create_publisher(PoseStamped, '/bev_pose', 10)
         self.initial_pose_publisher = self.create_publisher(PoseStamped, '/initialpose', 10)
+        self.enemy_pose_publisher = self.create_publisher(PoseStamped, '/enemy_pose', 10)
         self.counter = 0
         
         self.image_subscription = self.create_subscription(Image, '/image_raw', self.image_callback, 10)
-        self.timer = self.create_timer(0.1, self.broadcast_transforms)
+        self.timer = self.create_timer(0.1, self.broadcast_initialpose)
 
         self.bridge = CvBridge()
         self.camera = Camera(CAMERA_CONFIG_PATH)
@@ -30,6 +31,7 @@ class BEVPosePublisher(Node):
         self.quat = None
 
         self.initial_pose_msg = None
+        self.ourRobot = None
 
     def image_callback(self, msg):
         """
@@ -47,7 +49,7 @@ class BEVPosePublisher(Node):
                 self.tmatrix, self.center = tmatrix_new, center_new
             #self.get_logger().error(f"{ids}")
             if self.tmatrix is not None:
-                self.robotCoord, self.quat = self.camera.robots_tracking(ids, transMatrixDict, tvecDict, self.tmatrix, self.center)
+                self.robotCoord, self.quat, self.ourRobot = self.camera.robots_tracking(ids, transMatrixDict, tvecDict, self.tmatrix, self.center)
             if self.robotCoord is not None:
                 msg = PoseStamped()
                 msg.header = Header(frame_id='aruco', stamp=self.get_clock().now().to_msg())
@@ -58,19 +60,19 @@ class BEVPosePublisher(Node):
                 msg.pose.orientation.y = self.quat[1]
                 msg.pose.orientation.z = self.quat[2]
                 msg.pose.orientation.w = self.quat[3]
-                if self.counter == 0:
-                    self.initial_pose_msg = msg
-                    self.initial_pose_publisher.publish(msg)
-                    self.counter = 1
-                self.pose_publisher.publish(msg)
+                if self.ourRobot:
+                    if self.counter == 0:
+                        self.initial_pose_msg = msg
+                        self.initial_pose_publisher.publish(msg)
+                        self.counter = 1
+                    self.pose_publisher.publish(msg)
+                else:
+                    self.enemy_pose_publisher.publish(msg)
 
-    def broadcast_transforms(self):
+    def broadcast_initialpose(self):
         if self.initial_pose_msg is not None:
             self.initial_pose_msg.header.stamp = self.get_clock().now().to_msg()
             self.initial_pose_publisher.publish(self.initial_pose_msg)
-            # self.get_logger().info(
-            #     f"Initial pose updated"
-            # )
 
 def main(args=None):
     rclpy.init(args=args)

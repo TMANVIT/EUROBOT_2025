@@ -25,7 +25,7 @@ class Camera():
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # gray = cv2.undistort(gray, self.camera_matrix, self.dist_coefs, None, self.newcameramatrix)
         # gray = cv2.normalize(gray, None, 1.0, 255, cv2.NORM_MINMAX, dtype = cv2.CV_8U)
-        # gray = cv2.medianBlur(gray, 3)
+        # gray = cv2.medianBlur(gray, 5)
         # gray, prepared_img = cv2.threshold(gray, 200,220,cv2.THRESH_BINARY)
         return gray
     
@@ -70,18 +70,27 @@ class Camera():
         return tmatrix, center 
         
     def robots_tracking(self, ids, transMatrixDict, tvecDict, tmatrix, center):
-        if self.robot_id in ids:
-            rvec = tvecDict[self.robot_id]- center
-            robotCoord = [np.dot(rvec, tmatrix[0]), np.dot(rvec, tmatrix[1]), np.dot(rvec, tmatrix[2])]
-            robotTransMatrix = np.dot(transMatrixDict[self.robot_id], np.linalg.inv(tmatrix))
-            robotTransMatrix[0][2] = 0.0
-            robotTransMatrix[0] = robotTransMatrix[0]/np.linalg.norm(robotTransMatrix[0])
-            robotTransMatrix[1][2] = 0.0
-            robotTransMatrix[1] = robotTransMatrix[1]/np.linalg.norm(robotTransMatrix[1])
-            robotTransMatrix[2] = [0.0, 0.0, 1.0]
+        # if self.robot_id in ids:
+            # i = self.robot_id
+        for i in ids:
+            if i in range(11):
+                rvec = tvecDict[i]- center
+                robotCoord = [np.dot(rvec, tmatrix[0]), np.dot(rvec, tmatrix[1]), np.dot(rvec, tmatrix[2])]
+                robotTransMatrix = np.dot(transMatrixDict[i], np.linalg.inv(tmatrix))
+                robotTransMatrix[0][2] = 0.0
+                robotTransMatrix[0] = robotTransMatrix[0]/np.linalg.norm(robotTransMatrix[0])
+                robotTransMatrix[1][2] = 0.0
+                robotTransMatrix[1] = robotTransMatrix[1]/np.linalg.norm(robotTransMatrix[1])
+                robotTransMatrix[2] = [0.0, 0.0, 1.0]
+                
+                r = R.from_matrix(robotTransMatrix)
+                quaternion = (r*R.from_euler('z', 90, degrees=True)).as_quat()
+                
+                if i == self.robot_id:
+                    ourRobot = True
+                else:
+                    ourRobot = False
+
+                return robotCoord, quaternion, ourRobot
             
-            r = R.from_matrix(robotTransMatrix)
-            quaternion = r.as_quat()
-            return robotCoord, quaternion
-        else:
-            return None, None
+        return None, None, None

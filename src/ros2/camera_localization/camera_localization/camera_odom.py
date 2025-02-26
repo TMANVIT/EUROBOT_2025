@@ -17,6 +17,9 @@ class MapToOdomTF(Node):
         self.create_subscription(
             PoseStamped, "/initialpose", self.initial_pose_initialisation, 10
         )
+        self.create_subscription(
+            PoseStamped, "/enemy_pose", self.enemy_pose, 10
+        )
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
         self.inital_pose_coords = None
         self.inital_pose_rotation = None
@@ -45,8 +48,6 @@ class MapToOdomTF(Node):
             
             self.tf_broadcaster.sendTransform(odom_to_base_footprint)
 
-
-
             # self.get_logger().info(
             #     f"odom pose set: x={initial_x}, y={initial_y}, z={initial_z}"
             # )
@@ -55,7 +56,22 @@ class MapToOdomTF(Node):
         self.inital_pose_coords = np.array([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
         self.inital_pose_rotation = np.array((R.from_quat(np.array([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w]))).as_matrix())
 
+    def enemy_pose(self, msg):
+        map_to_enemy = TransformStamped()
+        map_to_enemy.header.stamp = self.get_clock().now().to_msg()
+        map_to_enemy.header.frame_id = "map"
+        map_to_enemy.child_frame_id = "enemy"
 
+        map_to_enemy.transform.translation.x = msg.pose.position.x
+        map_to_enemy.transform.translation.y = msg.pose.position.y
+        map_to_enemy.transform.translation.z = msg.pose.position.z
+
+        map_to_enemy.transform.rotation.x = msg.pose.orientation.x
+        map_to_enemy.transform.rotation.y = msg.pose.orientation.y
+        map_to_enemy.transform.rotation.z = msg.pose.orientation.z
+        map_to_enemy.transform.rotation.w = msg.pose.orientation.w
+
+        self.tf_broadcaster.sendTransform(map_to_enemy)
 
 
 
