@@ -50,7 +50,7 @@ class PredPublisher(Node):
         t = TransformStamped()
         t.header.stamp = self.get_clock().now().to_msg()
         t.header.frame_id = "map"
-        t.child_frame_id = "robot_predict"
+        t.child_frame_id = "lidar_odom"
         t.transform.translation.x = self.pose_pred.pose.position.x
         t.transform.translation.y = self.pose_pred.pose.position.y
         t.transform.translation.z = self.pose_pred.pose.position.z

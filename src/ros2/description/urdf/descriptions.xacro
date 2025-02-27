@@ -84,7 +84,7 @@
      <!-- <Lidar> -->
      <xacro:lazer
           xyz="0 0 0.308"
-          rpy = "0 0 180"
+          rpy = "0 0 0"
           length="0.041"
           radius="0.040"
           mass="0.25" >

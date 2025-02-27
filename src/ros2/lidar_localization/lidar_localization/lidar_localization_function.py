@@ -22,6 +22,7 @@ class LidarLocalization(Node):
         self.declare_parameter('visualize_candidate', True)
         self.declare_parameter('likelihood_threshold', 0.001)
         self.declare_parameter('consistency_threshold', 0.9)
+        self.declare_parameter('frame_id', 'lidar_odom')
 
         # Get parameters
         self.side = self.get_parameter('side').get_parameter_value().integer_value
@@ -29,6 +30,7 @@ class LidarLocalization(Node):
         self.visualize_candidate = self.get_parameter('visualize_candidate').get_parameter_value().bool_value
         self.likelihood_threshold = self.get_parameter('likelihood_threshold').get_parameter_value().double_value
         self.consistency_threshold = self.get_parameter('consistency_threshold').get_parameter_value().double_value
+        self.frame_id = self.get_parameter('frame_id').get_parameter_value().string_value
 
         # Set the landmarks map based on the side
         if self.side == 0:
@@ -171,7 +173,7 @@ class LidarLocalization(Node):
                 obs_candidates.append({'position': obs, 'probability': likelihood})
                 if self.visualize_candidate and self.beacon_no == 1:
                     marker = Marker()
-                    marker.header.frame_id = "robot_predict"
+                    marker.header.frame_id = self.frame_id
                     marker.header.stamp = self.get_clock().now().to_msg()
                     marker.ns = "candidates"
                     marker.type = Marker.SPHERE
@@ -181,7 +183,7 @@ class LidarLocalization(Node):
                     marker.scale.z = 0.01
 
                     text_marker = Marker()
-                    text_marker.header.frame_id = "robot_predict"
+                    text_marker.header.frame_id = self.frame_id
                     text_marker.header.stamp = self.get_clock().now().to_msg()
                     text_marker.ns = "text"
                     text_marker.type = Marker.TEXT_VIEW_FACING
@@ -275,7 +277,7 @@ class LidarLocalization(Node):
         if len(self.landmarks_set[max_likelihood_idx]['beacons']) >= 3:
             beacons = [self.landmarks_set[max_likelihood_idx]['beacons'][i] for i in range(3)]
             A = np.zeros((2, 2))
-            b = np.zeros(2)
+            b = np.zeros(2)# TODO: compensation
             dist_beacon_robot = [np.linalg.norm(beacon) for beacon in beacons]
 
             A[0, 0] = 2 * (self.landmarks_map[0][0] - self.landmarks_map[2][0])
@@ -306,8 +308,8 @@ class LidarLocalization(Node):
                 lidar_cov[2, 2] /= max_likelihood
 
                 # publish the lidar pose
-                self.lidar_pose_msg.header.stamp = self.get_clock().now().to_msg() # TODO: compensation
-                self.lidar_pose_msg.header.frame_id = 'map' #TODO: param
+                self.lidar_pose_msg.header.stamp = self.get_clock().now().to_msg()
+                self.lidar_pose_msg.header.frame_id = 'map' 
                 self.lidar_pose_msg.pose.position.x = lidar_pose[0]
                 self.lidar_pose_msg.pose.position.y = lidar_pose[1]
                 self.lidar_pose_msg.pose.position.z = 0.0
@@ -316,7 +318,7 @@ class LidarLocalization(Node):
                 self.lidar_pose_msg.pose.orientation.z = np.sin(lidar_pose[2] / 2)
                 self.lidar_pose_msg.pose.orientation.w = np.cos(lidar_pose[2] / 2)
                 # self.lidar_pose_msg.pose.covariance = [
-                #     lidar_cov[0, 0], 0.0, 0.0, 0.0, 0.0, 0.0,
+                #     lidar_cov[0, 0], 0.0, 0.0, 0.0, 0.0, 0.0,# TODO: compensation
                 #     0.0, lidar_cov[1, 1], 0.0, 0.0, 0.0, 0.0,
                 #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                 #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -346,7 +348,7 @@ class LidarLocalization(Node):
                 if i == j:
                     continue
                 geometry_description[(i, j)] = np.linalg.norm(beacons[i] - beacons[j])
-                # self.get_logger().debug(f"Beacon {i} to Beacon {j} distance: {geometry_description[(i, j)]}")
+                # self.get_logger().debug(f"Beacon {i} to Beacon {j} # TODO: compensationdistance: {geometry_description[(i, j)]}")
                 if (i, j) in self.geometry_description_map:
                     expected_distance = self.geometry_description_map[(i, j)]
                     consistency *= 1 - np.abs(geometry_description[(i, j)] - expected_distance) / expected_distance
