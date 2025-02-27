@@ -84,18 +84,15 @@
      <!-- <Lidar> -->
      <xacro:lazer
           xyz="0 0 0.308"
+          rpy = "0 0 180"
           length="0.041"
           radius="0.040"
           mass="0.25" >
-          <origin
-               xyz="0.0001471 4.608E-08 -0.015129"
-               rpy="0 0 0" 
-          />
      </xacro:lazer>
      <!-- <Lidar> -->
      <!-- <Aruco> -->
      <xacro:aruco_link_m 
-          filename="package://description/meshes/aruco_link.STL"
+          filename="package://description/meshes/aruco.STL"
           mass="0.4">
           <origin 
                xyz="-0.0077972 5.7506E-10 -0.038759"

@@ -72,7 +72,7 @@ class LidarLocalization(Node):
         self.lidar_pose_msg = PoseStamped()
     
     def obstacle_callback(self, msg):
-        self.get_logger().info('obstacle detected')
+        self.get_logger().debug('obstacle detected')
         # obstacle operation
         self.obs_raw = []
         for obs in msg.circles:
@@ -80,13 +80,13 @@ class LidarLocalization(Node):
         self.obs_time = msg.header.stamp
         # data processing
         if self.newPose == False: # Check if robot_pose or P_pred is empty
-            self.get_logger().info("no new robot pose or P_pred")
+            self.get_logger().debug("no new robot pose or P_pred")
             return
-        self.get_logger().info(f"New Pose detected x = {self.robot_pose[0]}, y = {self.robot_pose[1]}, yaw = {self.robot_pose[2]}")  
+        self.get_logger().debug(f"New Pose detected x = {self.robot_pose[0]}, y = {self.robot_pose[1]}, yaw = {self.robot_pose[2]}")  
         self.landmarks_candidate = self.get_landmarks_candidate()
         self.landmarks_set = self.get_landmarks_set()
         if len(self.landmarks_set) == 0:
-            self.get_logger().info("empty landmarks set")
+            self.get_logger().debug("empty landmarks set")
             return
         self.lidar_pose, self.lidar_cov = self.get_lidar_pose()
         # clear used data
@@ -270,7 +270,7 @@ class LidarLocalization(Node):
 
         lidar_pose = np.zeros(3)
         lidar_cov = np.diag([0.05**2, 0.05**2, 0.05**2]) # what should the optimal value be?
-        self.get_logger().info(f"landmarks_set: {self.landmarks_set}")
+        self.get_logger().debug(f"landmarks_set: {self.landmarks_set}")
         # If the most likely set has at least 3 beacons
         if len(self.landmarks_set[max_likelihood_idx]['beacons']) >= 3:
             beacons = [self.landmarks_set[max_likelihood_idx]['beacons'][i] for i in range(3)]
@@ -323,7 +323,7 @@ class LidarLocalization(Node):
                 #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                 #     0.0, 0.0, 0.0, 0.0, 0.0, lidar_cov[2, 2]
                 # ]
-                self.get_logger().info(f"lidar_pose: {lidar_pose}")
+                self.get_logger().debug(f"lidar_pose: {lidar_pose}")
                 self.lidar_pose_pub.publish(self.lidar_pose_msg)
                 # self.get_logger().debug("Published lidar_pose message")
 
