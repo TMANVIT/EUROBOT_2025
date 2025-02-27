@@ -128,3 +128,5 @@ notebooks/**
 !notebooks/*.ipynb
 
 *.swp
+
+Platform/

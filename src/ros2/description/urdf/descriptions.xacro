@@ -10,54 +10,105 @@
           <origin xyz="0 0 0" rpy="0 0 0" />
      </joint>
 
-     <xacro:base_m name="base_link" mass="5" filename="package://description/meshes/base_link.STL">
-          <origin xyz="0.024636 0.00068431 0.10638" rpy="0 0 0" />
-          <inertia ixx="0.018097" ixy="8.6144E-05" ixz="6.7135E-05" iyy="0.0070038"
-               iyz="-9.0076E-05" izz="0.01647" />
+     <xacro:base_m 
+          name="base_link" 
+          mass="5" 
+          filename="package://description/meshes/base_link.STL">
+          <origin
+               xyz="0.016054 -0.0031971 0.10841"
+               rpy="0 0 0" 
+          />
+          <inertia
+          ixx="0.019114"
+          ixy="0.00015199"
+          ixz="6.8537E-05"
+          iyy="0.0061796"
+          iyz="-9.0111E-05"
+          izz="0.019044" />
      </xacro:base_m>
      <!-- <Right_Wheel> -->
-     <xacro:wheel_link name_link="right_wheel"
-          filename="package://description/meshes/right_wheel.STL" mass="0.08">
-          <origin xyz="0 -8.6254E-14 0.013353" rpy="0 0 0" />
-          <inertia ixx="3.6651E-05" ixy="9.6988E-21" ixz="-7.7529E-22" iyy="3.6651E-05"
-               iyz="-1.1318E-16" izz="5.4175E-05" />
+     <xacro:wheel_link 
+          name_link="right_wheel" 
+          filename="package://description/meshes/right_wheel.STL"
+          mass="0.08">
+          <origin
+               xyz="-6.245E-17 -2.8449E-16 0.013347"
+               rpy="0 0 0" 
+          />
+          <inertia
+               ixx="3.6651E-05"
+               ixy="9.6988E-21"
+               ixz="-7.7529E-22"
+               iyy="3.6651E-05"
+               iyz="-1.1318E-16"
+               izz="5.4175E-05" 
+          />
      </xacro:wheel_link>
-     <xacro:wheel_joint name="rightwheel" name_link="right_wheel">
-          <origin xyz="0.059075 -0.2 0.021" rpy="-1.5708 0 0" />
+     <xacro:wheel_joint
+          name="rightwheel"
+          name_link="right_wheel"> 
+          <origin
+               xyz="0.058997 -0.2 0.021"
+               rpy="-1.5708 0 0" 
+          />
      </xacro:wheel_joint>
      <!-- </Right_Wheel> -->
      <!-- <Left_Wheel> -->
      <xacro:wheel_link name_link="left_wheel" filename="package://description/meshes/left_wheel.STL"
           mass="0.08">
-          <origin xyz="6.8279E-15 -1.2143E-15 -0.013353" rpy="0 0 0" />
-          <inertia ixx="3.6651E-05" ixy="-1.3538E-21" ixz="-8.9321E-18" iyy="3.6651E-05"
-               iyz="1.5999E-18" izz="5.4175E-05" />
+          <origin
+               xyz="4.5103E-17 2.0817E-17 -0.013347"
+               rpy="0 0 0" 
+          />
+          <inertia
+               ixx="3.6634E-05"
+               ixy="1.2292E-20"
+               ixz="-5.2555E-20"
+               iyy="3.6634E-05"
+               iyz="-3.185E-20"
+               izz="5.4175E-05" 
+          />
      </xacro:wheel_link>
-     <xacro:wheel_joint name="leftwheel" name_link="left_wheel">
-          <origin xyz="0.059075 0.2 0.021" rpy="-1.5708 0 0" />
+     <xacro:wheel_joint
+          name="leftwheel"
+          name_link="left_wheel"> 
+          <origin
+               xyz="0.058997 0.2 0.021"
+               rpy="-1.5708 0 0" 
+          />
      </xacro:wheel_joint>
      <!-- <Left_Wheel> -->
      <!-- <IMU> -->
      <xacro:imu />
      <!-- <IMU> -->
      <!-- <Lidar> -->
-     <xacro:laser >
-          <origin xyz="-0.0032264 0 0.31758" rpy="0 0 0" />
-          <!-- <inertia ixx="9.5253E-06" ixy="4.0169E-10" ixz="2.4656E-08" iyy="9.4165E-06"
-               iyz="-9.4826E-12" izz="1.7083E-05" /> -->
-     </xacro:laser>
-     <!-- <xacro:lidar_to_base_link>
-          <origin xyz="-0.0032264 0 0.31758" rpy="0 0 0" />
-     </xacro:lidar_to_base_link> -->
+     <xacro:lazer
+          xyz="0 0 0.308"
+          rpy = "0 0 180"
+          length="0.041"
+          radius="0.040"
+          mass="0.25" >
+     </xacro:lazer>
      <!-- <Lidar> -->
      <!-- <Aruco> -->
-     <xacro:aruco_link_m filename="package://description/meshes/aruco_link.STL" mass="0.2">
-          <origin xyz="-0.0092221 -1.2598E-17 -0.044216" rpy="0 0 0" />
-          <inertia ixx="0.00036111" ixy="-1.6666E-21" ixz="-6.4905E-05" iyy="0.0003976"
-               iyz="1.3655E-19" izz="0.00040158" />
+     <xacro:aruco_link_m 
+          filename="package://description/meshes/aruco.STL"
+          mass="0.4">
+          <origin 
+               xyz="-0.0077972 5.7506E-10 -0.038759"
+               rpy="0 0 0" />
+          <inertia
+               ixx="0.00060095"
+               ixy="1.109E-09"
+               ixz="-0.00011373"
+               iyy="0.00065092"
+               iyz="-2.1703E-12"
+               izz="0.00071676" />
      </xacro:aruco_link_m>
      <xacro:aruco_joint_m>
-          <origin xyz="-0.0032264 0 0.411" rpy="0 0 0" />
+          <origin
+          xyz="-0.003304 0 0.431"
+          rpy="0 0 0" />
      </xacro:aruco_joint_m>
      <!-- <Aruco> -->
 </robot>    

@@ -67,7 +67,7 @@ def generate_launch_description():
         Node(
             package="tf2_ros",
             executable = "static_transform_publisher",
-            arguments = ["0", "0", "0", "0", "0", "0", "map", "odom"],
+            arguments = ["0", "-1", "0", "1.57", "0", "0", "map", "odom"],
             name = "map_to_odom_static"
         ),
         
@@ -78,12 +78,21 @@ def generate_launch_description():
         #     name = "base_link_to_odom_static"
         # ),
         
-        # Node(
-        #     package="tf2_ros",
-        #     executable = "static_transform_publisher",
-        #     arguments = ["0", "0", "0", "0", "0", "0", "odom", "base_footprint"],
-        #     name = "base_footprint_to_odom_static"
-        # ),
+        ## Uncomment here, If IMU off
+        
+        Node(
+            package="tf2_ros",
+            executable = "static_transform_publisher",
+            arguments = ["0", "0", "0", "0", "0", "0", "odom", "robot_predict"],
+            name = "odom_to_robot_predict_static"
+        ),
+        
+        Node(
+            package="tf2_ros",
+            executable = "static_transform_publisher",
+            arguments = ["0", "0", "0", "0", "0", "0", "lidar_link", "lidar"],
+            name = "lidar_link_to_lidar_static"
+        ),
 
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(camera_launch_path),
