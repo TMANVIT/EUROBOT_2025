@@ -10,19 +10,41 @@ ekf_filter_node:
         base_link_frame: base_footprint
         world_frame: odom
 
-        odom0: odom/unfiltered
-        odom0_config: [false, false, false,
-                       false, false, false,
-                       true, true, false,  # vx, vy
-                       false, false, true,  # vyaw
-                       false, false, false]
+        # odom0: odom/unfiltered
+        # odom0_config: [false, false, false,
+        #                false, false, false,
+        #                true, true, false,  # vx, vy
+        #                false, false, true,  # vyaw
+        #                false, false, false]
 
-        imu0: imu/data
-        imu0_config: [false, false, false,
-                       false, false, false,
-                       false, false, false,
-                       false, false, true,  # Using yaw rate from IMU
-                       false, false, false]
+        # imu0: imu/data
+        # imu0_config: [false, false, false,
+        #                false, false, false,
+        #                false, false, false,
+        #                false, false, true,  # Using yaw rate from IMU
+        #                false, false, false]
+
+        pose0: /bve_pose  
+        pose0_config: [true, true, false,
+                    false, false, true,
+                    false, false, false,
+                    false, false, false,
+                    false, false, false]
+
+        pose0_differential: false
+        pose0_relative: false
+        pose0_queue_size: 3
+
+
+        # pose1: /lidar_pose
+        # pose1_config: [true, true, false,
+        #             false, false, true,
+        #             false, false, false,
+        #             false, false, false,
+        #             false, false, false]
+      
+        # pose1_differential: true
+        # pose1_relative: false
 
         # # Measurement noise covariance matrices
         # process_noise_covariance: [0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,

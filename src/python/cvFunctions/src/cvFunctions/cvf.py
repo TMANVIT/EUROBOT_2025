@@ -51,7 +51,7 @@ class Camera():
         
         return ids, transMatrixDictionary, tvecDictionary  
     
-    def t_matrix_building(self, ids, tvecDict, transMatrixDict):
+    def t_matrix_building(self, ids, tvecDict):
         tmatrix = None
         center = None
 
@@ -84,7 +84,7 @@ class Camera():
                 robotTransMatrix[2] = [0.0, 0.0, 1.0]
                 
                 r = R.from_matrix(robotTransMatrix)
-                quaternion = (r*R.from_euler('z', 10, degrees=True)).as_quat()
+                quaternion = (r).as_quat()
                 
                 if i == self.robot_id:
                     ourRobot = True
