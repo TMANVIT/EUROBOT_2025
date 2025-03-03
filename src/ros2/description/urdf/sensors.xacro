@@ -1,5 +1,9 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
+   <material name="lazer_material">
+      <color
+        rgba="1 1 1 1" />
+      </material>
   <xacro:macro name="imu">
     <link name="imu_link"/>
     
@@ -10,37 +14,37 @@
     </joint>
   </xacro:macro>
 
-  <xacro:macro name="laser" params="*origin">
-    <link name="lidar">
-      <visual>
-        <origin xyz="0 0 -0.025" rpy="0 0 0"/>
-        <geometry>
-          <cylinder radius="0.0375" length="0.05"/>
-        </geometry>
-        <material name="green">
-            <color rgba="0.003 0.639 0.223 1.0"/>
-        </material>
-      </visual>
-      <collision>
-        <origin xyz="0 0 -0.025" rpy="0 0 0"/>
-        <geometry>
-          <cylinder radius="0.0375" length="0.05"/>
-        </geometry>
-      </collision>
+  <xacro:macro name="lazer" params="xyz rpy length radius mass">
+  <link name="lidar_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="${length}" radius="${radius}"/>
+      </geometry>
+      <material name="lazer_material"/>
+    </visual>
+    <collision>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <geometry>
+        <cylinder length="${length}" radius="${radius}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <!-- Provide a default origin for inertial properties -->
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <mass value="${mass}"/>
+      <inertia ixx="${(1/12) * mass * (3*(radius*radius) + (length*length))}"
+               ixy="0.0" ixz="0.0"
+               iyy="${(1/12) * mass * (3*(radius*radius) + (length*length))}"
+               iyz="0.0"
+               izz="${(1/2) * mass * (radius*radius)}"/>
+    </inertial>
+  </link>
 
-      <inertial>
-        <origin xyz="0 0 0" rpy="0 0 0"/>
-        <mass value="0.1"/>
-        <inertia ixx="${(2/5) * 0.1 * (0.0375 * 0.0375)}" ixy="0" ixz="0"
-                 iyy="${(2/5) * 0.1 * (0.0375 * 0.0375)}" iyz="0"
-                 izz="${(2/5) * 0.1 * (0.0375 * 0.0375)}" />
-      </inertial>
-    </link>
-
-    <joint name="lidar_to_base_link" type="fixed">
+  <joint name="lidar_to_base_link" type="fixed">
       <parent link="base_link"/>
-      <child link="lidar"/>
-      <xacro:insert_block name="origin" />
-    </joint>
-  </xacro:macro>
+      <child link="lidar_link"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+  </joint>
+</xacro:macro>
 </robot>

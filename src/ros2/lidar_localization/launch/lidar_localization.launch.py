@@ -50,7 +50,7 @@ def generate_launch_description():
         Node(
             package="tf2_ros",
             executable = "static_transform_publisher",
-            arguments = ["0", "0", "0", "0", "0", "0", "lidar", "robot_predict"],
+            arguments = ["0", "0", "0", "0", "0", "0", "robot_predict", "base_footprint"],
             name = "obstacle_detector_to_lidar"
         ),
         
