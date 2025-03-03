@@ -36,7 +36,7 @@ class MapToOdomTF(Node):
             map_rotation = np.array((R.from_quat(np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]))).as_matrix())
 
             odom_to_base_footprint_coodrs = np.linalg.inv(self.inital_pose_rotation) @ (map_coodrinats-self.inital_pose_coords)
-            odom_to_base_footprint_quat = (R.from_matrix(np.linalg.inv(map_rotation) @ np.linalg.inv(self.inital_pose_rotation))).as_quat()
+            odom_to_base_footprint_quat = (R.from_matrix(map_rotation @ np.linalg.inv(self.inital_pose_rotation))).as_quat()
 
             odom_to_base_footprint.transform.translation.x = odom_to_base_footprint_coodrs[0]
             odom_to_base_footprint.transform.translation.y = odom_to_base_footprint_coodrs[1]

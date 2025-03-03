@@ -62,15 +62,15 @@ class BEVPosePublisher(Node):
                 msg.pose.pose.orientation.x = self.quat[0]
                 msg.pose.pose.orientation.y = self.quat[1]
                 msg.pose.pose.orientation.z = self.quat[2]
-                msg.pose.pose.orientation.w = self.quat[3]
+                msg.pose.pose.orientation.w = self.quat[3] * -1
 
                 covariance_matrix = zeros((6, 6))
-                covariance_matrix[0, 0] = 0.05  # sigma_x^2
-                covariance_matrix[1, 1] = 0.05  # sigma_y^2
+                covariance_matrix[0, 0] = 0.07  # sigma_x^2
+                covariance_matrix[1, 1] = 0.07  # sigma_y^2
                 covariance_matrix[2, 2] = 0.0001  # sigma_z^2 
                 covariance_matrix[3, 3] = 0.001  # sigma_roll^2
                 covariance_matrix[4, 4] = 0.001  # sigma_pitch^2
-                covariance_matrix[5, 5] = 0.05  # sigma_yaw^2 
+                covariance_matrix[5, 5] = 0.15  # sigma_yaw^2 
 
                 msg.pose.covariance = covariance_matrix.flatten().tolist()
 
