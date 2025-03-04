@@ -76,7 +76,7 @@ class Camera():
             if i in range(11):
                 rvec = tvecDict[i]- center
                 robotCoord = [np.dot(rvec, tmatrix[0]), np.dot(rvec, tmatrix[1]), np.dot(rvec, tmatrix[2])]
-                robotTransMatrix = np.dot(transMatrixDict[i], np.linalg.inv(tmatrix))
+                robotTransMatrix = np.linalg.inv(tmatrix) @ transMatrixDict[i]
                 robotTransMatrix[0][2] = 0.0
                 robotTransMatrix[0] = robotTransMatrix[0]/np.linalg.norm(robotTransMatrix[0])
                 robotTransMatrix[1][2] = 0.0
