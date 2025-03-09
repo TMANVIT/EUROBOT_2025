@@ -30,7 +30,7 @@ class MapToOdomTF(Node):
             odom_to_base_footprint = TransformStamped()
             odom_to_base_footprint.header.stamp = self.get_clock().now().to_msg()
             odom_to_base_footprint.header.frame_id = "odom"
-            odom_to_base_footprint.child_frame_id = "base_footprint"
+            odom_to_base_footprint.child_frame_id = "aruco_predict"
 
             map_coodrinats = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z])
             map_rotation = np.array((R.from_quat(np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]))).as_matrix())
@@ -47,7 +47,7 @@ class MapToOdomTF(Node):
             odom_to_base_footprint.transform.rotation.z = odom_to_base_footprint_quat[2]
             odom_to_base_footprint.transform.rotation.w = odom_to_base_footprint_quat[3]
             
-            # self.tf_broadcaster.sendTransform(odom_to_base_footprint)
+            self.tf_broadcaster.sendTransform(odom_to_base_footprint)
 
             # self.get_logger().info(
             #     f"odom pose set: x={initial_x}, y={initial_y}, z={initial_z}"
