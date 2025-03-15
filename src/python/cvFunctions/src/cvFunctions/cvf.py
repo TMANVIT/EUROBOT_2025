@@ -51,7 +51,7 @@ class Camera():
         
         return ids, transMatrixDictionary, tvecDictionary  
     
-    def t_matrix_building(self, ids, tvecDict, transMatrixDict):
+    def t_matrix_building(self, ids, tvecDict):
         tmatrix = None
         center = None
 
@@ -76,7 +76,7 @@ class Camera():
             if i in range(11):
                 rvec = tvecDict[i]- center
                 robotCoord = [np.dot(rvec, tmatrix[0]), np.dot(rvec, tmatrix[1]), np.dot(rvec, tmatrix[2])]
-                robotTransMatrix = np.dot(transMatrixDict[i], np.linalg.inv(tmatrix))
+                robotTransMatrix = np.linalg.inv(tmatrix) @ transMatrixDict[i]
                 robotTransMatrix[0][2] = 0.0
                 robotTransMatrix[0] = robotTransMatrix[0]/np.linalg.norm(robotTransMatrix[0])
                 robotTransMatrix[1][2] = 0.0
@@ -84,7 +84,7 @@ class Camera():
                 robotTransMatrix[2] = [0.0, 0.0, 1.0]
                 
                 r = R.from_matrix(robotTransMatrix)
-                quaternion = (r*R.from_euler('z', 10, degrees=True)).as_quat()
+                quaternion = (r).as_quat()
                 
                 if i == self.robot_id:
                     ourRobot = True

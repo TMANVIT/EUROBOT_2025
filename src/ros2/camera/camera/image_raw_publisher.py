@@ -13,6 +13,8 @@ class ImageRawPublisher(Node):
     timer_period = 0.01  # seconds
     image_height = 1600
     image_width = 986
+    # image_height = 2560
+    # image_width = 1440
 
     self.timer = self.create_timer(timer_period, self.timer_callback)
     self.cap = cv2.VideoCapture(0)

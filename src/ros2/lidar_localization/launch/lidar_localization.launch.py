@@ -14,7 +14,7 @@ def generate_launch_description():
     lidar_localization_params = PathJoinSubstitution(
         [FindPackageShare("lidar_localization"), "config", "lidar_localization.yaml"]
     )
-
+    
     return LaunchDescription(
         [
             DeclareLaunchArgument(

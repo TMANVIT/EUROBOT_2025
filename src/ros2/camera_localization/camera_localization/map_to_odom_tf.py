@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 import tf2_ros
-from geometry_msgs.msg import PoseStamped, TransformStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped, TransformStamped
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
@@ -12,11 +12,12 @@ class MapToOdomTF(Node):
         super().__init__("map_to_odom_tf")
 
         self.create_subscription(
-            PoseStamped, "/initialpose", self.initial_pose_callback, 10
+            PoseWithCovarianceStamped, "/initialpose", self.initial_pose_callback, 10
         )
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self, spin_thread = True)
+        self.timer = self.create_timer(0.1, self.broadcast_map_to_odom)
         self.aruco_to_base_link = None
         self.map_to_aruco = None
         self.map_to_odom = None
@@ -28,18 +29,18 @@ class MapToOdomTF(Node):
         self.map_to_aruco.header.frame_id = "map"
         self.map_to_aruco.child_frame_id = "odom"
 
-        self.map_to_aruco.transform.translation.x = msg.pose.position.x
-        self.map_to_aruco.transform.translation.y = msg.pose.position.y
-        self.map_to_aruco.transform.translation.z = msg.pose.position.z
+        self.map_to_aruco.transform.translation.x = msg.pose.pose.position.x
+        self.map_to_aruco.transform.translation.y = msg.pose.pose.position.y
+        self.map_to_aruco.transform.translation.z = msg.pose.pose.position.z
 
-        self.map_to_aruco.transform.rotation.x = msg.pose.orientation.x
-        self.map_to_aruco.transform.rotation.y = msg.pose.orientation.y
-        self.map_to_aruco.transform.rotation.z = msg.pose.orientation.z
-        self.map_to_aruco.transform.rotation.w = msg.pose.orientation.w
+        self.map_to_aruco.transform.rotation.x = msg.pose.pose.orientation.x
+        self.map_to_aruco.transform.rotation.y = msg.pose.pose.orientation.y
+        self.map_to_aruco.transform.rotation.z = msg.pose.pose.orientation.z
+        self.map_to_aruco.transform.rotation.w = msg.pose.pose.orientation.w
 
-        initial_x = msg.pose.position.x
-        initial_y = msg.pose.position.y
-        initial_z = msg.pose.position.z
+        initial_x = msg.pose.pose.position.x
+        initial_y = msg.pose.pose.position.y
+        initial_z = msg.pose.pose.position.z
 
     
         self.aruco_to_base_link = self.tf_buffer.lookup_transform("aruco_link", "base_link", rclpy.time.Time(), timeout=rclpy.duration.Duration(seconds=2.0))
@@ -91,7 +92,10 @@ class MapToOdomTF(Node):
 
         return composed
     
-        
+    def broadcast_map_to_odom(self):
+        if self.map_to_odom is not None:
+            self.map_to_odom.header.stamp = self.get_clock().now().to_msg()
+            self.tf_broadcaster.sendTransform(self.map_to_odom)
 
 
 

@@ -341,7 +341,20 @@ class LidarLocalization(Node):
         consistency = 1.0
         lenB = len(beacons)
 
-        # lenB can be 2, 3 or 4
+        # lenB can be 2, 3 or 4]
+                msg.pose.orientation.w = self.quat[3]
+                if self.ourRobot:
+                    if self.counter == 0:
+                        self.initial_pose_msg = msg
+                        self.initial_pose_publisher.publish(msg)
+                        self.counter = 1
+                    self.pose_publisher.publish(msg)
+                else:
+                    self.enemy_pose_publisher.publish(msg)
+
+    def broadcast_initialpose(self):
+        if self.initial_pose_msg is not None:
+            self.initial_pose_msg.header.stamp = sel
         # use the index of the beacons to calculate the distance between them
         for i in beacons:
             for j in beacons:
