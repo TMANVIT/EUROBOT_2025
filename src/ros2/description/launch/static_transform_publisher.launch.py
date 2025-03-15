@@ -6,13 +6,19 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
-            ## Link map to odom. TODO change this transform to camera initial pose.
             Node(
                 package="tf2_ros",
-                executable="static_transform_publisher",
-                arguments=["0", "-1", "0", "1.57", "0", "0", "map", "odom"],
-                name="map_to_odom_static",
+                executable = "static_transform_publisher",
+                arguments = ["0", "0", "0", "0", "0", "0", "world", "map"],
+                name = "world_to_map_static"
             ),
+            # ## Link map to odom. TODO change this transform to camera initial pose.
+            # Node(
+            #     package="tf2_ros",
+            #     executable="static_transform_publisher",
+            #     arguments=["0", "-1", "0", "1.57", "0", "0", "map", "odom"],
+            #     name="map_to_odom_static",
+            # ),
             ## Link lidar sensor in robot to static urdf model link "lidar_link"
             Node(
                 package="tf2_ros",
@@ -22,12 +28,12 @@ def generate_launch_description():
             ),
             
             ## Link between main footprint of robot and lidar_odom. TODO release that 
-            Node(
-                package="tf2_ros",
-                executable = "static_transform_publisher",
-                arguments = ["0", "0", "0", "0", "0", "0", "lidar_odom", "base_footprint"],
-                name = "obstacle_detector_to_lidar"
-            ),
+            # Node(
+            #     package="tf2_ros",
+            #     executable = "static_transform_publisher",
+            #     arguments = ["0", "0", "0", "0", "0", "0", "camera_odom", "base_footprint"],
+            #     name = "obstacle_detector_to_lidar"
+            # ),
             
             ## Link to torches, which depend on robot color. TODO Switch color in Makefile
             Node(

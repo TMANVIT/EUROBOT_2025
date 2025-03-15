@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from obstacle_detector.msg import Obstacles
 from visualization_msgs.msg import Marker, MarkerArray
 from std_msgs.msg import ColorRGBA
@@ -48,7 +48,7 @@ class LidarLocalization(Node):
         # set debug mode
         self.beacon_no = 0
 
-        self.lidar_pose_pub = self.create_publisher(PoseStamped, '/lidar_pose', 10)
+        self.lidar_pose_pub = self.create_publisher(PoseWithCovarianceStamped, '/lidar_pose', 10)
         if self.visualize_candidate:
             self.circles_pub = self.create_publisher(MarkerArray, '/candidates', 10)
         self.subscription = self.create_subscription(
@@ -317,14 +317,14 @@ class LidarLocalization(Node):
                 self.lidar_pose_msg.pose.orientation.y = 0.0
                 self.lidar_pose_msg.pose.orientation.z = np.sin(lidar_pose[2] / 2)
                 self.lidar_pose_msg.pose.orientation.w = np.cos(lidar_pose[2] / 2)
-                # self.lidar_pose_msg.pose.covariance = [
-                #     lidar_cov[0, 0], 0.0, 0.0, 0.0, 0.0, 0.0,# TODO: compensation
-                #     0.0, lidar_cov[1, 1], 0.0, 0.0, 0.0, 0.0,
-                #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                #     0.0, 0.0, 0.0, 0.0, 0.0, lidar_cov[2, 2]
-                # ]
+                self.lidar_pose_msg.pose.covariance = [
+                    lidar_cov[0, 0], 0.0, 0.0, 0.0, 0.0, 0.0,# TODO: compensation
+                    0.0, lidar_cov[1, 1], 0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0, 0.0, lidar_cov[2, 2]
+                ]
                 self.get_logger().debug(f"lidar_pose: {lidar_pose}")
                 self.lidar_pose_pub.publish(self.lidar_pose_msg)
                 # self.get_logger().debug("Published lidar_pose message")
