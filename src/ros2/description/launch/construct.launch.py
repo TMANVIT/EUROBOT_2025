@@ -24,6 +24,14 @@ def generate_launch_description():
             "camera_localization.launch.py",
         ]
     )
+    
+    lidar_localization_launch_path = PathJoinSubstitution(
+        [
+            FindPackageShare("lidar_localization"),
+            "launch",
+            "lidar_localization.launch.py",
+        ]
+    )
 
     static_transform_launch_path = PathJoinSubstitution(
         [
@@ -77,6 +85,9 @@ def generate_launch_description():
             ),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(static_transform_launch_path)
+            ),
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(lidar_localization_launch_path)
             ),
         ]
     )

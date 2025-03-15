@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 
-from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from obstacle_detector.msg import Obstacles
 from visualization_msgs.msg import Marker, MarkerArray
 from std_msgs.msg import ColorRGBA
@@ -57,7 +57,7 @@ class LidarLocalization(Node):
             self.obstacle_callback,
             10)
         self.subscription = self.create_subscription(
-            PoseStamped, 
+            PoseWithCovarianceStamped, 
             '/pred_pose',
             self.pred_pose_callback,
             10
@@ -71,7 +71,7 @@ class LidarLocalization(Node):
         self.P_pred = []
         self.newPose = False
         self.R = np.array([[0.05**2, 0.0], [0.0, 0.05**2]]) # R: measurement noise; TODO: tune the value
-        self.lidar_pose_msg = PoseStamped()
+        self.lidar_pose_msg = PoseWithCovarianceStamped()
     
     def obstacle_callback(self, msg):
         self.get_logger().debug('obstacle detected')
@@ -98,10 +98,10 @@ class LidarLocalization(Node):
         self.get_logger().debug("Robot pose callback triggered")
         self.newPose = True
         quat = [
-            msg.pose.orientation.x,
-            msg.pose.orientation.y,
-            msg.pose.orientation.z,
-            msg.pose.orientation.w
+            msg.pose.pose.orientation.x,
+            msg.pose.pose.orientation.y,
+            msg.pose.pose.orientation.z,
+            msg.pose.pose.orientation.w
         ]
         yaw = R.from_quat(quat).as_euler(seq='xyz', degrees=False)[2]
 
@@ -109,17 +109,12 @@ class LidarLocalization(Node):
         if yaw < 0:
             yaw += 2 * np.pi
         
-        self.robot_pose = np.array([msg.pose.position.x, msg.pose.position.y, yaw])
+        self.robot_pose = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y, yaw])
         self.P_pred = np.array([
-            [0.1, 0, 0],
-            [0, 0.15, 0],
-            [0, 0, 0.15]
+            [msg.pose.covariance[0], 0, 0],
+            [0, msg.pose.covariance[7], 0],
+            [0, 0, msg.pose.covariance[35]]
         ])
-        # self.P_pred = np.array([
-        #     [msg.pose.covariance[0], 0, 0],
-        #     [0, msg.pose.covariance[7], 0],
-        #     [0, 0, msg.pose.covariance[35]]
-        # ])
 
     def init_landmarks_map(self):
         geometry_description_map = {}
@@ -309,14 +304,14 @@ class LidarLocalization(Node):
 
                 # publish the lidar pose
                 self.lidar_pose_msg.header.stamp = self.get_clock().now().to_msg()
-                self.lidar_pose_msg.header.frame_id = 'map' 
-                self.lidar_pose_msg.pose.position.x = lidar_pose[0]
-                self.lidar_pose_msg.pose.position.y = lidar_pose[1]
-                self.lidar_pose_msg.pose.position.z = 0.0
-                self.lidar_pose_msg.pose.orientation.x = 0.0
-                self.lidar_pose_msg.pose.orientation.y = 0.0
-                self.lidar_pose_msg.pose.orientation.z = np.sin(lidar_pose[2] / 2)
-                self.lidar_pose_msg.pose.orientation.w = np.cos(lidar_pose[2] / 2)
+                self.lidar_pose_msg.header.frame_id = 'lidar_odom' 
+                self.lidar_pose_msg.pose.pose.position.x = lidar_pose[0]
+                self.lidar_pose_msg.pose.pose.position.y = lidar_pose[1]
+                self.lidar_pose_msg.pose.pose.position.z = 0.0
+                self.lidar_pose_msg.pose.pose.orientation.x = 0.0
+                self.lidar_pose_msg.pose.pose.orientation.y = 0.0
+                self.lidar_pose_msg.pose.pose.orientation.z = np.sin(lidar_pose[2] / 2)
+                self.lidar_pose_msg.pose.pose.orientation.w = np.cos(lidar_pose[2] / 2)
                 self.lidar_pose_msg.pose.covariance = [
                     lidar_cov[0, 0], 0.0, 0.0, 0.0, 0.0, 0.0,# TODO: compensation
                     0.0, lidar_cov[1, 1], 0.0, 0.0, 0.0, 0.0,
@@ -339,22 +334,8 @@ class LidarLocalization(Node):
     def get_geometry_consistency(self, beacons):
         geometry_description = {}
         consistency = 1.0
-        lenB = len(beacons)
 
-        # lenB can be 2, 3 or 4]
-                msg.pose.orientation.w = self.quat[3]
-                if self.ourRobot:
-                    if self.counter == 0:
-                        self.initial_pose_msg = msg
-                        self.initial_pose_publisher.publish(msg)
-                        self.counter = 1
-                    self.pose_publisher.publish(msg)
-                else:
-                    self.enemy_pose_publisher.publish(msg)
-
-    def broadcast_initialpose(self):
-        if self.initial_pose_msg is not None:
-            self.initial_pose_msg.header.stamp = sel
+        # lenB can be 2, 3 or 4
         # use the index of the beacons to calculate the distance between them
         for i in beacons:
             for j in beacons:
@@ -368,6 +349,22 @@ class LidarLocalization(Node):
                 # if the index is not found in map, it is probably on the lower triangle of the matrix
 
         return consistency
+
+    # def broadcast_initialpose(self):
+    #     if self.initial_pose_msg is not None:
+    #         self.initial_pose_msg.header.stamp = sel
+    #     # use the index of the beacons to calculate the distance between them
+    #     for i in beacons:
+    #         for j in beacons:
+    #             if i == j:
+    #                 continue
+    #             geometry_description[(i, j)] = np.linalg.norm(beacons[i] - beacons[j])
+    #             # self.get_logger().debug(f"Beacon {i} to Beacon {j} # TODO: compensationdistance: {geometry_description[(i, j)]}")
+    #             if (i, j) in self.geometry_description_map:
+    #                 expected_distance = self.geometry_description_map[(i, j)]
+    #                 consistency *= 1 - np.abs(geometry_description[(i, j)] - expected_distance) / expected_distance
+    #             # if the index is not found in map, it is probably on the lower triangle of the matrix
+    #   return consistency
 
 def angle_limit_checking(theta):
     while theta > np.pi:
