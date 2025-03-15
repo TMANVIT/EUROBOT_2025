@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float64
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from tf2_ros import TransformBroadcaster
 from geometry_msgs.msg import TransformStamped
 
@@ -18,18 +18,18 @@ class PredPublisher(Node):
         self.pose_pred.pose.orientation.y = 0.0
         self.pose_pred.pose.orientation.z = 0.0
         self.pose_pred.pose.orientation.w = 1.0
-        # self.pose_pred.pose.covariance = [0.0] * 36
-        # self.pose_pred.pose.covariance[0] = 0.0025
-        # self.pose_pred.pose.covariance[7] = 0.0025
-        # self.pose_pred.pose.covariance[35] = 0.25
+        self.pose_pred.pose.covariance = [0.0] * 36
+        self.pose_pred.pose.covariance[0] = 0.0025
+        self.pose_pred.pose.covariance[7] = 0.0025
+        self.pose_pred.pose.covariance[35] = 0.25
         self.init_pose_detected = False
 
         self.init_pose = self.create_subscription(
             PoseStamped, "/initialpose", self.initpose_callback, 10
         )
-        self.pub = self.create_publisher(PoseStamped, "/pred_pose", 10)
+        self.pub = self.create_publisher(PoseWithCovarianceStamped, "/pred_pose", 10)
         self.sub = self.create_subscription(
-            PoseStamped, "/lidar_pose", self.param_callback, 10
+            PoseWithCovarianceStamped, "/lidar_pose", self.param_callback, 10
         )
 
         self.br = TransformBroadcaster(self)
@@ -50,7 +50,7 @@ class PredPublisher(Node):
         t = TransformStamped()
         t.header.stamp = self.get_clock().now().to_msg()
         t.header.frame_id = "map"
-        t.child_frame_id = "robot_predict"
+        t.child_frame_id = "lidar_odom"
         t.transform.translation.x = self.pose_pred.pose.position.x
         t.transform.translation.y = self.pose_pred.pose.position.y
         t.transform.translation.z = self.pose_pred.pose.position.z

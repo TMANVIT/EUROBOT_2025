@@ -5,3 +5,4 @@ lidar_localization_node:
     visualize_candidate: true
     likelihood_threshold: 0.001
     consistency_threshold: 0.7
+    frame_id: lidar_odom

@@ -11,6 +11,9 @@ def generate_launch_description():
     lidar_launch_path = PathJoinSubstitution(
         [FindPackageShare('sllidar_ros2'), 'launch', 'sllidar_s3_launch.py']
     )   
+    servo_params = PathJoinSubstitution(
+        [FindPackageShare("servo_control"), "config", "servo_control.yaml"]
+    )
         
     return LaunchDescription([
         
@@ -44,6 +47,14 @@ def generate_launch_description():
             name='micro_ros_agent',
             output='screen',
             arguments=['serial', '--dev', LaunchConfiguration("Pico 1"), '--baudrate', LaunchConfiguration("micro_ros_baudrate")]
+        ),
+        
+        Node(
+                package="servo_control",
+                executable="servo_control_node",
+                name="servo_control_node",
+                output="screen",
+                parameters=[servo_params],
         ),
         
         IncludeLaunchDescription(
