@@ -1,0 +1,6 @@
+servo_control_node:
+  ros__parameters:
+    port: '/dev/ttyUSB0'
+    baudrate: 115200
+    servo_speed: 4500
+    servo_accel: 50

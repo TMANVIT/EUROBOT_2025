@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from obstacle_detector.msg import Obstacles
 from visualization_msgs.msg import Marker, MarkerArray
 from std_msgs.msg import ColorRGBA
@@ -22,6 +22,7 @@ class LidarLocalization(Node):
         self.declare_parameter('visualize_candidate', True)
         self.declare_parameter('likelihood_threshold', 0.001)
         self.declare_parameter('consistency_threshold', 0.9)
+        self.declare_parameter('frame_id', 'lidar_odom')
 
         # Get parameters
         self.side = self.get_parameter('side').get_parameter_value().integer_value
@@ -29,6 +30,7 @@ class LidarLocalization(Node):
         self.visualize_candidate = self.get_parameter('visualize_candidate').get_parameter_value().bool_value
         self.likelihood_threshold = self.get_parameter('likelihood_threshold').get_parameter_value().double_value
         self.consistency_threshold = self.get_parameter('consistency_threshold').get_parameter_value().double_value
+        self.frame_id = self.get_parameter('frame_id').get_parameter_value().string_value
 
         # Set the landmarks map based on the side
         if self.side == 0:
@@ -46,7 +48,7 @@ class LidarLocalization(Node):
         # set debug mode
         self.beacon_no = 0
 
-        self.lidar_pose_pub = self.create_publisher(PoseStamped, '/lidar_pose', 10)
+        self.lidar_pose_pub = self.create_publisher(PoseWithCovarianceStamped, '/lidar_pose', 10)
         if self.visualize_candidate:
             self.circles_pub = self.create_publisher(MarkerArray, '/candidates', 10)
         self.subscription = self.create_subscription(
@@ -55,7 +57,7 @@ class LidarLocalization(Node):
             self.obstacle_callback,
             10)
         self.subscription = self.create_subscription(
-            PoseStamped, 
+            PoseWithCovarianceStamped, 
             '/pred_pose',
             self.pred_pose_callback,
             10
@@ -69,7 +71,7 @@ class LidarLocalization(Node):
         self.P_pred = []
         self.newPose = False
         self.R = np.array([[0.05**2, 0.0], [0.0, 0.05**2]]) # R: measurement noise; TODO: tune the value
-        self.lidar_pose_msg = PoseStamped()
+        self.lidar_pose_msg = PoseWithCovarianceStamped()
     
     def obstacle_callback(self, msg):
         self.get_logger().debug('obstacle detected')
@@ -96,10 +98,10 @@ class LidarLocalization(Node):
         self.get_logger().debug("Robot pose callback triggered")
         self.newPose = True
         quat = [
-            msg.pose.orientation.x,
-            msg.pose.orientation.y,
-            msg.pose.orientation.z,
-            msg.pose.orientation.w
+            msg.pose.pose.orientation.x,
+            msg.pose.pose.orientation.y,
+            msg.pose.pose.orientation.z,
+            msg.pose.pose.orientation.w
         ]
         yaw = R.from_quat(quat).as_euler(seq='xyz', degrees=False)[2]
 
@@ -107,17 +109,12 @@ class LidarLocalization(Node):
         if yaw < 0:
             yaw += 2 * np.pi
         
-        self.robot_pose = np.array([msg.pose.position.x, msg.pose.position.y, yaw])
+        self.robot_pose = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y, yaw])
         self.P_pred = np.array([
-            [0.1, 0, 0],
-            [0, 0.15, 0],
-            [0, 0, 0.15]
+            [msg.pose.covariance[0], 0, 0],
+            [0, msg.pose.covariance[7], 0],
+            [0, 0, msg.pose.covariance[35]]
         ])
-        # self.P_pred = np.array([
-        #     [msg.pose.covariance[0], 0, 0],
-        #     [0, msg.pose.covariance[7], 0],
-        #     [0, 0, msg.pose.covariance[35]]
-        # ])
 
     def init_landmarks_map(self):
         geometry_description_map = {}
@@ -171,7 +168,7 @@ class LidarLocalization(Node):
                 obs_candidates.append({'position': obs, 'probability': likelihood})
                 if self.visualize_candidate and self.beacon_no == 1:
                     marker = Marker()
-                    marker.header.frame_id = "robot_predict"
+                    marker.header.frame_id = self.frame_id
                     marker.header.stamp = self.get_clock().now().to_msg()
                     marker.ns = "candidates"
                     marker.type = Marker.SPHERE
@@ -181,7 +178,7 @@ class LidarLocalization(Node):
                     marker.scale.z = 0.01
 
                     text_marker = Marker()
-                    text_marker.header.frame_id = "robot_predict"
+                    text_marker.header.frame_id = self.frame_id
                     text_marker.header.stamp = self.get_clock().now().to_msg()
                     text_marker.ns = "text"
                     text_marker.type = Marker.TEXT_VIEW_FACING
@@ -275,7 +272,7 @@ class LidarLocalization(Node):
         if len(self.landmarks_set[max_likelihood_idx]['beacons']) >= 3:
             beacons = [self.landmarks_set[max_likelihood_idx]['beacons'][i] for i in range(3)]
             A = np.zeros((2, 2))
-            b = np.zeros(2)
+            b = np.zeros(2)# TODO: compensation
             dist_beacon_robot = [np.linalg.norm(beacon) for beacon in beacons]
 
             A[0, 0] = 2 * (self.landmarks_map[0][0] - self.landmarks_map[2][0])
@@ -306,23 +303,23 @@ class LidarLocalization(Node):
                 lidar_cov[2, 2] /= max_likelihood
 
                 # publish the lidar pose
-                self.lidar_pose_msg.header.stamp = self.get_clock().now().to_msg() # TODO: compensation
-                self.lidar_pose_msg.header.frame_id = 'map' #TODO: param
-                self.lidar_pose_msg.pose.position.x = lidar_pose[0]
-                self.lidar_pose_msg.pose.position.y = lidar_pose[1]
-                self.lidar_pose_msg.pose.position.z = 0.0
-                self.lidar_pose_msg.pose.orientation.x = 0.0
-                self.lidar_pose_msg.pose.orientation.y = 0.0
-                self.lidar_pose_msg.pose.orientation.z = np.sin(lidar_pose[2] / 2)
-                self.lidar_pose_msg.pose.orientation.w = np.cos(lidar_pose[2] / 2)
-                # self.lidar_pose_msg.pose.covariance = [
-                #     lidar_cov[0, 0], 0.0, 0.0, 0.0, 0.0, 0.0,
-                #     0.0, lidar_cov[1, 1], 0.0, 0.0, 0.0, 0.0,
-                #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                #     0.0, 0.0, 0.0, 0.0, 0.0, lidar_cov[2, 2]
-                # ]
+                self.lidar_pose_msg.header.stamp = self.get_clock().now().to_msg()
+                self.lidar_pose_msg.header.frame_id = 'lidar_odom' 
+                self.lidar_pose_msg.pose.pose.position.x = lidar_pose[0]
+                self.lidar_pose_msg.pose.pose.position.y = lidar_pose[1]
+                self.lidar_pose_msg.pose.pose.position.z = 0.0
+                self.lidar_pose_msg.pose.pose.orientation.x = 0.0
+                self.lidar_pose_msg.pose.pose.orientation.y = 0.0
+                self.lidar_pose_msg.pose.pose.orientation.z = np.sin(lidar_pose[2] / 2)
+                self.lidar_pose_msg.pose.pose.orientation.w = np.cos(lidar_pose[2] / 2)
+                self.lidar_pose_msg.pose.covariance = [
+                    lidar_cov[0, 0], 0.0, 0.0, 0.0, 0.0, 0.0,# TODO: compensation
+                    0.0, lidar_cov[1, 1], 0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0, 0.0, lidar_cov[2, 2]
+                ]
                 self.get_logger().debug(f"lidar_pose: {lidar_pose}")
                 self.lidar_pose_pub.publish(self.lidar_pose_msg)
                 # self.get_logger().debug("Published lidar_pose message")
@@ -337,7 +334,6 @@ class LidarLocalization(Node):
     def get_geometry_consistency(self, beacons):
         geometry_description = {}
         consistency = 1.0
-        lenB = len(beacons)
 
         # lenB can be 2, 3 or 4
         # use the index of the beacons to calculate the distance between them
@@ -346,13 +342,29 @@ class LidarLocalization(Node):
                 if i == j:
                     continue
                 geometry_description[(i, j)] = np.linalg.norm(beacons[i] - beacons[j])
-                # self.get_logger().debug(f"Beacon {i} to Beacon {j} distance: {geometry_description[(i, j)]}")
+                # self.get_logger().debug(f"Beacon {i} to Beacon {j} # TODO: compensationdistance: {geometry_description[(i, j)]}")
                 if (i, j) in self.geometry_description_map:
                     expected_distance = self.geometry_description_map[(i, j)]
                     consistency *= 1 - np.abs(geometry_description[(i, j)] - expected_distance) / expected_distance
                 # if the index is not found in map, it is probably on the lower triangle of the matrix
 
         return consistency
+
+    # def broadcast_initialpose(self):
+    #     if self.initial_pose_msg is not None:
+    #         self.initial_pose_msg.header.stamp = sel
+    #     # use the index of the beacons to calculate the distance between them
+    #     for i in beacons:
+    #         for j in beacons:
+    #             if i == j:
+    #                 continue
+    #             geometry_description[(i, j)] = np.linalg.norm(beacons[i] - beacons[j])
+    #             # self.get_logger().debug(f"Beacon {i} to Beacon {j} # TODO: compensationdistance: {geometry_description[(i, j)]}")
+    #             if (i, j) in self.geometry_description_map:
+    #                 expected_distance = self.geometry_description_map[(i, j)]
+    #                 consistency *= 1 - np.abs(geometry_description[(i, j)] - expected_distance) / expected_distance
+    #             # if the index is not found in map, it is probably on the lower triangle of the matrix
+    #   return consistency
 
 def angle_limit_checking(theta):
     while theta > np.pi:

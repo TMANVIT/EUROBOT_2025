@@ -36,6 +36,5 @@ if [ "$MAKE_MAP" == true ]; then
   ros2 launch navigation slam.launch.py
 else
   echo "Launching navigation with map..."
-  ros2 launch navigation navigation.launch.py &
-  ros2 launch lidar_localization lidar_localization.launch.py
+  ros2 launch navigation navigation.launch.py
 fi
