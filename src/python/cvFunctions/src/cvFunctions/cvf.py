@@ -14,26 +14,36 @@ class Camera():
         self.config = read_config(config_path)
         self.camera_matrix = np.array(self.config["camera_matrix"], dtype=np.float64)
         self.dist_coefs = np.array(self.config["dist_coeff"], dtype=np.float64)
-        # self.newcameramatrix, roi = cv2.getOptimalNewCameraMatrix(self.camera_matrix, self.dist_coefs, (1600, 896), 0.5, (1600, 896))
+        self.newcameramatrix, roi = cv2.getOptimalNewCameraMatrix(self.camera_matrix, self.dist_coefs, (1600, 896), 0.5, (1600, 896))
         self.robot_id = self.config["robot_id"]
 
+        # Настройка параметров детекции ArUco
         self.arucoParams = cv2.aruco.DetectorParameters()
         self.arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)
         self.detector = cv2.aruco.ArucoDetector(self.arucoDict, self.arucoParams)
-    
+
+        # Оптимизированные параметры для уменьшения шума и повышения точности
+        self.arucoParams.adaptiveThreshWinSizeMin = 3      # Минимальный размер окна адаптивной пороговой обработки
+        self.arucoParams.adaptiveThreshWinSizeMax = 23     # Максимальный размер окна адаптивной пороговой обработки
+        self.arucoParams.adaptiveThreshWinSizeStep = 10    # Шаг изменения размера окна
+        self.arucoParams.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX  # Уточнение углов с субпиксельной точностью
+        self.arucoParams.cornerRefinementWinSize = 5       # Размер окна для уточнения углов
+        self.arucoParams.minMarkerPerimeterRate = 0.1      # Минимальный периметр маркера относительно изображения
+        self.arucoParams.polygonalApproxAccuracyRate = 0.05 # Точность аппроксимации контура маркера
+        self.arucoParams.markerBorderBits = 1              # Толщина границы маркера (по умолчанию 1)
+
     def prepare_image(self, img):
+        # Улучшенная подготовка изображения для уменьшения шума
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        # gray = cv2.undistort(gray, self.camera_matrix, self.dist_coefs, None, self.newcameramatrix)
-        # gray = cv2.normalize(gray, None, 1.0, 255, cv2.NORM_MINMAX, dtype = cv2.CV_8U)
-        # gray = cv2.medianBlur(gray, 5)
-        # gray, prepared_img = cv2.threshold(gray, 200,220,cv2.THRESH_BINARY)
+        # gray = cv2.GaussianBlur(gray, (5, 5), 0)           # Сглаживание шума с помощью Гауссова фильтра
+        # gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)  # Адаптивная бинаризация
         return gray
     
     def detect_markers(self, img):
         tvecDictionary = {}
         transMatrixDictionary = {}
         imgToProduse = self.prepare_image(img)
-        corners, ids, rejected = cv2.aruco.detectMarkers(imgToProduse, self.arucoDict, parameters=self.arucoParams)
+        corners, ids, rejected = self.detector.detectMarkers(imgToProduse)  # Используем оптимизированный детектор
     
         if ids is not None:
             ids = list(map(lambda x: x[0], ids))
@@ -43,10 +53,10 @@ class Camera():
                 else:
                     marker_length = 0.1
 
-                # rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], marker_length, cameraMatrix=self.camera_matrix, distCoeffs= None )
-                rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], marker_length, cameraMatrix=self.camera_matrix, distCoeffs= self.dist_coefs )
+                rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], marker_length, 
+                                                                            cameraMatrix=self.camera_matrix, 
+                                                                            distCoeffs=self.dist_coefs)
                 tvecDictionary[ids[i]] = tvec[0][0]
-                
                 transMatrixDictionary[ids[i]] = cv2.Rodrigues(rvec)[0]
         
         return ids, transMatrixDictionary, tvecDictionary  
@@ -55,36 +65,34 @@ class Camera():
         tmatrix = None
         center = None
 
-
-        if(set([20,21,22,23]).issubset(ids)):
-            center = (tvecDict[22]+ tvecDict[20] + tvecDict[23] + tvecDict[21])/4
+        if set([20, 21, 22, 23]).issubset(ids):
+            center = (tvecDict[22] + tvecDict[20] + tvecDict[23] + tvecDict[21]) / 4
             
-            xvec = (tvecDict[22]+ tvecDict[20] - tvecDict[23] - tvecDict[21])*-1
-            xvec = xvec/np.linalg.norm(xvec)
-            yvec = (tvecDict[22]+ tvecDict[23] - tvecDict[20] - tvecDict[21])*-1
-            yvec = yvec/np.linalg.norm(yvec)
+            xvec = (tvecDict[22] + tvecDict[20] - tvecDict[23] - tvecDict[21]) * -1
+            xvec = xvec / np.linalg.norm(xvec)
+            yvec = (tvecDict[22] + tvecDict[23] - tvecDict[20] - tvecDict[21]) * -1
+            yvec = yvec / np.linalg.norm(yvec)
             zvec = np.cross(xvec, yvec)
-
+            zvec = zvec / np.linalg.norm(zvec)  # Нормализация zvec для стабильности
+            
             tmatrix = np.array([xvec, yvec, zvec])
 
         return tmatrix, center 
         
     def robots_tracking(self, ids, transMatrixDict, tvecDict, tmatrix, center):
-        # if self.robot_id in ids:
-            # i = self.robot_id
         for i in ids:
             if i in range(11):
-                rvec = tvecDict[i]- center
+                rvec = tvecDict[i] - center
                 robotCoord = [np.dot(rvec, tmatrix[0]), np.dot(rvec, tmatrix[1]), np.dot(rvec, tmatrix[2])]
                 robotTransMatrix = np.linalg.inv(tmatrix) @ transMatrixDict[i]
                 robotTransMatrix[0][2] = 0.0
-                robotTransMatrix[0] = robotTransMatrix[0]/np.linalg.norm(robotTransMatrix[0])
+                robotTransMatrix[0] = robotTransMatrix[0] / np.linalg.norm(robotTransMatrix[0])
                 robotTransMatrix[1][2] = 0.0
-                robotTransMatrix[1] = robotTransMatrix[1]/np.linalg.norm(robotTransMatrix[1])
+                robotTransMatrix[1] = robotTransMatrix[1] / np.linalg.norm(robotTransMatrix[1])
                 robotTransMatrix[2] = [0.0, 0.0, 1.0]
                 
                 r = R.from_matrix(robotTransMatrix)
-                quaternion = (r).as_quat()
+                quaternion = r.as_quat()
                 
                 if i == self.robot_id:
                     ourRobot = True

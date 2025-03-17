@@ -52,7 +52,7 @@ def generate_launch_description():
             Node(
                 package="tf2_ros",
                 executable="static_transform_publisher",
-                arguments=["0", "0", "0", "3.14", "0", "0", "lidar_odom", "laser"],
+                arguments=["0", "0", "0", "3.14", "0", "0", "lidar_link", "laser"],
                 name="lidar_link_to_laser",
             ),
         ]
