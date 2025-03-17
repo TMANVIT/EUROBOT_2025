@@ -33,7 +33,7 @@ ekf_filter_node:
 
         pose0_differential: false
         pose0_relative: false
-        pose0_queue_size: 1
+        pose0_queue_size: 5
 
 
         pose1: /lidar_pose

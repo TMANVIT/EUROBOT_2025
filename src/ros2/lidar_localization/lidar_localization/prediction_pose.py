@@ -19,18 +19,18 @@ class PredPublisher(Node):
         self.pose_pred.pose.pose.orientation.z = 0.0
         self.pose_pred.pose.pose.orientation.w = 1.0
         self.pose_pred.pose.covariance = [0.0] * 36
-        self.pose_pred.pose.covariance[0] = 0.0025
-        self.pose_pred.pose.covariance[7] = 0.0025
-        self.pose_pred.pose.covariance[35] = 0.25
+        self.pose_pred.pose.covariance[0] = 0.5
+        self.pose_pred.pose.covariance[7] = 0.5
+        self.pose_pred.pose.covariance[35] = 0.5
         self.init_pose_detected = False
 
         self.init_pose = self.create_subscription(
             PoseWithCovarianceStamped, "/initialpose", self.initpose_callback, 10
         )
         self.pub = self.create_publisher(PoseWithCovarianceStamped, "/pred_pose", 10)
-        # self.sub = self.create_subscription(
-        #     PoseWithCovarianceStamped, "/lidar_pose", self.param_callback, 10
-        # )
+        self.sub = self.create_subscription(
+            PoseWithCovarianceStamped, "/lidar_pose", self.param_callback, 10
+        )
 
         self.br = TransformBroadcaster(self)
         self.timer = self.create_timer(0.01, self.publish_pose)  # 100Hz
@@ -49,8 +49,8 @@ class PredPublisher(Node):
         # Broadcast static transform from map to robot base
         t = TransformStamped()
         t.header.stamp = self.get_clock().now().to_msg()
-        t.header.frame_id = "odom"
-        t.child_frame_id = "lidar_odom"
+        t.header.frame_id = "map"
+        t.child_frame_id = "lidar_predict"
         t.transform.translation.x = self.pose_pred.pose.pose.position.x
         t.transform.translation.y = self.pose_pred.pose.pose.position.y
         t.transform.translation.z = self.pose_pred.pose.pose.position.z
