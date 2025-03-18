@@ -36,7 +36,7 @@ class Camera():
         # Улучшенная подготовка изображения для уменьшения шума
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # gray = cv2.GaussianBlur(gray, (5, 5), 0)           # Сглаживание шума с помощью Гауссова фильтра
-        # gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)  # Адаптивная бинаризация
+        gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)  # Адаптивная бинаризация
         return gray
     
     def detect_markers(self, img):

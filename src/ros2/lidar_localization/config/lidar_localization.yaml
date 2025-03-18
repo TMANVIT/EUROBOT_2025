@@ -3,6 +3,6 @@ lidar_localization_node:
     side: 0 # 0 - Blue, 1 - Yellow
     debug_mode: false
     visualize_candidate: true
-    likelihood_threshold: 0.0001
+    likelihood_threshold: 0.000001
     consistency_threshold: 0.75
     frame_id: lidar_link
