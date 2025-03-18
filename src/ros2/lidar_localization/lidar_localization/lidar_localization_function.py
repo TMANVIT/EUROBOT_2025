@@ -109,7 +109,7 @@ class LidarLocalization(Node):
                     [self.predict_transform.transform.rotation.x,
                     self.predict_transform.transform.rotation.y,
                     self.predict_transform.transform.rotation.z,
-                    self.predict_transform.transform.rotation.w]).as_euler(seq="xyz", degrees=False)
+                    self.predict_transform.transform.rotation.w]).as_euler(seq="xyz", degrees=False)[2]
             self.robot_pose = np.array([
                 self.predict_transform.transform.translation.x,
                 self.predict_transform.transform.translation.y,
@@ -509,7 +509,7 @@ class LidarLocalization(Node):
             
             lidar_pose[0] += relative_transform.transform.translation.x
             lidar_pose[1] += relative_transform.transform.translation.y
-            lidar_pose[2] += R.from_quat([qr[0], qr[1], qr[2], qr[3]]).as_euler(seq='xyz', degrees=False)
+            lidar_pose[2] += R.from_quat([qr[0], qr[1], qr[2], qr[3]]).as_euler(seq='xyz', degrees=False)[2]
         except (LookupException, ConnectivityException, ExtrapolationException) as e:
             self.get_logger().error(f'Could not transform {self.robot_parent_frame_id} to {self.robot_frame_id}: {e}')
             self.get_logger().error("Could not transform the robot pose")
