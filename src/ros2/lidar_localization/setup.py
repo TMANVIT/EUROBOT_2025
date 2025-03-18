@@ -26,6 +26,7 @@ setup(
         'console_scripts': [
             'lidar_localization_node = lidar_localization.lidar_localization_function:main',
             'prediction_pose_node = lidar_localization.prediction_pose:main',
+            'circle_publisher = lidar_localization_pkg.probability_circle_publisher:main',
         ],
     },
 )

@@ -19,9 +19,9 @@ class PredPublisher(Node):
         self.pose_pred.pose.pose.orientation.z = 0.0
         self.pose_pred.pose.pose.orientation.w = 1.0
         self.pose_pred.pose.covariance = [0.0] * 36
-        self.pose_pred.pose.covariance[0] = 0.5
-        self.pose_pred.pose.covariance[7] = 0.5
-        self.pose_pred.pose.covariance[35] = 0.5
+        self.pose_pred.pose.covariance[0] = 0.0025
+        self.pose_pred.pose.covariance[7] = 0.0025
+        self.pose_pred.pose.covariance[35] = 0.25
         self.init_pose_detected = False
 
         self.init_pose = self.create_subscription(
