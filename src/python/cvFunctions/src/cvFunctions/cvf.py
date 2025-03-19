@@ -32,6 +32,19 @@ class Camera():
         self.arucoParams.polygonalApproxAccuracyRate = 0.05 # Точность аппроксимации контура маркера
         self.arucoParams.markerBorderBits = 1              # Толщина границы маркера (по умолчанию 1)
 
+        self.RotSideDict = {
+            55: R.from_euler('xyz', [0.0, -90.0, 0.0], degrees=True).as_matrix(),
+            56: R.from_euler('xyz', [-90.0, 0.0, 0.0], degrees=True).as_matrix(),
+            57: R.from_euler('xyz', [0.0, 90.0, 0.0], degrees=True).as_matrix(),
+            58: R.from_euler('xyz', [90.0, 0.0, 0.0], degrees=True).as_matrix()
+        }
+        self.TvecSideDict = {
+            55: [-0.025, 0.0, 0.025],
+            56: [0.0, 0.025, 0.025],
+            57: [0.025, 0.0, 0.025],
+            58: [0.0, -0.025, 0.025]
+        }
+
     def prepare_image(self, img):
         # Улучшенная подготовка изображения для уменьшения шума
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -47,6 +60,7 @@ class Camera():
     def detect_markers(self, img):
         tvecDictionary = {}
         transMatrixDictionary = {}
+        weightsDictionary = {}
         imgToProduse = self.prepare_image(img)
         corners, ids, rejected = self.detector.detectMarkers(imgToProduse)  # Используем оптимизированный детектор
     
@@ -63,8 +77,9 @@ class Camera():
                                                                             distCoeffs=self.dist_coefs)
                 tvecDictionary[ids[i]] = tvec[0][0]
                 transMatrixDictionary[ids[i]] = cv2.Rodrigues(rvec)[0]
+                weightsDictionary[ids[i]] = abs(transMatrixDictionary[ids[i]][2][2])
         
-        return ids, transMatrixDictionary, tvecDictionary  
+        return ids, transMatrixDictionary, tvecDictionary, weightsDictionary
     
     def t_matrix_building(self, ids, tvecDict):
         tmatrix = None
@@ -84,26 +99,47 @@ class Camera():
 
         return tmatrix, center 
         
-    def robots_tracking(self, ids, transMatrixDict, tvecDict, tmatrix, center):
+    def robots_tracking(self, ids, transMatrixDict, tvecDict, weightsDictionary, tmatrix, center):
+        ourRobot = False
+        tvecArray = np.array()
+        rvecArray = np.array()
+        weightsArray = np.array()
         for i in ids:
-            if i in range(11):
+            if i in list(range(11))+self.RotSideDict.keys():
                 rvec = tvecDict[i] - center
                 robotCoord = [np.dot(rvec, tmatrix[0]), np.dot(rvec, tmatrix[1]), np.dot(rvec, tmatrix[2])]
                 robotTransMatrix = np.linalg.inv(tmatrix) @ transMatrixDict[i]
+                if i in self.RotSideDict.keys():
+                    robotCoord += self.TvecSideDict[i]
+                    robotTransMatrix = robotTransMatrix @ self.RotSideDict[i]
                 robotTransMatrix[0][2] = 0.0
                 robotTransMatrix[0] = robotTransMatrix[0] / np.linalg.norm(robotTransMatrix[0])
                 robotTransMatrix[1][2] = 0.0
                 robotTransMatrix[1] = robotTransMatrix[1] / np.linalg.norm(robotTransMatrix[1])
                 robotTransMatrix[2] = [0.0, 0.0, 1.0]
                 
-                r = R.from_matrix(robotTransMatrix)
-                quaternion = r.as_quat()
-                
-                if i == self.robot_id:
-                    ourRobot = True
-                else:
-                    ourRobot = False
+                tvecArray.append(robotCoord)
+                rvecArray.append(robotTransMatrix)
+                weightsArray.append(weightsDictionary[i])
 
-                return robotCoord, quaternion, ourRobot
+                
+                if i == self.robot_id or i in self.RotSideDict.keys():
+                    ourRobot = True
+
+        if not ourRobot:
+            return None, None, None
+        
+        if len(tvecArray) == 1:
+            r = R.from_matrix(rvecArray[0])
+            quaternion = r.as_quat()
+            robotCoordAver = tvecArray[0]
+        else:
+            weightsArray = weightsArray/sum(weightsArray)
+            robotCoordAver = np.mean(tvecArray)
+            AverTrans = np.average(rvecArray, axis=0, weights=weightsArray)
+            r = R.from_matrix(AverTrans)
+            quaternion = r.as_quat()
+
+        return robotCoordAver, quaternion, ourRobot
             
-        return None, None, None
+        

@@ -56,7 +56,7 @@ class BEVPosePublisher(Node):
         cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
         
         # Process the image
-        ids, transMatrixDict, tvecDict = self.camera.detect_markers(cv_image)
+        ids, transMatrixDict, tvecDict, weightsDict = self.camera.detect_markers(cv_image)
 
         if ids is not None:
             tmatrix_new, center_new = self.camera.t_matrix_building(ids, tvecDict)
@@ -66,7 +66,7 @@ class BEVPosePublisher(Node):
                 else:
                     self.tmatrix, self.center = 0.1*(tmatrix_new-self.tmatrix) + self.tmatrix, 0.1*(center_new-self.center) + self.center
             if self.tmatrix is not None:
-                self.robotCoord, self.quat, self.ourRobot = self.camera.robots_tracking(ids, transMatrixDict, tvecDict, self.tmatrix, self.center)
+                self.robotCoord, self.quat, self.ourRobot = self.camera.robots_tracking(ids, transMatrixDict, tvecDict, weightsDict, self.tmatrix, self.center)
             if self.robotCoord is not None:
                 # Преобразуем кватернионы в углы Эйлера (roll, pitch, yaw) с помощью scipy
                 rotation = Rotation.from_quat(self.quat)  # self.quat в формате [x, y, z, w]
