@@ -36,7 +36,7 @@ class BEVPosePublisher(Node):
         self.ourRobot = None
 
         # Скользящее окно для вычисления ковариации (60 кадров ~ 2 сек при 30 Гц)
-        self.window_size = 60
+        self.window_size = 15
         self.data_window = deque(maxlen=self.window_size)  # Для всех данных [x, y, z, roll, pitch, yaw]
 
     def ensure_positive_semidefinite(self, matrix, epsilon=1e-6):

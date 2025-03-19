@@ -35,8 +35,13 @@ class Camera():
     def prepare_image(self, img):
         # Улучшенная подготовка изображения для уменьшения шума
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        # gray = cv2.GaussianBlur(gray, (5, 5), 0)           # Сглаживание шума с помощью Гауссова фильтра
-        gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)  # Адаптивная бинаризация
+        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+        # gray = clahe.apply(gray)
+        # gray = cv2.GaussianBlur(gray, (3, 3), 0)
+        gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 21, 1)
+
+
+        
         return gray
     
     def detect_markers(self, img):
