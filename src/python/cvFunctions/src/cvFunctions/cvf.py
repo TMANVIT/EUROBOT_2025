@@ -69,6 +69,8 @@ class Camera():
             for i in range(len(ids)):
                 if ids[i] in range(10):
                     marker_length = 0.069
+                elif ids[i] in self.RotSideDict.keys():
+                    marker_length = 0.05
                 else:
                     marker_length = 0.1
 
@@ -101,11 +103,13 @@ class Camera():
         
     def robots_tracking(self, ids, transMatrixDict, tvecDict, weightsDictionary, tmatrix, center):
         ourRobot = False
-        tvecArray = np.array()
-        rvecArray = np.array()
-        weightsArray = np.array()
+        enemyCoord = None
+        enemyQuat = None
+        tvecArray = []
+        rvecArray = []
+        weightsArray = []
         for i in ids:
-            if i in list(range(11))+self.RotSideDict.keys():
+            if i in list(range(11))+list(self.RotSideDict.keys()):
                 rvec = tvecDict[i] - center
                 robotCoord = [np.dot(rvec, tmatrix[0]), np.dot(rvec, tmatrix[1]), np.dot(rvec, tmatrix[2])]
                 robotTransMatrix = np.linalg.inv(tmatrix) @ transMatrixDict[i]
@@ -118,28 +122,35 @@ class Camera():
                 robotTransMatrix[1] = robotTransMatrix[1] / np.linalg.norm(robotTransMatrix[1])
                 robotTransMatrix[2] = [0.0, 0.0, 1.0]
                 
-                tvecArray.append(robotCoord)
-                rvecArray.append(robotTransMatrix)
-                weightsArray.append(weightsDictionary[i])
-
+            
                 
                 if i == self.robot_id or i in self.RotSideDict.keys():
                     ourRobot = True
+                    tvecArray.append(robotCoord)
+                    rvecArray.append(robotTransMatrix)
+                    weightsArray.append(weightsDictionary[i])
+                else:
+                    enemyCoord = robotCoord
+                    r = R.from_matrix(robotTransMatrix)
+                    enemyQuat = r.as_quat()
 
         if not ourRobot:
-            return None, None, None
-        
-        if len(tvecArray) == 1:
+            robotCoordAver = None
+            quaternion = None
+        elif len(tvecArray) == 1:
             r = R.from_matrix(rvecArray[0])
             quaternion = r.as_quat()
             robotCoordAver = tvecArray[0]
         else:
-            weightsArray = weightsArray/sum(weightsArray)
-            robotCoordAver = np.mean(tvecArray)
-            AverTrans = np.average(rvecArray, axis=0, weights=weightsArray)
+            weightsSum = sum(weightsArray)
+            for i in range(len(weightsArray)):
+                weightsArray[i] =  weightsArray[i]/weightsSum
+            
+            robotCoordAver = np.mean(np.array(tvecArray))
+            AverTrans = np.average(np.array(rvecArray), axis=0, weights=weightsArray)
             r = R.from_matrix(AverTrans)
             quaternion = r.as_quat()
 
-        return robotCoordAver, quaternion, ourRobot
+        return robotCoordAver, quaternion, enemyCoord, enemyQuat
             
         

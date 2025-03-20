@@ -33,7 +33,8 @@ class BEVPosePublisher(Node):
         self.robotCoord = None
         self.quat = None
 
-        self.ourRobot = None
+        self.enemyCoord = None
+        self.enemyQuat = None
 
         # Скользящее окно для вычисления ковариации (60 кадров ~ 2 сек при 30 Гц)
         self.window_size = 15
@@ -66,7 +67,8 @@ class BEVPosePublisher(Node):
                 else:
                     self.tmatrix, self.center = 0.1*(tmatrix_new-self.tmatrix) + self.tmatrix, 0.1*(center_new-self.center) + self.center
             if self.tmatrix is not None:
-                self.robotCoord, self.quat, self.ourRobot = self.camera.robots_tracking(ids, transMatrixDict, tvecDict, weightsDict, self.tmatrix, self.center)
+                self.robotCoord, self.quat, self.enemyCoord, self.enemyQuat = self.camera.robots_tracking(ids, transMatrixDict, tvecDict, weightsDict, self.tmatrix, self.center)
+            
             if self.robotCoord is not None:
                 # Преобразуем кватернионы в углы Эйлера (roll, pitch, yaw) с помощью scipy
                 rotation = Rotation.from_quat(self.quat)  # self.quat в формате [x, y, z, w]
@@ -111,14 +113,24 @@ class BEVPosePublisher(Node):
                     covariance_matrix[5, 5] = 0.25    # sigma_yaw^2 
                     pose_msg.pose.covariance = covariance_matrix.flatten().tolist()
 
-                # Публикуем сообщение
-                if self.ourRobot:
-                    if self.counter == 0:
-                        self.initial_pose_publisher.publish(pose_msg)
-                        self.counter = 1
-                    self.pose_publisher.publish(pose_msg)
-                else:
-                    self.enemy_pose_publisher.publish(pose_msg)
+                if self.counter == 0:
+                    self.initial_pose_publisher.publish(pose_msg)
+                    self.counter = 1
+                self.pose_publisher.publish(pose_msg)
+
+
+            if self.enemyCoord is not None:
+                pose_msg = PoseWithCovarianceStamped()
+                pose_msg.header = Header(frame_id='map', stamp=self.get_clock().now().to_msg())
+                pose_msg.pose.pose.position.x = float(self.enemyCoord[0])
+                pose_msg.pose.pose.position.y = float(self.enemyCoord[1])
+                pose_msg.pose.pose.position.z = float(self.enemyCoord[2])
+                pose_msg.pose.pose.orientation.x = self.enemyQuat[0]
+                pose_msg.pose.pose.orientation.y = self.enemyQuat[1]
+                pose_msg.pose.pose.orientation.z = self.enemyQuat[2]
+                pose_msg.pose.pose.orientation.w = self.enemyQuat[3]
+
+                self.enemy_pose_publisher.publish(pose_msg)
 
 def main(args=None):
     rclpy.init(args=args)
