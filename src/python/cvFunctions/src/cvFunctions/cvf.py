@@ -125,8 +125,9 @@ class Camera():
             
                 
                 if i == self.robot_id or i in self.RotSideDict.keys():
+                    print(i, robotCoord, robotTransMatrix)
                     ourRobot = True
-                    tvecArray.append(robotCoord)
+                    tvecArray.append(np.array(robotCoord))
                     rvecArray.append(robotTransMatrix)
                     weightsArray.append(weightsDictionary[i])
                 else:
@@ -146,7 +147,8 @@ class Camera():
             for i in range(len(weightsArray)):
                 weightsArray[i] =  weightsArray[i]/weightsSum
             
-            robotCoordAver = np.mean(np.array(tvecArray))
+            print(tvecArray)
+            robotCoordAver = np.average(tvecArray, axis = 0, weights= weightsArray)
             AverTrans = np.average(np.array(rvecArray), axis=0, weights=weightsArray)
             r = R.from_matrix(AverTrans)
             quaternion = r.as_quat()
