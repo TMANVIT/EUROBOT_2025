@@ -40,11 +40,5 @@ def generate_launch_description():
                 output="screen",
                 parameters=[obstacle_detector_params],
             ),
-            Node(
-                package="lidar_localization",
-                executable="circle_publisher",
-                name="circle_publisher",
-                output="screen",
-            ),
         ]
     )
