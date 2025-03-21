@@ -114,7 +114,7 @@ class Camera():
                 robotCoord = [np.dot(rvec, tmatrix[0]), np.dot(rvec, tmatrix[1]), np.dot(rvec, tmatrix[2])]
                 robotTransMatrix = np.linalg.inv(tmatrix) @ transMatrixDict[i]
                 if i in self.RotSideDict.keys():
-                    robotCoord += self.TvecSideDict[i]
+                    # robotCoord += self.TvecSideDict[i]
                     robotTransMatrix = robotTransMatrix @ self.RotSideDict[i]
                 robotTransMatrix[0][2] = 0.0
                 robotTransMatrix[0] = robotTransMatrix[0] / np.linalg.norm(robotTransMatrix[0])
