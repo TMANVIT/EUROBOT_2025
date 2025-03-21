@@ -144,7 +144,7 @@ global_costmap:
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: true
-        enabled: true
+        enabled: false
         subscribe_to_updates: true
         transform_tolerance: 0.05
       inflation_layer:

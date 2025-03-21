@@ -63,8 +63,6 @@ class LidarLocalization(Node):
                 np.array([-1.49866, -0.999966]),
                 np.array([-1.49856, 0.994759]),
             ]
-        # set debug mode
-        self.beacon_no = 0
 
         self.lidar_pose_pub = self.create_publisher(
             PoseWithCovarianceStamped, "/lidar_pose", 10
@@ -97,6 +95,8 @@ class LidarLocalization(Node):
         self.obs_raw = []
         for obs in msg.circles:
             self.obs_raw.append(np.array([obs.center.x, obs.center.y]))
+            self.get_logger().info(f"x = {obs.center.x}; y = {obs.center.y}")
+        self.get_logger().info(f"complete")
         self.obs_time = msg.header.stamp
         # data processing
         try:
@@ -116,7 +116,7 @@ class LidarLocalization(Node):
                 euler                
             ])
         except (LookupException, ConnectivityException, ExtrapolationException) as e:
-            self.get_logger().error(f'Could not transform {self.robot_parent_frame_id} to {self.robot_frame_id}: {e}')
+            self.get_logger().error(f'Could not transform {self.parent_frame_id} to {self.frame_id}: {e}')
             self.get_logger().debug("now try to use the latest topic")
             if self.newPose == False: 
                 self.get_logger().error("no new predict topic, skip.")
@@ -211,7 +211,7 @@ class LidarLocalization(Node):
             likelihood = likelihood / normalizer
             if likelihood > self.likelihood_threshold:
                 obs_candidates.append({"position": obs, "probability": likelihood})
-                if self.visualize_candidate and self.beacon_no == 1:
+                if self.visualize_candidate:
                     marker = Marker()
                     marker.header.frame_id = self.frame_id
                     marker.header.stamp = self.get_clock().now().to_msg()
@@ -247,7 +247,7 @@ class LidarLocalization(Node):
                     text_marker.text = f"{likelihood:.2f}"
                     text_marker.id = marker_id
                     marker_array.markers.append(text_marker)
-        if self.visualize_candidate and self.beacon_no == 1:
+        if self.visualize_candidate:
             self.circles_pub.publish(marker_array)
             self.get_logger().debug("Published marker array")
             # clean up
@@ -257,9 +257,7 @@ class LidarLocalization(Node):
 
     def get_landmarks_candidate(self):
         landmarks_candidate = []
-        self.beacon_no = 0
         for landmark in self.landmarks_map:
-            self.beacon_no += 1
             candidate = {
                 "landmark": landmark,
                 "obs_candidates": self.get_obs_candidate(landmark),
