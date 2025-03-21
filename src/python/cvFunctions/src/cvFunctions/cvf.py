@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import yaml
 from scipy.spatial.transform import Rotation as R
-from filterpy.kalman import KalmanFilter
 
 def read_config(config_path):
     with open(config_path, 'r') as file:
@@ -45,13 +44,6 @@ class Camera:
             23: np.array([0.9, -0.4, 0.0])
         }
 
-        # Инициализация фильтра Калмана для сглаживания позы нашего робота
-        self.kf = KalmanFilter(dim_x=7, dim_z=7)  # [x, y, z, qx, qy, qz, qw]
-        self.kf.x = np.zeros(7)  # Начальное состояние
-        self.kf.P *= 1000  # Начальная ковариация состояния
-        self.kf.R = np.eye(7) * 0.1  # Ковариация измерений
-        self.kf.Q = np.eye(7) * 0.01  # Ковариация процесса
-
     def prepare_image(self, img):
         """Подготовка изображения для детекции маркеров."""
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -84,7 +76,7 @@ class Camera:
                 [marker_length / 2, marker_length / 2, 0],
                 [marker_length / 2, -marker_length / 2, 0],
                 [-marker_length / 2, -marker_length / 2, 0]
-            ]) + self.field_markers[marker_id]  # Смещение до координат поля
+            ]) + self.field_markers[marker_id]
             object_points.extend(obj_points)
             image_points.extend(corners[idx][0])
 
@@ -99,20 +91,18 @@ class Camera:
         return None, None
 
     def estimate_robot_pose(self, ids, corners, tmatrix, center, is_our_robot=True):
-        """Оценка позы робота (нашего или врага) относительно поля."""
+        """Оценка позы робота (нашего или врага) с вычислением ковариации."""
         if not ids or tmatrix is None or center is None:
-            return None, None
+            return None, None, None
 
         object_points = []
         image_points = []
         for i, marker_id in enumerate(ids):
             # Определяем, какие маркеры учитывать
             if is_our_robot:
-                # Наш робот: основной маркер и боковые
                 if marker_id != self.robot_id and marker_id not in self.RotSideDict:
                     continue
             else:
-                # Враг: только основной маркер (1–10, но не self.robot_id)
                 if not (1 <= marker_id <= 10 and marker_id != self.robot_id):
                     continue
 
@@ -135,7 +125,7 @@ class Camera:
             image_points.extend(corners[i][0])
 
         if not object_points:
-            return None, None
+            return None, None, None
 
         object_points = np.array(object_points)
         image_points = np.array(image_points)
@@ -146,29 +136,28 @@ class Camera:
             robot_tvec = np.dot(tmatrix, tvec.flatten()) + center  # Позиция робота
             robot_rot_matrix = tmatrix @ cv2.Rodrigues(rvec)[0]  # Ориентация робота
             quat = R.from_matrix(robot_rot_matrix).as_quat()  # Кватернион ориентации
-            return robot_tvec, quat
-        return None, None
+
+            # Вычисление ковариации
+            _, jac = cv2.projectPoints(object_points, rvec, tvec, self.camera_matrix, self.dist_coefs)
+            J = jac[:, :6]  # Якобиан по 6 параметрам (rvec, tvec)
+            sigma2 = 1.0  # Предполагаемая дисперсия шума углов в пикселях (1 пиксель²)
+            cov = np.linalg.pinv(J.T @ J) * sigma2  # Ковариация позы
+            return robot_tvec, quat, cov
+        return None, None, None
 
     def robots_tracking(self, img):
-        """Отслеживание нашего робота и врага."""
+        """Отслеживание нашего робота и врага без фильтра Калмана."""
         ids, corners = self.detect_markers(img)
         tmatrix, center = self.t_matrix_building(ids, corners)
 
         # Оценка позы нашего робота
-        our_tvec, our_quat = self.estimate_robot_pose(ids, corners, tmatrix, center, is_our_robot=True)
-        robotCoordAver = None
-        quaternion = None
-        if our_tvec is not None and our_quat is not None:
-            self.kf.predict()
-            measurement = np.hstack((our_tvec, our_quat))
-            self.kf.update(measurement)
-            filtered_state = self.kf.x
-            robotCoordAver = filtered_state[:3]  # Фильтрованная позиция нашего робота
-            quaternion = filtered_state[3:]  # Фильтрованная ориентация нашего робота
+        our_tvec, our_quat, our_cov = self.estimate_robot_pose(ids, corners, tmatrix, center, is_our_robot=True)
+        robotCoordAver = our_tvec
+        quaternion = our_quat
 
         # Оценка позы врага (только один враг)
-        enemy_tvec, enemy_quat = self.estimate_robot_pose(ids, corners, tmatrix, center, is_our_robot=False)
+        enemy_tvec, enemy_quat, enemy_cov = self.estimate_robot_pose(ids, corners, tmatrix, center, is_our_robot=False)
         enemyCoord = enemy_tvec
         enemyQuat = enemy_quat
 
-        return robotCoordAver, quaternion, enemyCoord, enemyQuat
+        return robotCoordAver, quaternion, enemyCoord, enemyQuat  # Ковариации можно использовать отдельно
