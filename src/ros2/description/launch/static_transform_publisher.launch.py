@@ -49,5 +49,28 @@ def generate_launch_description():
                 arguments=["0", "0", "0", "3.14", "0", "0", "lidar_link", "laser"],
                 name="lidar_link_to_laser",
             ),
+            
+            #### NEEEEEEEEEEEED TO DEBUG
+            
+            Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                arguments=["0", "0", "0", "0", "0", "0", "map", "odom"],
+                name="initial_pose",
+            ),
+            
+            Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                arguments=["0", "0", "0", "1.57", "0", "0", "odom", "base_footprint"],
+                name="initial_pose_2",
+            ),
+            
+            # Node(
+            #     package="tf2_ros",
+            #     executable="static_transform_publisher",
+            #     arguments=["0", "0", "0", "0", "0", "0", "base_footprint", "base_link"],
+            #     name="initial_pose_3",
+            # ),
         ]
     )
