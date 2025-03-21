@@ -75,8 +75,8 @@ controller_server:
     general_goal_checker:
       stateful: true
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.1
-      yaw_goal_tolerance: 0.05
+      xy_goal_tolerance: 0.15
+      yaw_goal_tolerance: 0.3
     # DWB parameters
     FollowPath:
       plugin: "nav2_rotation_shim_controller::RotationShimController"
@@ -140,7 +140,7 @@ global_costmap:
       robot_base_frame: base_footprint
       footprint: "[[0.1, 0.20], [-0.086, 0.20], [-0.086, -0.20], [0.1, -0.20]]"
       resolution: 0.005
-      plugins: ["static_layer", "inflation_layer"]
+      plugins: ["static_layer", "inflation_layer", "obstacle_layer"]
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: true
@@ -153,6 +153,21 @@ global_costmap:
         inflation_radius: 0.4
         cost_scaling_factor: 4.5
         inflate_unknown: false
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: obstacle_cloud
+        obstacle_cloud:
+          topic: /enemy_cloud
+          data_type: "PointCloud2"
+          max_obstacle_height: 2.0
+          marking: true
+          clearing: false
+          obstacle_max_range: 5.0  # Увеличиваем до 5 м
+          obstacle_min_range: 0.0
+          raytrace_max_range: 5.0
+          raytrace_min_range: 0.0
+          obstacle_radius: 0.4  # Радиус области вокруг точки (40 см)
       always_send_full_costmap: true
 
 
