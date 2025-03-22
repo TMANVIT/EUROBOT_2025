@@ -11,14 +11,7 @@ def generate_launch_description():
                 executable = "static_transform_publisher",
                 arguments = ["0", "0", "0", "0", "0", "0", "world", "map"],
                 name = "world_to_map_static"
-            ),
-            # ## Link map to odom. TODO change this transform to camera initial pose.
-            Node(
-                package="tf2_ros",
-                executable="static_transform_publisher",
-                arguments=["0", "0", "0", "1.57", "0", "0", "map", "odom"],
-                name="map_to_odom_static",
-            ),         
+            ),       
             
             ## Link to torches, which depend on robot color. TODO Switch color in Makefile
             Node(
@@ -55,22 +48,16 @@ def generate_launch_description():
             Node(
                 package="tf2_ros",
                 executable="static_transform_publisher",
-                arguments=["0", "0", "0", "0", "0", "0", "map", "odom"],
+                arguments=["0", "0", "0", "1.57", "0", "0", "map", "odom"],
                 name="initial_pose",
             ),
             
             Node(
                 package="tf2_ros",
                 executable="static_transform_publisher",
-                arguments=["0", "0", "0", "1.57", "0", "0", "odom", "base_footprint"],
+                arguments=["0", "0", "0", "0", "0", "0", "odom", "base_footprint"],
                 name="initial_pose_2",
             ),
             
-            # Node(
-            #     package="tf2_ros",
-            #     executable="static_transform_publisher",
-            #     arguments=["0", "0", "0", "0", "0", "0", "base_footprint", "base_link"],
-            #     name="initial_pose_3",
-            # ),
         ]
     )

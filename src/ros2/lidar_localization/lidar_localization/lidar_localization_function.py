@@ -399,7 +399,7 @@ class LidarLocalization(Node):
 
                 # Publish the lidar pose
                 self.lidar_pose_msg.header.stamp = self.get_clock().now().to_msg()
-                self.lidar_pose_msg.header.frame_id = "map"
+                self.lidar_pose_msg.header.frame_id = self.parent_frame_id
                 self.lidar_pose_msg.pose.pose.position.x = lidar_pose[0]
                 self.lidar_pose_msg.pose.pose.position.y = lidar_pose[1]
                 self.lidar_pose_msg.pose.pose.position.z = 0.0
