@@ -24,73 +24,25 @@ class MapToOdomTF(Node):
 
     def initial_pose_callback(self, msg):
 
-        self.map_to_aruco = TransformStamped()
-        self.map_to_aruco.header.stamp = self.get_clock().now().to_msg()
-        self.map_to_aruco.header.frame_id = "map"
-        self.map_to_aruco.child_frame_id = "odom"
+        self.map_to_odom = TransformStamped()
+        self.map_to_odom.header.stamp = self.get_clock().now().to_msg()
+        self.map_to_odom.header.frame_id = "map"
+        self.map_to_odom.child_frame_id = "odom"
 
-        self.map_to_aruco.transform.translation.x = msg.pose.pose.position.x
-        self.map_to_aruco.transform.translation.y = msg.pose.pose.position.y
-        self.map_to_aruco.transform.translation.z = msg.pose.pose.position.z
+        self.map_to_odom.transform.translation.x = msg.pose.pose.position.x
+        self.map_to_odom.transform.translation.y = msg.pose.pose.position.y
+        self.map_to_odom.transform.translation.z = msg.pose.pose.position.z
 
-        self.map_to_aruco.transform.rotation.x = msg.pose.pose.orientation.x
-        self.map_to_aruco.transform.rotation.y = msg.pose.pose.orientation.y
-        self.map_to_aruco.transform.rotation.z = msg.pose.pose.orientation.z
-        self.map_to_aruco.transform.rotation.w = msg.pose.pose.orientation.w
+        self.map_to_odom.transform.rotation.x = msg.pose.pose.orientation.x
+        self.map_to_odom.transform.rotation.y = msg.pose.pose.orientation.y
+        self.map_to_odom.transform.rotation.z = msg.pose.pose.orientation.z
+        self.map_to_odom.transform.rotation.w = msg.pose.pose.orientation.w
 
-        initial_x = msg.pose.pose.position.x
-        initial_y = msg.pose.pose.position.y
-        initial_z = msg.pose.pose.position.z
-
-    
-        self.aruco_to_base_link = self.tf_buffer.lookup_transform("aruco_link", "base_link", rclpy.time.Time(), timeout=rclpy.duration.Duration(seconds=2.0))
-
-        self.map_to_odom = self.compose_transforms(self.map_to_aruco, self.aruco_to_base_link)
         self.tf_broadcaster.sendTransform(self.map_to_odom)
 
 
         # self.get_logger().info(f"Initial pose set: x={initial_x}, y={initial_y}, z={initial_z}")
 
-    
-
-    def compose_transforms(self, first, second):
-        composed = TransformStamped()
-        composed.header.stamp = self.get_clock().now().to_msg()
-        composed.header.frame_id = "map"
-        composed.child_frame_id = "odom"
-
-        first_trans = np.array([first.transform.translation.x,
-                       first.transform.translation.y,
-                       first.transform.translation.z])
-        first_rot_matrix = np.array((R.from_quat([first.transform.rotation.x,
-                     first.transform.rotation.y,
-                     first.transform.rotation.z,
-                     first.transform.rotation.w])).as_matrix())
-
-        second_trans = np.array([second.transform.translation.x,
-                        second.transform.translation.y,
-                        second.transform.translation.z])
-        second_rot_matrix = np.array((R.from_quat([second.transform.rotation.x,
-                      second.transform.rotation.y,
-                      second.transform.rotation.z,
-                      second.transform.rotation.w])).as_matrix())
-
-        new_trans = first_trans+np.linalg.inv(second_rot_matrix) @ second_trans
-        new_rot = R.from_matrix(second_rot_matrix @ first_rot_matrix)
-        new_rot = R.from_matrix(first_rot_matrix)
-
-        composed.transform.translation.x = new_trans[0]
-        composed.transform.translation.y = new_trans[1]
-        composed.transform.translation.z = new_trans[2]
-
-        new_quat = new_rot.as_quat()
-
-        composed.transform.rotation.x = new_quat[0]
-        composed.transform.rotation.y = new_quat[1]
-        composed.transform.rotation.z = new_quat[2]
-        composed.transform.rotation.w = new_quat[3]
-
-        return composed
     
     def broadcast_map_to_odom(self):
         if self.map_to_odom is not None:

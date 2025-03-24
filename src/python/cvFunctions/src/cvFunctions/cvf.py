@@ -10,33 +10,29 @@ def read_config(config_path):
 
 class Camera:
     def __init__(self, config_path: str):
-        # Загрузка конфигурации
         self.config = read_config(config_path)
         self.camera_matrix = np.array(self.config["camera_matrix"], dtype=np.float64)
         self.dist_coefs = np.array(self.config["dist_coeff"], dtype=np.float64)
         self.newcameramatrix, _ = cv2.getOptimalNewCameraMatrix(self.camera_matrix, self.dist_coefs, (1600, 896), 0.5, (1600, 896))
-        self.robot_id = self.config["robot_id"]  # ID маркера нашего робота (в диапазоне 1–10)
+        self.robot_id = self.config["robot_id"]
 
-        # Настройка детектора ArUco
         self.arucoParams = cv2.aruco.DetectorParameters()
         self.arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)
         self.detector = cv2.aruco.ArucoDetector(self.arucoDict, self.arucoParams)
 
-        # Матрицы перехода для боковых маркеров нашего робота
         self.RotSideDict = {
-            55: R.from_euler('xyz', [0.0, -90.0, 0.0], degrees=True).as_matrix(),
-            56: R.from_euler('xyz', [-90.0, 0.0, 0.0], degrees=True).as_matrix(),
-            57: R.from_euler('xyz', [0.0, 90.0, 0.0], degrees=True).as_matrix(),
-            58: R.from_euler('xyz', [90.0, 0.0, 0.0], degrees=True).as_matrix()
+            55: R.from_euler('y', 90, degrees=True).as_matrix(),    # Front: x down, z forward
+            56: R.from_euler('x', 90, degrees=True).as_matrix(),    # Right: x forward, z right
+            57: R.from_euler('y', -90, degrees=True).as_matrix(),   # Rear: x up, z backward
+            58: R.from_euler('x', -90, degrees=True).as_matrix()    # Left: x forward, z left
         }
         self.TvecSideDict = {
-            55: [-0.025, 0.0, 0.025],
-            56: [0.0, 0.025, 0.025],
-            57: [0.025, 0.0, 0.025],
-            58: [0.0, -0.025, 0.025]
+            55: np.array([-0.05, 0.0, 0.055]),  # From 55 to self.robot_id
+            56: np.array([0.0, 0.05, 0.055]),   # From 56 to self.robot_id
+            57: np.array([0.05, 0.0, 0.055]),   # From 57 to self.robot_id
+            58: np.array([0.0, -0.05, 0.055])   # From 58 to self.robot_id
         }
 
-        # Координаты маркеров поля
         self.field_markers = {
             20: np.array([-0.9, 0.4, 0.0]),
             21: np.array([0.9, 0.4, 0.0]),
@@ -44,17 +40,19 @@ class Camera:
             23: np.array([0.9, -0.4, 0.0])
         }
 
+        self.last_tmatrix = None
+        self.last_center = None
+        self.initialized = False
+
     def prepare_image(self, img):
-        """Подготовка изображения для детекции маркеров."""
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-        gray = clahe.apply(gray)
-        gray = cv2.GaussianBlur(gray, (3, 3), 0)
-        gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 21, 1)
+        # clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+        # gray = clahe.apply(gray)
+        # gray = cv2.GaussianBlur(gray, (3, 3), 0)
+        # gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 21, 1)
         return gray
 
     def detect_markers(self, img):
-        """Детекция маркеров на изображении."""
         img_prepared = self.prepare_image(img)
         corners, ids, _ = self.detector.detectMarkers(img_prepared)
         if ids is not None:
@@ -62,102 +60,142 @@ class Camera:
         return ids, corners
 
     def t_matrix_building(self, ids, corners):
-        """Определение системы координат поля с помощью маркеров 20–23."""
-        if not ids or not set([20, 21, 22, 23]).issubset(ids):
-            return None, None
+        if not ids or not any(marker_id in self.field_markers for marker_id in ids):
+            return self.last_tmatrix, self.last_center
 
+        field_corners = []
+        field_ids = []
+        for i, marker_id in enumerate(ids):
+            if marker_id in self.field_markers:
+                field_corners.append(corners[i][0])
+                field_ids.append(marker_id)
+
+        if not field_ids:
+            return self.last_tmatrix, self.last_center
+
+        print(f"Visible field markers: {len(field_ids)}")
+
+        marker_size = 0.1  # Specify the size of field markers
         object_points = []
         image_points = []
-        marker_length = 0.1  # Размер маркеров поля
-        for marker_id in [20, 21, 22, 23]:
-            idx = ids.index(marker_id)
-            obj_points = np.array([
-                [-marker_length / 2, marker_length / 2, 0],
-                [marker_length / 2, marker_length / 2, 0],
-                [marker_length / 2, -marker_length / 2, 0],
-                [-marker_length / 2, -marker_length / 2, 0]
-            ]) + self.field_markers[marker_id]
-            object_points.extend(obj_points)
-            image_points.extend(corners[idx][0])
+        for mid, corners in zip(field_ids, field_corners):
+            obj_pts = np.array([
+                [-marker_size / 2, marker_size / 2, 0],
+                [marker_size / 2, marker_size / 2, 0],
+                [marker_size / 2, -marker_size / 2, 0],
+                [-marker_size / 2, -marker_size / 2, 0]
+            ], dtype=np.float32) + self.field_markers[mid]
+            object_points.extend(obj_pts)
+            image_points.extend(corners)
 
-        object_points = np.array(object_points)
-        image_points = np.array(image_points)
+        object_points = np.array(object_points, dtype=np.float32)
+        image_points = np.array(image_points, dtype=np.float32)
 
-        success, rvec, tvec = cv2.solvePnP(object_points, image_points, self.camera_matrix, self.dist_coefs, flags=cv2.SOLVEPNP_ITERATIVE)
-        if success:
-            tmatrix = cv2.Rodrigues(rvec)[0]  # Матрица вращения камеры относительно поля
-            center = tvec.flatten()  # Позиция камеры относительно поля
-            return tmatrix, center
-        return None, None
+        if not self.initialized and len(field_ids) >= 3:
+            success, rvec, tvec = cv2.solvePnP(
+                object_points, image_points, self.camera_matrix, self.dist_coefs,
+                flags=cv2.SOLVEPNP_SQPNP
+            )
+            if success:
+                tmatrix = cv2.Rodrigues(rvec)[0]
+                center = tvec.flatten()
+                self.last_tmatrix = tmatrix
+                self.last_center = center
+                self.initialized = True
+                print(f"Initialized tmatrix:\n{tmatrix}\ncenter: {center}")
+            else:
+                print("Failed to initialize with solvePnP")
+                return self.last_tmatrix, self.last_center
+        elif self.initialized and len(field_ids) >= 3:
+            success, rvec, tvec = cv2.solvePnP(
+                object_points, image_points, self.camera_matrix, self.dist_coefs,
+                flags=cv2.SOLVEPNP_ITERATIVE, useExtrinsicGuess=True,
+                rvec=cv2.Rodrigues(self.last_tmatrix)[0], tvec=self.last_center
+            )
+            if success:
+                center = tvec.flatten()
+                self.last_center = center
+            else:
+                print("Failed to update center with solvePnP")
+            tmatrix = self.last_tmatrix
+        else:
+            return self.last_tmatrix, self.last_center
+
+        return tmatrix, center
 
     def estimate_robot_pose(self, ids, corners, tmatrix, center, is_our_robot=True):
-        """Оценка позы робота (нашего или врага) с вычислением ковариации."""
         if not ids or tmatrix is None or center is None:
             return None, None, None
 
-        object_points = []
-        image_points = []
+        robot_corners = []
+        robot_ids = []
         for i, marker_id in enumerate(ids):
-            # Определяем, какие маркеры учитывать
             if is_our_robot:
                 if marker_id != self.robot_id and marker_id not in self.RotSideDict:
                     continue
             else:
                 if not (1 <= marker_id <= 10 and marker_id != self.robot_id):
                     continue
+            robot_corners.append(corners[i][0])
+            robot_ids.append(marker_id)
 
-            # Определение размера маркера
-            marker_length = 0.07 if 1 <= marker_id <= 10 else 0.05  # 0.07 для 1–10, 0.05 для RotSideDict
+        if not robot_ids:
+            return None, None, None
 
-            # Базовые 3D точки маркера
-            obj_points = np.array([
+        print(f"Visible robot markers: {len(robot_ids)}")
+
+        object_points = []
+        image_points = []
+        for mid, corners in zip(robot_ids, robot_corners):
+            marker_length = 0.07 if (1 <= mid <= 10) else 0.05
+            obj_pts = np.array([
                 [-marker_length / 2, marker_length / 2, 0],
                 [marker_length / 2, marker_length / 2, 0],
                 [marker_length / 2, -marker_length / 2, 0],
                 [-marker_length / 2, -marker_length / 2, 0]
-            ])
+            ], dtype=np.float32)
+            if mid in self.RotSideDict:
+                rot_side = self.RotSideDict[mid]
+                tvec_side = self.TvecSideDict[mid]
+                obj_pts = np.dot(obj_pts, rot_side.T) - tvec_side  # Transformation to self.robot_id system
+            object_points.extend(obj_pts)
+            image_points.extend(corners)
 
-            # Для боковых маркеров нашего робота применяем преобразование
-            if marker_id in self.RotSideDict:
-                obj_points = (self.RotSideDict[marker_id] @ obj_points.T).T + self.TvecSideDict[marker_id]
+        object_points = np.array(object_points, dtype=np.float32)
+        image_points = np.array(image_points, dtype=np.float32)
 
-            object_points.extend(obj_points)
-            image_points.extend(corners[i][0])
-
-        if not object_points:
+        success, rvec, tvec = cv2.solvePnP(
+            object_points, image_points, self.camera_matrix, self.dist_coefs,
+            flags=cv2.SOLVEPNP_ITERATIVE
+        )
+        if not success:
+            print("Failed to estimate robot pose with solvePnP")
             return None, None, None
 
-        object_points = np.array(object_points)
-        image_points = np.array(image_points)
+        tvec_cam = tvec.flatten()
+        rot_matrix = cv2.Rodrigues(rvec)[0]
 
-        success, rvec, tvec = cv2.solvePnP(object_points, image_points, self.camera_matrix, self.dist_coefs, flags=cv2.SOLVEPNP_ITERATIVE)
-        if success:
-            # Преобразование в систему координат поля
-            robot_tvec = np.dot(tmatrix, tvec.flatten()) + center  # Позиция робота
-            robot_rot_matrix = tmatrix @ cv2.Rodrigues(rvec)[0]  # Ориентация робота
-            quat = R.from_matrix(robot_rot_matrix).as_quat()  # Кватернион ориентации
+        robot_tvec = np.dot(tmatrix.T, tvec_cam - center)
+        robot_rot_matrix = np.dot(tmatrix.T, rot_matrix)
+        quat = R.from_matrix(robot_rot_matrix).as_quat()
 
-            # Вычисление ковариации
-            _, jac = cv2.projectPoints(object_points, rvec, tvec, self.camera_matrix, self.dist_coefs)
-            J = jac[:, :6]  # Якобиан по 6 параметрам (rvec, tvec)
-            sigma2 = 1.0  # Предполагаемая дисперсия шума углов в пикселях (1 пиксель²)
-            cov = np.linalg.pinv(J.T @ J) * sigma2  # Ковариация позы
-            return robot_tvec, quat, cov
-        return None, None, None
+        _, jac = cv2.projectPoints(object_points, rvec, tvec, self.camera_matrix, self.dist_coefs)
+        J = jac[:, :6]
+        sigma2 = 1.0
+        cov = np.linalg.pinv(J.T @ J) * sigma2
+
+        return robot_tvec, quat, cov
 
     def robots_tracking(self, img):
-        """Отслеживание нашего робота и врага без фильтра Калмана."""
         ids, corners = self.detect_markers(img)
         tmatrix, center = self.t_matrix_building(ids, corners)
 
-        # Оценка позы нашего робота
         our_tvec, our_quat, our_cov = self.estimate_robot_pose(ids, corners, tmatrix, center, is_our_robot=True)
-        robotCoordAver = our_tvec
-        quaternion = our_quat
-
-        # Оценка позы врага (только один враг)
         enemy_tvec, enemy_quat, enemy_cov = self.estimate_robot_pose(ids, corners, tmatrix, center, is_our_robot=False)
-        enemyCoord = enemy_tvec
-        enemyQuat = enemy_quat
 
-        return robotCoordAver, quaternion, enemyCoord, enemyQuat  # Ковариации можно использовать отдельно
+        if our_tvec is not None:
+            print(f"Our robot: x={our_tvec[0]:.3f}, y={our_tvec[1]:.3f}, z={our_tvec[2]:.3f}")
+        if enemy_tvec is not None:
+            print(f"Enemy robot: x={enemy_tvec[0]:.3f}, y={enemy_tvec[1]:.3f}, z={enemy_tvec[2]:.3f}")
+
+        return our_tvec, our_quat, enemy_tvec, enemy_quat, our_cov, enemy_cov
