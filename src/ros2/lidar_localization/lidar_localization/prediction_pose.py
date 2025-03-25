@@ -28,35 +28,35 @@ class PredPublisher(Node):
             PoseWithCovarianceStamped, "/initialpose", self.initpose_callback, 10
         )
         self.pub = self.create_publisher(PoseWithCovarianceStamped, "/pred_pose", 10)
-        self.sub = self.create_subscription(
-            PoseWithCovarianceStamped, "/lidar_pose", self.param_callback, 10
-        )
+        # self.sub = self.create_subscription(
+        #     PoseWithCovarianceStamped, "/lidar_pose", self.param_callback, 10
+        # )
 
         self.br = TransformBroadcaster(self)
         self.timer = self.create_timer(0.01, self.publish_pose)  # 100Hz
 
-    def param_callback(self, msg):
-        # Modify the pose_pred data based on the received parameter
-        self.pose_pred.pose.pose.position.x = msg.pose.pose.position.x
-        self.pose_pred.pose.pose.position.y = msg.pose.pose.position.y
-        self.pose_pred.pose.pose.position.z = msg.pose.pose.position.z
-        self.pose_pred.pose.pose.orientation.x = msg.pose.pose.orientation.x
-        self.pose_pred.pose.pose.orientation.y = msg.pose.pose.orientation.y
-        self.pose_pred.pose.pose.orientation.z = msg.pose.pose.orientation.z
-        self.pose_pred.pose.pose.orientation.w = msg.pose.pose.orientation.w
-        self.pose_pred.pose.covariance = msg.pose.covariance
+    # def param_callback(self, msg):
+    #     # Modify the pose_pred data based on the received parameter
+    #     self.pose_pred.pose.pose.position.x = msg.pose.pose.position.x
+    #     self.pose_pred.pose.pose.position.y = msg.pose.pose.position.y
+    #     self.pose_pred.pose.pose.position.z = msg.pose.pose.position.z
+    #     self.pose_pred.pose.pose.orientation.x = msg.pose.pose.orientation.x
+    #     self.pose_pred.pose.pose.orientation.y = msg.pose.pose.orientation.y
+    #     self.pose_pred.pose.pose.orientation.z = msg.pose.pose.orientation.z
+    #     self.pose_pred.pose.pose.orientation.w = msg.pose.pose.orientation.w
+    #     self.pose_pred.pose.covariance = msg.pose.covariance
 
-        # Broadcast static transform from map to robot base
-        t = TransformStamped()
-        t.header.stamp = self.get_clock().now().to_msg()
-        t.header.frame_id = "map"
-        t.child_frame_id = "lidar_predict"
-        t.transform.translation.x = self.pose_pred.pose.pose.position.x
-        t.transform.translation.y = self.pose_pred.pose.pose.position.y
-        t.transform.translation.z = self.pose_pred.pose.pose.position.z
-        t.transform.rotation = self.pose_pred.pose.pose.orientation
+    #     # Broadcast static transform from map to robot base
+    #     t = TransformStamped()
+    #     t.header.stamp = self.get_clock().now().to_msg()
+    #     t.header.frame_id = "map"
+    #     t.child_frame_id = "lidar_predict"
+    #     t.transform.translation.x = self.pose_pred.pose.pose.position.x
+    #     t.transform.translation.y = self.pose_pred.pose.pose.position.y
+    #     t.transform.translation.z = self.pose_pred.pose.pose.position.z
+    #     t.transform.rotation = self.pose_pred.pose.pose.orientation
 
-        self.br.sendTransform(t)
+    #     self.br.sendTransform(t)
 
     def publish_pose(self):
         self.pose_pred.header.stamp = self.get_clock().now().to_msg()

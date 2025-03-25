@@ -3,7 +3,7 @@ lidar_localization_node:
     side: 0 # 0 - Blue, 1 - Yellow
     debug_mode: true
     visualize_candidate: true
-    likelihood_threshold: 0.000001
-    consistency_threshold: 1.5
+    likelihood_threshold: 0.01
+    consistency_threshold: 0.90
     frame_id: base_footprint
     robot_parent_frame_id: map
