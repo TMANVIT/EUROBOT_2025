@@ -20,34 +20,34 @@ class MapToOdomTF(Node):
         self.timer = self.create_timer(0.1, self.broadcast_map_to_odom)
         self.aruco_to_base_link = None
         self.map_to_aruco = None
-        self.map_to_odom = None
+        self.init_pose = False
 
     def initial_pose_callback(self, msg):
+        if not self.init_pose:
+            self.map_to_odom = TransformStamped()
+            self.map_to_odom.header.stamp = self.get_clock().now().to_msg()
+            self.map_to_odom.header.frame_id = "map"
+            self.map_to_odom.child_frame_id = "odom"
 
-        self.map_to_odom = TransformStamped()
-        self.map_to_odom.header.stamp = self.get_clock().now().to_msg()
-        self.map_to_odom.header.frame_id = "map"
-        self.map_to_odom.child_frame_id = "odom"
+            self.map_to_odom.transform.translation.x = msg.pose.pose.position.x
+            self.map_to_odom.transform.translation.y = msg.pose.pose.position.y
+            self.map_to_odom.transform.translation.z = msg.pose.pose.position.z
 
-        self.map_to_odom.transform.translation.x = msg.pose.pose.position.x
-        self.map_to_odom.transform.translation.y = msg.pose.pose.position.y
-        self.map_to_odom.transform.translation.z = msg.pose.pose.position.z
+            self.map_to_odom.transform.rotation.x = msg.pose.pose.orientation.x
+            self.map_to_odom.transform.rotation.y = msg.pose.pose.orientation.y
+            self.map_to_odom.transform.rotation.z = msg.pose.pose.orientation.z
+            self.map_to_odom.transform.rotation.w = msg.pose.pose.orientation.w
 
-        self.map_to_odom.transform.rotation.x = msg.pose.pose.orientation.x
-        self.map_to_odom.transform.rotation.y = msg.pose.pose.orientation.y
-        self.map_to_odom.transform.rotation.z = msg.pose.pose.orientation.z
-        self.map_to_odom.transform.rotation.w = msg.pose.pose.orientation.w
-
+            self.init_pose = True
+            
         self.tf_broadcaster.sendTransform(self.map_to_odom)
-
-
-        # self.get_logger().info(f"Initial pose set: x={initial_x}, y={initial_y}, z={initial_z}")
 
     
     def broadcast_map_to_odom(self):
-        if self.map_to_odom is not None:
+        if self.init_pose:
             self.map_to_odom.header.stamp = self.get_clock().now().to_msg()
             self.tf_broadcaster.sendTransform(self.map_to_odom)
+            self.get_logger().info(f"Initial pose set: x={self.map_to_odom}")
 
 
 

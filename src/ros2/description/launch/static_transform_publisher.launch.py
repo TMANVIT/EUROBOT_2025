@@ -13,6 +13,20 @@ def generate_launch_description():
                 name = "world_to_map_static"
             ),       
             
+            Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                arguments=["0", "0", "0", "0", "0", "0", "map", "odom"],
+                name="initial_map_to_odom",
+            ),
+            
+            Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                arguments=["0", "0", "0", "0", "0", "0", "odom", "base_footprint"],
+                name="initial_odom_to_base_footprint",
+            ),
+            
             ## Link to torches, which depend on robot color. TODO Switch color in Makefile
             Node(
                 package="tf2_ros",
@@ -42,22 +56,6 @@ def generate_launch_description():
                 arguments=["0", "0", "0", "3.14", "0", "0", "lidar_link", "laser"],
                 name="lidar_link_to_laser",
             ),
-            
-            #### NEEEEEEEEEEEED TO DEBUG
-            
-            # Node(
-            #     package="tf2_ros",
-            #     executable="static_transform_publisher",
-            #     arguments=["0", "0", "0", "0", "0", "0", "map", "odom"],
-            #     name="initial_pose",
-            # ),
-            
-            # Node(
-            #     package="tf2_ros",
-            #     executable="static_transform_publisher",
-            #     arguments=["0", "0", "0", "0", "0", "0", "odom", "base_footprint"],
-            #     name="initial_pose_2",
-            # ),
             
         ]
     )

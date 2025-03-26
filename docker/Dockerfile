@@ -56,7 +56,7 @@ RUN apt-get update && \
 WORKDIR /packages
 COPY ./src/python .
 RUN bash -c "pip install ./cvFunctions"  
-RUN bash -c "pip install -r ./requirements.txt"
+# RUN bash -c "pip install -r ./requirements.txt"
 
 # Set the working directory and clone Cyclone DDS repository
 WORKDIR /opt
