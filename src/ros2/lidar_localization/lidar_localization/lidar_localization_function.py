@@ -114,9 +114,9 @@ class LidarLocalization(Node):
         )
         self.P_pred = np.array(
             [
-                [msg.pose.covariance[0] * 100, 0, 0],
-                [0, msg.pose.covariance[7] * 100, 0],
-                [0, 0, msg.pose.covariance[35] * 1e6],
+                [msg.pose.covariance[0], 0, 0],
+                [0, msg.pose.covariance[7], 0],
+                [0, 0, msg.pose.covariance[35]],
             ]
         )
 
