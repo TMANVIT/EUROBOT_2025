@@ -3,156 +3,199 @@ import numpy as np
 import yaml
 from scipy.spatial.transform import Rotation as R
 
-def read_config(config):
-    # Load YAML configuration
-    with open(config, 'r') as file:
-        data = yaml.safe_load(file)  
-    return data  
+def read_config(config_path):
+    with open(config_path, 'r') as file:
+        data = yaml.safe_load(file)
+    return data
 
-class Camera():
+class Camera:
     def __init__(self, config_path: str):
         self.config = read_config(config_path)
         self.camera_matrix = np.array(self.config["camera_matrix"], dtype=np.float64)
         self.dist_coefs = np.array(self.config["dist_coeff"], dtype=np.float64)
-        self.newcameramatrix, roi = cv2.getOptimalNewCameraMatrix(self.camera_matrix, self.dist_coefs, (1600, 896), 0.5, (1600, 896))
+        self.newcameramatrix, _ = cv2.getOptimalNewCameraMatrix(self.camera_matrix, self.dist_coefs, (1600, 896), 0.5, (1600, 896))
         self.robot_id = self.config["robot_id"]
 
-        # Настройка параметров детекции ArUco
         self.arucoParams = cv2.aruco.DetectorParameters()
         self.arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)
         self.detector = cv2.aruco.ArucoDetector(self.arucoDict, self.arucoParams)
 
-        # Оптимизированные параметры для уменьшения шума и повышения точности
-        self.arucoParams.adaptiveThreshWinSizeMin = 3      # Минимальный размер окна адаптивной пороговой обработки
-        self.arucoParams.adaptiveThreshWinSizeMax = 23     # Максимальный размер окна адаптивной пороговой обработки
-        self.arucoParams.adaptiveThreshWinSizeStep = 10    # Шаг изменения размера окна
-        self.arucoParams.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX  # Уточнение углов с субпиксельной точностью
-        self.arucoParams.cornerRefinementWinSize = 5       # Размер окна для уточнения углов
-        self.arucoParams.minMarkerPerimeterRate = 0.1      # Минимальный периметр маркера относительно изображения
-        self.arucoParams.polygonalApproxAccuracyRate = 0.05 # Точность аппроксимации контура маркера
-        self.arucoParams.markerBorderBits = 1              # Толщина границы маркера (по умолчанию 1)
-
         self.RotSideDict = {
-            55: R.from_euler('xyz', [0.0, -90.0, 0.0], degrees=True).as_matrix(),
-            56: R.from_euler('xyz', [-90.0, 0.0, 0.0], degrees=True).as_matrix(),
-            57: R.from_euler('xyz', [0.0, 90.0, 0.0], degrees=True).as_matrix(),
-            58: R.from_euler('xyz', [90.0, 0.0, 0.0], degrees=True).as_matrix()
+            55: R.from_euler('y', 90, degrees=True).as_matrix(),    # Front: x down, z forward
+            56: R.from_euler('x', 90, degrees=True).as_matrix(),    # Right: x forward, z right
+            57: R.from_euler('y', -90, degrees=True).as_matrix(),   # Rear: x up, z backward
+            58: R.from_euler('x', -90, degrees=True).as_matrix()    # Left: x forward, z left
         }
         self.TvecSideDict = {
-            55: [-0.025, 0.0, 0.025],
-            56: [0.0, 0.025, 0.025],
-            57: [0.025, 0.0, 0.025],
-            58: [0.0, -0.025, 0.025]
+            55: np.array([-0.05, 0.0, 0.055]),  # From 55 to self.robot_id
+            56: np.array([0.0, 0.05, 0.055]),   # From 56 to self.robot_id
+            57: np.array([0.05, 0.0, 0.055]),   # From 57 to self.robot_id
+            58: np.array([0.0, -0.05, 0.055])   # From 58 to self.robot_id
         }
 
+        self.field_markers = {
+            20: np.array([-0.9, 0.4, 0.0]),
+            21: np.array([0.9, 0.4, 0.0]),
+            22: np.array([-0.9, -0.4, 0.0]),
+            23: np.array([0.9, -0.4, 0.0])
+        }
+
+        self.last_tmatrix = None
+        self.last_center = None
+        self.initialized = False
+
     def prepare_image(self, img):
-        # Улучшенная подготовка изображения для уменьшения шума
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+        # clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
         # gray = clahe.apply(gray)
-        # gray = cv2.GaussianBlur(gray, (3, 3), 0)
+        gray = cv2.GaussianBlur(gray, (3, 3), 0)
         gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 21, 1)
-
-
-        
         return gray
-    
+
     def detect_markers(self, img):
-        tvecDictionary = {}
-        transMatrixDictionary = {}
-        weightsDictionary = {}
-        imgToProduse = self.prepare_image(img)
-        corners, ids, rejected = self.detector.detectMarkers(imgToProduse)  # Используем оптимизированный детектор
-    
+        img_prepared = self.prepare_image(img)
+        corners, ids, _ = self.detector.detectMarkers(img_prepared)
         if ids is not None:
             ids = list(map(lambda x: x[0], ids))
-            for i in range(len(ids)):
-                if ids[i] in range(10):
-                    marker_length = 0.069
-                elif ids[i] in self.RotSideDict.keys():
-                    marker_length = 0.05
-                else:
-                    marker_length = 0.1
+        return ids, corners
 
-                rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], marker_length, 
-                                                                            cameraMatrix=self.camera_matrix, 
-                                                                            distCoeffs=self.dist_coefs)
-                tvecDictionary[ids[i]] = tvec[0][0]
-                transMatrixDictionary[ids[i]] = cv2.Rodrigues(rvec)[0]
-                weightsDictionary[ids[i]] = abs(transMatrixDictionary[ids[i]][2][2])
-        
-        return ids, transMatrixDictionary, tvecDictionary, weightsDictionary
-    
-    def t_matrix_building(self, ids, tvecDict):
-        tmatrix = None
-        center = None
+    def t_matrix_building(self, ids, corners):
+        if not ids or not any(marker_id in self.field_markers for marker_id in ids):
+            return self.last_tmatrix, self.last_center
 
-        if set([20, 21, 22, 23]).issubset(ids):
-            center = (tvecDict[22] + tvecDict[20] + tvecDict[23] + tvecDict[21]) / 4
-            
-            xvec = (tvecDict[22] + tvecDict[20] - tvecDict[23] - tvecDict[21]) * -1
-            xvec = xvec / np.linalg.norm(xvec)
-            yvec = (tvecDict[22] + tvecDict[23] - tvecDict[20] - tvecDict[21]) * -1
-            yvec = yvec / np.linalg.norm(yvec)
-            zvec = np.cross(xvec, yvec)
-            zvec = zvec / np.linalg.norm(zvec)  # Нормализация zvec для стабильности
-            
-            tmatrix = np.array([xvec, yvec, zvec])
+        field_corners = []
+        field_ids = []
+        for i, marker_id in enumerate(ids):
+            if marker_id in self.field_markers:
+                field_corners.append(corners[i][0])
+                field_ids.append(marker_id)
 
-        return tmatrix, center 
-        
-    def robots_tracking(self, ids, transMatrixDict, tvecDict, weightsDictionary, tmatrix, center):
-        ourRobot = False
-        enemyCoord = None
-        enemyQuat = None
-        tvecArray = []
-        rvecArray = []
-        weightsArray = []
-        for i in ids:
-            if i in list(range(11))+list(self.RotSideDict.keys()):
-                rvec = tvecDict[i] - center
-                robotCoord = [np.dot(rvec, tmatrix[0]), np.dot(rvec, tmatrix[1]), np.dot(rvec, tmatrix[2])]
-                robotTransMatrix = np.linalg.inv(tmatrix) @ transMatrixDict[i]
-                if i in self.RotSideDict.keys():
-                    # robotCoord += self.TvecSideDict[i]
-                    robotTransMatrix = robotTransMatrix @ self.RotSideDict[i]
-                robotTransMatrix[0][2] = 0.0
-                robotTransMatrix[0] = robotTransMatrix[0] / np.linalg.norm(robotTransMatrix[0])
-                robotTransMatrix[1][2] = 0.0
-                robotTransMatrix[1] = robotTransMatrix[1] / np.linalg.norm(robotTransMatrix[1])
-                robotTransMatrix[2] = [0.0, 0.0, 1.0]
-                
-            
-                
-                if i == self.robot_id or i in self.RotSideDict.keys():
-                    print(i, robotCoord, robotTransMatrix)
-                    ourRobot = True
-                    tvecArray.append(np.array(robotCoord))
-                    rvecArray.append(robotTransMatrix)
-                    weightsArray.append(weightsDictionary[i])
-                else:
-                    enemyCoord = robotCoord
-                    r = R.from_matrix(robotTransMatrix)
-                    enemyQuat = r.as_quat()
+        if not field_ids:
+            return self.last_tmatrix, self.last_center
 
-        if not ourRobot:
-            robotCoordAver = None
-            quaternion = None
-        elif len(tvecArray) == 1:
-            r = R.from_matrix(rvecArray[0])
-            quaternion = r.as_quat()
-            robotCoordAver = tvecArray[0]
+        print(f"Visible field markers: {len(field_ids)}")
+
+        marker_size = 0.1  # Specify the size of field markers
+        object_points = []
+        image_points = []
+        for mid, corners in zip(field_ids, field_corners):
+            obj_pts = np.array([
+                [-marker_size / 2, marker_size / 2, 0],
+                [marker_size / 2, marker_size / 2, 0],
+                [marker_size / 2, -marker_size / 2, 0],
+                [-marker_size / 2, -marker_size / 2, 0]
+            ], dtype=np.float32) + self.field_markers[mid]
+            object_points.extend(obj_pts)
+            image_points.extend(corners)
+
+        object_points = np.array(object_points, dtype=np.float32)
+        image_points = np.array(image_points, dtype=np.float32)
+
+        if not self.initialized and len(field_ids) >= 3:
+            success, rvec, tvec = cv2.solvePnP(
+                object_points, image_points, self.camera_matrix, self.dist_coefs,
+                flags=cv2.SOLVEPNP_SQPNP
+            )
+            if success:
+                tmatrix = cv2.Rodrigues(rvec)[0]
+                center = tvec.flatten()
+                self.last_tmatrix = tmatrix
+                self.last_center = center
+                self.initialized = True
+                print(f"Initialized tmatrix:\n{tmatrix}\ncenter: {center}")
+            else:
+                print("Failed to initialize with solvePnP")
+                return self.last_tmatrix, self.last_center
+        elif self.initialized and len(field_ids) >= 3:
+            success, rvec, tvec = cv2.solvePnP(
+                object_points, image_points, self.camera_matrix, self.dist_coefs,
+                flags=cv2.SOLVEPNP_ITERATIVE, useExtrinsicGuess=True,
+                rvec=cv2.Rodrigues(self.last_tmatrix)[0], tvec=self.last_center
+            )
+            if success:
+                center = tvec.flatten()
+                self.last_center = center
+            else:
+                print("Failed to update center with solvePnP")
+            tmatrix = self.last_tmatrix
         else:
-            weightsSum = sum(weightsArray)
-            for i in range(len(weightsArray)):
-                weightsArray[i] =  weightsArray[i]/weightsSum
-            
-            print(tvecArray)
-            robotCoordAver = np.average(tvecArray, axis = 0, weights= weightsArray)
-            AverTrans = np.average(np.array(rvecArray), axis=0, weights=weightsArray)
-            r = R.from_matrix(AverTrans)
-            quaternion = r.as_quat()
+            return self.last_tmatrix, self.last_center
 
-        return robotCoordAver, quaternion, enemyCoord, enemyQuat
-            
-        
+        return tmatrix, center
+
+    def estimate_robot_pose(self, ids, corners, tmatrix, center, is_our_robot=True):
+        if not ids or tmatrix is None or center is None:
+            return None, None, None
+
+        robot_corners = []
+        robot_ids = []
+        for i, marker_id in enumerate(ids):
+            if is_our_robot:
+                if marker_id != self.robot_id and marker_id not in self.RotSideDict:
+                    continue
+            else:
+                if not (1 <= marker_id <= 10 and marker_id != self.robot_id):
+                    continue
+            robot_corners.append(corners[i][0])
+            robot_ids.append(marker_id)
+
+        if not robot_ids:
+            return None, None, None
+
+        print(f"Visible robot markers: {len(robot_ids)}")
+
+        object_points = []
+        image_points = []
+        for mid, corners in zip(robot_ids, robot_corners):
+            marker_length = 0.07 if (1 <= mid <= 10) else 0.05
+            obj_pts = np.array([
+                [-marker_length / 2, marker_length / 2, 0],
+                [marker_length / 2, marker_length / 2, 0],
+                [marker_length / 2, -marker_length / 2, 0],
+                [-marker_length / 2, -marker_length / 2, 0]
+            ], dtype=np.float32)
+            if mid in self.RotSideDict:
+                rot_side = self.RotSideDict[mid]
+                tvec_side = self.TvecSideDict[mid]
+                obj_pts = np.dot(obj_pts, rot_side.T) - tvec_side  # Transformation to self.robot_id system
+            object_points.extend(obj_pts)
+            image_points.extend(corners)
+
+        object_points = np.array(object_points, dtype=np.float32)
+        image_points = np.array(image_points, dtype=np.float32)
+
+        success, rvec, tvec = cv2.solvePnP(
+            object_points, image_points, self.camera_matrix, self.dist_coefs,
+            flags=cv2.SOLVEPNP_ITERATIVE
+        )
+        if not success:
+            print("Failed to estimate robot pose with solvePnP")
+            return None, None, None
+
+        tvec_cam = tvec.flatten()
+        rot_matrix = cv2.Rodrigues(rvec)[0]
+
+        robot_tvec = np.dot(tmatrix.T, tvec_cam - center)
+        robot_rot_matrix = np.dot(tmatrix.T, rot_matrix)
+        quat = R.from_matrix(robot_rot_matrix).as_quat()
+
+        _, jac = cv2.projectPoints(object_points, rvec, tvec, self.camera_matrix, self.dist_coefs)
+        J = jac[:, :6]
+        sigma2 = 1.0
+        cov = np.linalg.pinv(J.T @ J) * sigma2
+
+        return robot_tvec, quat, cov
+
+    def robots_tracking(self, img):
+        ids, corners = self.detect_markers(img)
+        tmatrix, center = self.t_matrix_building(ids, corners)
+
+        our_tvec, our_quat, our_cov = self.estimate_robot_pose(ids, corners, tmatrix, center, is_our_robot=True)
+        enemy_tvec, enemy_quat, enemy_cov = self.estimate_robot_pose(ids, corners, tmatrix, center, is_our_robot=False)
+
+        if our_tvec is not None:
+            print(f"Our robot: x={our_tvec[0]:.3f}, y={our_tvec[1]:.3f}, z={our_tvec[2]:.3f}")
+        if enemy_tvec is not None:
+            print(f"Enemy robot: x={enemy_tvec[0]:.3f}, y={enemy_tvec[1]:.3f}, z={enemy_tvec[2]:.3f}")
+
+        return our_tvec, our_quat, enemy_tvec, enemy_quat, our_cov, enemy_cov
