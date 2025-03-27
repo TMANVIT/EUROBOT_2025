@@ -41,7 +41,7 @@ class BEVPosePublisher(Node):
 
 
         # Sliding window for covariance estimation
-        self.window_size = 15
+        self.window_size = 5
         self.data_window = deque(maxlen=self.window_size)
         self.enemy_data_window = deque(maxlen=self.window_size)
         self.counter = 0  # Counter for initial pose publication
