@@ -9,6 +9,7 @@ DISPLAY ?= :1
 MAKE_MAP ?= false
 RMW_IMPLEMENTATION ?= rmw_cyclonedds_cpp
 CYCLONEDDS_URI ?= /ros2_ws/cyclonedds.xml
+ROS_DOMAIN_ID = 47
 
 # ------------------------------------------------------------------------------
 
@@ -29,7 +30,8 @@ BASE_PARAMETERS := \
 	RENDER_DISPLAY=$(DISPLAY) \
 	MAKE_MAP=$(MAKE_MAP) \
 	RMW_IMPLEMENTATION=$(RMW_IMPLEMENTATION) \
-	CYCLONEDDS_URI=$(CYCLONEDDS_URI)
+	CYCLONEDDS_URI=$(CYCLONEDDS_URI) \
+	ROS_DOMAIN_ID=$(ROS_DOMAIN_ID)
 
 # ------------------------------------------------------------------------------
 

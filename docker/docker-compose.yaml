@@ -14,7 +14,9 @@ services:
       - CMAKE_PREFIX_PATH=/opt/ros/humble
       - MAKE_MAP=$MAKE_MAP
       - RMW_IMPLEMENTATION=$RMW_IMPLEMENTATION
+      - ROS_LOCALHOST_ONLY=0
       - CYCLONEDDS_URI=$CYCLONEDDS_URI
+      - ROS_DOMAIN_ID=$ROS_DOMAIN_ID
     volumes:
       - $ROOT_DIR/src/ros2:/ros2_ws/src
       - $ROOT_DIR/data:/data
