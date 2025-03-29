@@ -24,13 +24,17 @@ class Camera:
             55: R.from_euler('y', 90, degrees=True).as_matrix(),    # Front: x down, z forward
             56: R.from_euler('x', 90, degrees=True).as_matrix(),    # Right: x forward, z right
             57: R.from_euler('y', -90, degrees=True).as_matrix(),   # Rear: x up, z backward
-            58: R.from_euler('x', -90, degrees=True).as_matrix()    # Left: x forward, z left
+            58: R.from_euler('x', -90, degrees=True).as_matrix(),   # Left: x forward, z left
+            964: np.eye(3),   # Top: no rotation (example)
+            992: np.eye(3)    # Side: x forward, z right (example)
         }
         self.TvecSideDict = {
             55: np.array([-0.05, 0.0, 0.055]),  # From 55 to self.robot_id
             56: np.array([0.0, 0.05, 0.055]),   # From 56 to self.robot_id
             57: np.array([0.05, 0.0, 0.055]),   # From 57 to self.robot_id
-            58: np.array([0.0, -0.05, 0.055])   # From 58 to self.robot_id
+            58: np.array([0.0, -0.05, 0.055]),  # From 58 to self.robot_id
+            964: np.array([0.043, 0.15, 0.135]),   # From 964 to self.robot_id 
+            992: np.array([0.043, -0.15, 0.135])   # From 992 to self.robot_id
         }
 
         self.field_markers = {
@@ -75,7 +79,7 @@ class Camera:
 
         print(f"Visible field markers: {len(field_ids)}")
 
-        marker_size = 0.1  # Specify the size of field markers
+        marker_size = 0.1  # Size of field markers
         object_points = []
         image_points = []
         for mid, corners in zip(field_ids, field_corners):
@@ -83,7 +87,7 @@ class Camera:
                 [-marker_size / 2, marker_size / 2, 0],
                 [marker_size / 2, marker_size / 2, 0],
                 [marker_size / 2, -marker_size / 2, 0],
-                [-marker_size / 2, -marker_size / 2, 0]
+                [-marker_length / 2, -marker_length / 2, 0]
             ], dtype=np.float32) + self.field_markers[mid]
             object_points.extend(obj_pts)
             image_points.extend(corners)
@@ -147,7 +151,14 @@ class Camera:
         object_points = []
         image_points = []
         for mid, corners in zip(robot_ids, robot_corners):
-            marker_length = 0.07 if (1 <= mid <= 10) else 0.05
+            # Set marker size based on ID
+            if mid in [964, 992]:
+                marker_length = 0.085  # 8.5 cm for markers 964 and 992
+            elif 1 <= mid <= 10:
+                marker_length = 0.07   # 7 cm for enemy markers
+            else:
+                marker_length = 0.05   # 5 cm for other markers (55-58, self.robot_id)
+            
             obj_pts = np.array([
                 [-marker_length / 2, marker_length / 2, 0],
                 [marker_length / 2, marker_length / 2, 0],
