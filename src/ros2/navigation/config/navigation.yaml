@@ -140,7 +140,7 @@ global_costmap:
       robot_base_frame: base_footprint
       footprint: "[[0.1, 0.20], [-0.086, 0.20], [-0.086, -0.20], [0.1, -0.20]]"
       resolution: 0.005
-      plugins: ["static_layer", "inflation_layer", "obstacle_layer"]
+      plugins: ["static_layer", "inflation_layer", "dynamic_obstacles_layer"]
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: true
@@ -149,26 +149,27 @@ global_costmap:
         transform_tolerance: 0.05
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        enabled: true
-        inflation_radius: 0.4
-        cost_scaling_factor: 4.5
-        inflate_unknown: false
-      obstacle_layer:
+        update_frequency: 100.0 
+      dynamic_obstacles_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
-        enabled: true
-        observation_sources: obstacle_cloud
-        obstacle_cloud:
-          topic: /enemy_cloud
-          data_type: "PointCloud2"
-          max_obstacle_height: 2.0
-          marking: true
-          clearing: false
-          obstacle_max_range: 5.0  # Увеличиваем до 5 м
-          obstacle_min_range: 0.0
-          raytrace_max_range: 5.0
-          raytrace_min_range: 0.0
-          obstacle_radius: 0.4  # Радиус области вокруг точки (40 см)
-      always_send_full_costmap: true
+        enabled: True
+        observation_sources: enemy_obstacles
+        enemy_obstacles:
+          topic: /enemy_obstacles
+          data_type: PointCloud2
+          marking: True
+          clearing: True
+          combination_method: 1
+          obstacle_radius: 0.0
+          observation_persistence: 0.0
+          max_obstacle_height: 0.5
+          footprint_clearing_enabled: True
+          transform_tolerance: 0.5
+          # Экспериментальные параметры
+          force_updating: True
+          clear_after_reading: True
+          update_footprint_enabled: True
+
 
 
 # local_costmap:
