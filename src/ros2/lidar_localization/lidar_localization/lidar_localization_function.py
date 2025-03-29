@@ -68,13 +68,12 @@ class LidarLocalization(Node):
         self.adaptation_window = (
             self.get_parameter("adaptation_window").get_parameter_value().integer_value
         )
-
-        self.initialize_variables()
-        self.setup_communications()
-
         self.innovation_history = deque(
             maxlen=self.get_parameter("adaptation_window").value
         )
+
+        self.initialize_variables()
+        self.setup_communications()
 
     def initialize_variables(self):
         self.robot_pose = np.zeros(3)  # [x, y, theta]
@@ -606,13 +605,9 @@ def main(args=None):
     rclpy.init(args=args)
     node = LidarLocalization()
 
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        node.destroy_node()
-        rclpy.shutdown()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
 
 
 if __name__ == "__main__":

@@ -1,10 +1,12 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
+from geometry_msgs.msg import Vector3
 from cv_bridge import CvBridge
 from cvFunctions.cvf import Camera  # Предполагается, что Camera находится в cvFunctions.cvf
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from std_msgs.msg import Header
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSDurabilityPolicy, QoSHistoryPolicy
 import numpy as np
 from collections import deque
 from scipy.spatial.transform import Rotation
@@ -15,14 +17,53 @@ CAMERA_CONFIG_PATH = "/ros2_ws/src/camera/config/camera_calibration_config.yaml"
 class BEVPosePublisher(Node):
     def __init__(self):
         super().__init__('bve_pose_publisher')
-        # Publishers for robot pose, initial pose, and enemy pose
-        self.pose_publisher = self.create_publisher(PoseWithCovarianceStamped, '/bve_pose', 10)
-        self.initial_pose_publisher = self.create_publisher(PoseWithCovarianceStamped, '/initialpose', 10)
-        self.enemy_pose_publisher = self.create_publisher(PoseWithCovarianceStamped, '/enemy_pose', 10)
+        
+        # Настройки QoS для разных типов данных
+        self.image_qos = QoSProfile(
+            reliability=QoSReliabilityPolicy.BEST_EFFORT,
+            durability=QoSDurabilityPolicy.VOLATILE,
+            history=QoSHistoryPolicy.KEEP_LAST,
+            depth=1
+        )
+        
+        self.pose_qos = QoSProfile(
+            reliability=QoSReliabilityPolicy.RELIABLE,
+            durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
+            history=QoSHistoryPolicy.KEEP_LAST,
+            depth=10
+        )
+        
+        # Publishers with QoS settings
+        self.pose_publisher = self.create_publisher(
+            PoseWithCovarianceStamped, 
+            '/bve_pose', 
+            qos_profile=self.pose_qos
+        )
+        
+        self.initial_pose_publisher = self.create_publisher(
+            PoseWithCovarianceStamped, 
+            '/initialpose', 
+            qos_profile=self.pose_qos
+        )
+        
+        self.pico_pose_publisher = self.create_publisher(
+            Vector3, 
+            '/odom/init',
+            10
+        )
+        
+        self.enemy_pose_publisher = self.create_publisher(
+            PoseWithCovarianceStamped, 
+            '/enemy_pose', 
+            qos_profile=self.pose_qos
+        )
 
-        # Subscription to raw image topic
+        # Subscription with QoS settings
         self.image_subscription = self.create_subscription(
-            Image, '/image_raw', self.image_callback, 10
+            Image, 
+            '/image_raw', 
+            self.image_callback, 
+            qos_profile=self.image_qos
         )
 
         self.bridge = CvBridge()
@@ -30,7 +71,12 @@ class BEVPosePublisher(Node):
 
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
         self.tf_buffer = tf2_ros.Buffer()
-        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self, spin_thread = True)
+        self.tf_listener = tf2_ros.TransformListener(
+            self.tf_buffer, 
+            self, 
+            qos=self.pose_qos,
+            spin_thread=True
+        )
         
         # Variables to store robot and enemy pose data
         self.robotCoord = None
@@ -69,7 +115,7 @@ class BEVPosePublisher(Node):
         yaw_only_euler = [0.0, 0.0, euler[2]]
         
         # Convert back to quaternion
-        projected_rotation = Rotation.from_euler('xyz', yaw_only_euler, degrees=False)
+        projected_rotation = Rotation.from_euler(seq='xyz', angles=yaw_only_euler, degrees=False)
         return projected_rotation.as_quat()
 
     def image_callback(self, msg):
@@ -126,6 +172,12 @@ class BEVPosePublisher(Node):
             if self.counter == 0:
                 self.initial_pose_publisher.publish(pose_msg)
                 self.counter = 1
+                imu_pub = Vector3()
+                imu_pub.x = pose_msg.pose.pose.position.x
+                imu_pub.y = pose_msg.pose.pose.position.y
+                imu_pub.z = Rotation.from_quat(self.quat).as_euler(seq='xyz', degrees=False)[2]
+                self.get_logger().info(f"{imu_pub}")
+                self.pico_pose_publisher.publish(imu_pub)
             self.pose_publisher.publish(pose_msg)
 
             # Debug output

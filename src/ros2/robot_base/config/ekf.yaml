@@ -10,56 +10,56 @@ ekf_filter_node:
         base_link_frame: base_footprint
         world_frame: odom
 
-        # odom0: odom/unfiltered
-        # odom0_config: [false, false, false,
-        #                false, false, false,
-        #                true, true, false, 
-        #                false, false, true, 
-        #                false, false, false]
+        odom0: odom/unfiltered
+        odom0_config: [false, false, false,
+                       false, false, false,
+                       true, true, false, 
+                       false, false, true, 
+                       false, false, false]
 
-        # imu0: imu/data
-        # imu0_config: [false, false, false,
-        #                false, false, false,
-        #                false, false, false,
-        #                false, false, true, 
-        #                false, false, false]
+        imu0: imu/data
+        imu0_config: [false, false, false,
+                       false, false, false,
+                       false, false, false,
+                       false, false, true, 
+                       false, false, false]
 
         # # # Sensor noise covariance matrices
         # # odom0_pose_rejection_threshold: 1000000000.0 
         # # odom0_twist_rejection_threshold: 1000000000.0 
         # # imu0_twist_rejection_threshold: 1000000000.0 
         # # imu0_pose_rejection_threshold: 1000000000.0 
-        # odom0_queue_size: 7
-        # imu0_queue_size: 7
-        # # odom0_nodelay: true
-        # # imu0_nodelay: true
-        # odom0_remove_gravitational_acceleration: false
+        odom0_queue_size: 7
+        imu0_queue_size: 7
+        # odom0_nodelay: true
+        # imu0_nodelay: true
+        odom0_remove_gravitational_acceleration: false
 
-        pose0: /bve_pose  
-        pose0_config: [true, true, false,
-                    false, false, true,
-                    false, false, false,
-                    false, false, false,
-                    false, false, false]
+        # pose0: /bve_pose  
+        # pose0_config: [true, true, false,
+        #             false, false, true,
+        #             false, false, false,
+        #             false, false, false,
+        #             false, false, false]
 
-        pose0_differential: false
-        pose0_relative: false
-        pose0_queue_size: 5
-        pose0_delay: 0.05 
-        # pose0_rejection_threshold: 10.0
-        # pose0_mahalanobis_threshold: 10.0
+        # pose0_differential: false
+        # pose0_relative: false
+        # pose0_queue_size: 5
+        # pose0_delay: 0.05 
+        # # pose0_rejection_threshold: 10.0
+        # # pose0_mahalanobis_threshold: 10.0
 
 
-        pose1: /lidar_pose
-        pose1_config: [true, true, false,
-                    false, false, true,
-                    false, false, false,
-                    false, false, false,
-                    false, false, false]      
-        pose1_differential: false
-        pose1_relative: false
-        pose1_queue_size: 2
-        pose1_delay: 0.11 
+        # pose1: /lidar_pose
+        # pose1_config: [true, true, false,
+        #             false, false, true,
+        #             false, false, false,
+        #             false, false, false,
+        #             false, false, false]      
+        # pose1_differential: false
+        # pose1_relative: false
+        # pose1_queue_size: 2
+        # pose1_delay: 0.11 
         # pose1_rejection_threshold: 1.0
         # pose1_mahalanobis_threshold: 1.0
 
@@ -95,4 +95,4 @@ ekf_filter_node:
         #                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0,
         #                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0,
         #                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0,
-        #                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01] сейчас пока так настроил
+        #                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01] #сейчас пока так настроил
