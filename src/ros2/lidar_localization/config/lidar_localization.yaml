@@ -6,3 +6,4 @@ lidar_localization_node:
     likelihood_threshold: 0.000001
     consistency_threshold: 0.75
     frame_id: lidar_link
+    robot_parent_frame_id: base_footprint

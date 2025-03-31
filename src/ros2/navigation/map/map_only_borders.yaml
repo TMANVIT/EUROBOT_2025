@@ -1,0 +1,6 @@
+image: /ros2_ws/src/navigation/map/map_only_borders.pgm  # Название PGM-файла
+resolution: 0.005  # Разрешение (0.5 см на пиксель)
+origin: [-1.55, -1.05, 0.0]  # Смещение (центр карты)
+occupied_thresh: 0.00  # Порог занятости
+free_thresh: 1.0  # Порог свободного пространства
+negate: 0  # Не инвертировать цвета
