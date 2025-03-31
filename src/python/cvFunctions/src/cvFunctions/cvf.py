@@ -33,8 +33,8 @@ class Camera:
             56: np.array([0.0, 0.05, 0.055]),   # From 56 to self.robot_id
             57: np.array([0.05, 0.0, 0.055]),   # From 57 to self.robot_id
             58: np.array([0.0, -0.05, 0.055]),  # From 58 to self.robot_id
-            964: np.array([0.043, 0.15, 0.135]),   # From 964 to self.robot_id 
-            992: np.array([0.043, -0.15, 0.135])   # From 992 to self.robot_id
+            964: np.array([0.043, -0.15, 0.135]),   # From 964 to self.robot_id 
+            992: np.array([0.043, 0.15, 0.135])   # From 992 to self.robot_id
         }
 
         self.field_markers = {
@@ -87,7 +87,7 @@ class Camera:
                 [-marker_size / 2, marker_size / 2, 0],
                 [marker_size / 2, marker_size / 2, 0],
                 [marker_size / 2, -marker_size / 2, 0],
-                [-marker_length / 2, -marker_length / 2, 0]
+                [-marker_size / 2, -marker_size / 2, 0]
             ], dtype=np.float32) + self.field_markers[mid]
             object_points.extend(obj_pts)
             image_points.extend(corners)

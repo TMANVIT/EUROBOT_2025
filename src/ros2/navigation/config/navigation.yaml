@@ -138,7 +138,7 @@ global_costmap:
       publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_footprint
-      footprint: "[[0.1, 0.20], [-0.086, 0.20], [-0.086, -0.20], [0.1, -0.20]]"
+      footprint: "[[0.23, 0.20], [-0.086, 0.20], [-0.086, -0.20], [0.23, -0.20]]"
       resolution: 0.005
       plugins: ["static_layer", "inflation_layer", "obstacle_layer"]
       static_layer:
