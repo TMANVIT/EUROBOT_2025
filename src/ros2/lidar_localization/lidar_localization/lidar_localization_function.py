@@ -169,7 +169,7 @@ class LidarLocalization(Node):
             return
 
         # 1. Get robot pose on this timestamp 
-        self.get_robot_pose(msg.header.stamp)
+        # self.get_robot_pose(msg.header.stamp)
 
         # 2. Extract obstacles
         obstacles = [np.array([obs.center.x, obs.center.y]) for obs in msg.circles]

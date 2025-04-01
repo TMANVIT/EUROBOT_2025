@@ -69,7 +69,7 @@ class BEVPosePublisher(Node):
         self.bridge = CvBridge()
         self.camera = Camera(CAMERA_CONFIG_PATH)
 
-        self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
+        # self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(
             self.tf_buffer, 
@@ -83,13 +83,13 @@ class BEVPosePublisher(Node):
         self.quat = None
         self.enemyCoord = None
         self.enemyQuat = None
-        self.aruco_to_base_link = self.tf_buffer.lookup_transform("aruco_link", "base_link", rclpy.time.Time(), timeout=rclpy.duration.Duration(seconds=2.0))
+        self.aruco_to_base_link = self.tf_buffer.lookup_transform("aruco_link", "base_footprint", rclpy.time.Time(), timeout=rclpy.duration.Duration(seconds=2.0))
 
 
         # Sliding window for covariance estimation
         self.window_size = 5
         self.data_window = deque(maxlen=self.window_size)
-        self.enemy_data_window = deque(maxlen=self.window_size)
+        #self.enemy_data_window = deque(maxlen=self.window_size)
         self.counter = 0  # Counter for initial pose publication
 
     def ensure_positive_semidefinite(self, matrix, epsilon=1e-6):
@@ -150,23 +150,32 @@ class BEVPosePublisher(Node):
             pose_msg.pose.pose.orientation.y = self.quat[1]
             pose_msg.pose.pose.orientation.z = self.quat[2]
             pose_msg.pose.pose.orientation.w = self.quat[3]
+            
+            covariance_matrix = np.zeros((6, 6))
+            covariance_matrix[0, 0] = 0.0015  # x variance
+            covariance_matrix[1, 1] = 0.0015  # y variance
+            covariance_matrix[2, 2] = 0.0001  # z variance
+            covariance_matrix[3, 3] = 0.001  # roll variance
+            covariance_matrix[4, 4] = 0.001 # pitch variance
+            covariance_matrix[5, 5] = 0.0025  # yaw variance
+            pose_msg.pose.covariance = covariance_matrix.flatten().tolist()
 
             # Compute covariance
-            if len(self.data_window) == self.window_size:
-                data = np.array(self.data_window).T
-                window_cov = np.cov(data)
-                window_cov = self.ensure_positive_semidefinite(window_cov)
-                combined_cov = self.combine_covariances(robot_cov, window_cov, alpha=0.3)
-                pose_msg.pose.covariance = combined_cov.flatten().tolist()
-            else:
-                covariance_matrix = robot_cov if robot_cov is not None else np.zeros((6, 6))
-                covariance_matrix[0, 0] = max(covariance_matrix[0, 0], 0.15)  # x variance
-                covariance_matrix[1, 1] = max(covariance_matrix[1, 1], 0.15)  # y variance
-                covariance_matrix[2, 2] = max(covariance_matrix[2, 2], 0.0001)  # z variance
-                covariance_matrix[3, 3] = max(covariance_matrix[3, 3], 0.001)  # roll variance
-                covariance_matrix[4, 4] = max(covariance_matrix[4, 4], 0.001)  # pitch variance
-                covariance_matrix[5, 5] = max(covariance_matrix[5, 5], 0.25)  # yaw variance
-                pose_msg.pose.covariance = covariance_matrix.flatten().tolist()
+            # if len(self.data_window) == self.window_size:
+            #     data = np.array(self.data_window).T
+            #     window_cov = np.cov(data)
+            #     window_cov = self.ensure_positive_semidefinite(window_cov)
+            #     combined_cov = self.combine_covariances(robot_cov, window_cov, alpha=0.3)
+            #     pose_msg.pose.covariance = combined_cov.flatten().tolist()
+            # else:
+            #     covariance_matrix = robot_cov if robot_cov is not None else np.zeros((6, 6))
+            #     covariance_matrix[0, 0] = max(covariance_matrix[0, 0], 0.15)  # x variance
+            #     covariance_matrix[1, 1] = max(covariance_matrix[1, 1], 0.15)  # y variance
+            #     covariance_matrix[2, 2] = max(covariance_matrix[2, 2], 0.0001)  # z variance
+            #     covariance_matrix[3, 3] = max(covariance_matrix[3, 3], 0.001)  # roll variance
+            #     covariance_matrix[4, 4] = max(covariance_matrix[4, 4], 0.001)  # pitch variance
+            #     covariance_matrix[5, 5] = max(covariance_matrix[5, 5], 0.25)  # yaw variance
+            #     pose_msg.pose.covariance = covariance_matrix.flatten().tolist()
 
             # Publish initial pose once and regular pose
             if self.counter == 0:
@@ -176,7 +185,7 @@ class BEVPosePublisher(Node):
                 imu_pub.x = pose_msg.pose.pose.position.x
                 imu_pub.y = pose_msg.pose.pose.position.y
                 imu_pub.z = Rotation.from_quat(self.quat).as_euler(seq='xyz', degrees=False)[2]
-                self.get_logger().info(f"{imu_pub}")
+                # self.get_logger().info(f"{imu_pub}")
                 self.pico_pose_publisher.publish(imu_pub)
             self.pose_publisher.publish(pose_msg)
 
@@ -187,45 +196,45 @@ class BEVPosePublisher(Node):
             # )
 
         # Process enemy robot's pose
-        if enemyCoord is not None:
-            self.enemyCoord = enemyCoord
-            self.enemyQuat = self.project_quaternion_to_xy_plane(enemyQuat)  # Project quaternion to xy-plane
+        # if enemyCoord is not None:
+        #     self.enemyCoord = enemyCoord
+        #     self.enemyQuat = self.project_quaternion_to_xy_plane(enemyQuat)  # Project quaternion to xy-plane
 
-            # Convert quaternion to Euler angles for covariance window
-            enemy_rotation = Rotation.from_quat(self.enemyQuat)
-            enemy_euler = enemy_rotation.as_euler('xyz', degrees=False)
-            self.enemy_data_window.append([self.enemyCoord[0], self.enemyCoord[1], self.enemyCoord[2], 
-                                           enemy_euler[0], enemy_euler[1], enemy_euler[2]])
+        #     # Convert quaternion to Euler angles for covariance window
+        #     enemy_rotation = Rotation.from_quat(self.enemyQuat)
+        #     enemy_euler = enemy_rotation.as_euler('xyz', degrees=False)
+        #     self.enemy_data_window.append([self.enemyCoord[0], self.enemyCoord[1], self.enemyCoord[2], 
+        #                                    enemy_euler[0], enemy_euler[1], enemy_euler[2]])
 
-            # Prepare enemy pose message
-            pose_msg = PoseWithCovarianceStamped()
-            pose_msg.header = Header(frame_id='map', stamp=self.get_clock().now().to_msg())
-            pose_msg.pose.pose.position.x = float(self.enemyCoord[0])
-            pose_msg.pose.pose.position.y = float(self.enemyCoord[1])
-            pose_msg.pose.pose.position.z = float(self.enemyCoord[2])
-            pose_msg.pose.pose.orientation.x = self.enemyQuat[0]
-            pose_msg.pose.pose.orientation.y = self.enemyQuat[1]
-            pose_msg.pose.pose.orientation.z = self.enemyQuat[2]
-            pose_msg.pose.pose.orientation.w = self.enemyQuat[3]
+        #     # Prepare enemy pose message
+        #     pose_msg = PoseWithCovarianceStamped()
+        #     pose_msg.header = Header(frame_id='map', stamp=self.get_clock().now().to_msg())
+        #     pose_msg.pose.pose.position.x = float(self.enemyCoord[0])
+        #     pose_msg.pose.pose.position.y = float(self.enemyCoord[1])
+        #     pose_msg.pose.pose.position.z = float(self.enemyCoord[2])
+        #     pose_msg.pose.pose.orientation.x = self.enemyQuat[0]
+        #     pose_msg.pose.pose.orientation.y = self.enemyQuat[1]
+        #     pose_msg.pose.pose.orientation.z = self.enemyQuat[2]
+        #     pose_msg.pose.pose.orientation.w = self.enemyQuat[3]
 
-            # Compute covariance for enemy
-            if len(self.enemy_data_window) == self.window_size:
-                enemy_data = np.array(self.enemy_data_window).T
-                enemy_window_cov = np.cov(enemy_data)
-                enemy_window_cov = self.ensure_positive_semidefinite(enemy_window_cov)
-                combined_cov = self.combine_covariances(enemy_cov, enemy_window_cov, alpha=0.3)
-                pose_msg.pose.covariance = combined_cov.flatten().tolist()
-            else:
-                covariance_matrix = enemy_cov if enemy_cov is not None else np.zeros((6, 6))
-                covariance_matrix[0, 0] = max(covariance_matrix[0, 0], 0.15)  # x variance
-                covariance_matrix[1, 1] = max(covariance_matrix[1, 1], 0.15)  # y variance
-                covariance_matrix[2, 2] = max(covariance_matrix[2, 2], 0.0001)  # z variance
-                covariance_matrix[3, 3] = max(covariance_matrix[3, 3], 0.001)  # roll variance
-                covariance_matrix[4, 4] = max(covariance_matrix[4, 4], 0.001)  # pitch variance
-                covariance_matrix[5, 5] = max(covariance_matrix[5, 5], 0.25)  # yaw variance
-                pose_msg.pose.covariance = covariance_matrix.flatten().tolist()
+        #     # Compute covariance for enemy
+        #     if len(self.enemy_data_window) == self.window_size:
+        #         enemy_data = np.array(self.enemy_data_window).T
+        #         enemy_window_cov = np.cov(enemy_data)
+        #         enemy_window_cov = self.ensure_positive_semidefinite(enemy_window_cov)
+        #         combined_cov = self.combine_covariances(enemy_cov, enemy_window_cov, alpha=0.3)
+        #         pose_msg.pose.covariance = combined_cov.flatten().tolist()
+        #     else:
+        #         covariance_matrix = enemy_cov if enemy_cov is not None else np.zeros((6, 6))
+        #         covariance_matrix[0, 0] = max(covariance_matrix[0, 0], 0.15)  # x variance
+        #         covariance_matrix[1, 1] = max(covariance_matrix[1, 1], 0.15)  # y variance
+        #         covariance_matrix[2, 2] = max(covariance_matrix[2, 2], 0.0001)  # z variance
+        #         covariance_matrix[3, 3] = max(covariance_matrix[3, 3], 0.001)  # roll variance
+        #         covariance_matrix[4, 4] = max(covariance_matrix[4, 4], 0.001)  # pitch variance
+        #         covariance_matrix[5, 5] = max(covariance_matrix[5, 5], 0.25)  # yaw variance
+        #         pose_msg.pose.covariance = covariance_matrix.flatten().tolist()
 
-            self.enemy_pose_publisher.publish(pose_msg)
+        #     self.enemy_pose_publisher.publish(pose_msg)
 
             # Debug output
             # self.get_logger().info(

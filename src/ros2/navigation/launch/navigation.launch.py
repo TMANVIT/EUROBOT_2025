@@ -4,7 +4,7 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.substitutions import FindPackageShare
 
-MAP_NAME = 'map_only_borders' 
+MAP_NAME = 'battlefield' 
 
 def generate_launch_description():
     nav2_launch_path = PathJoinSubstitution(
