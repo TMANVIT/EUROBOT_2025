@@ -6,10 +6,14 @@
     <Domain Id="any">
         <General>
             <Interfaces>
-                <NetworkInterface name="wlp2s0"/>
+                <NetworkInterface name="wlp2s0" priority="100"/>
             </Interfaces>
 
             <AllowMulticast>true</AllowMulticast>
+            <MaxMessageSize>65536B</MaxMessageSize>
+
+            <Transport>udp</Transport>
+            <DontRoute>false</DontRoute>
         </General>
 
     </Domain>

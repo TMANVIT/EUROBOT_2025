@@ -113,9 +113,9 @@ class LidarLocalization(Node):
             ]
             if self.side == 0
             else [
-                np.array([1.52048, 0.00173703]),
-                np.array([-1.49866, -0.999966]),
-                np.array([-1.49856, 0.994759]),
+                np.array([1.59048, 0.09193703]),
+                np.array([-1.57, -0.959966]),
+                np.array([-1.57, -0.979966]),
             ]
         )
 

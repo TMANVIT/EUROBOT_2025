@@ -79,15 +79,11 @@ Visualization Manager:
           Value: false
         laser:
           Value: true
-        left_wheel:
-          Value: true
         lidar_link:
           Value: true
         map:
           Value: true
         odom:
-          Value: true
-        right_wheel:
           Value: true
         torch_blue_1:
           Value: true
@@ -104,27 +100,7 @@ Visualization Manager:
       Show Names: true
       Tree:
         world:
-          map:
-            odom:
-              base_footprint:
-                base_link:
-                  aruco_link:
-                    {}
-                  imu_link:
-                    {}
-                  left_wheel:
-                    {}
-                  lidar_link:
-                    laser:
-                      {}
-                  right_wheel:
-                    {}
-            torch_blue_1:
-              {}
-            torch_blue_2:
-              {}
-            torch_blue_3:
-              {}
+          {}
       Update Interval: 0
       Value: true
     - Alpha: 1

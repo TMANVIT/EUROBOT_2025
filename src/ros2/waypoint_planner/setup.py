@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'waypoint_planner_node = waypoint_planner.waypiont_planner:main',
         ],
     },
 )
