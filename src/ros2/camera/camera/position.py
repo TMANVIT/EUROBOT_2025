@@ -46,12 +46,6 @@ class BEVPosePublisher(Node):
             qos_profile=self.pose_qos
         )
         
-        self.pico_pose_publisher = self.create_publisher(
-            Vector3, 
-            '/odom/init',
-            10
-        )
-        
         self.enemy_pose_publisher = self.create_publisher(
             PoseWithCovarianceStamped, 
             '/enemy_pose', 
@@ -186,7 +180,6 @@ class BEVPosePublisher(Node):
                 imu_pub.y = pose_msg.pose.pose.position.y
                 imu_pub.z = Rotation.from_quat(self.quat).as_euler(seq='xyz', degrees=False)[2]
                 # self.get_logger().info(f"{imu_pub}")
-                self.pico_pose_publisher.publish(imu_pub)
             self.pose_publisher.publish(pose_msg)
 
             # Debug output

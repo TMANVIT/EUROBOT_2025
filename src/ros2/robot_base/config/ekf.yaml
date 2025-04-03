@@ -15,7 +15,7 @@ ekf_filter_node:
         odom0_config: [false, false, false,
                        false, false, false,
                        true, true, false, 
-                       false, false, true, 
+                       false, false, false, 
                        false, false, false]
 
         imu0: imu/data
@@ -26,8 +26,8 @@ ekf_filter_node:
                        false, false, false]
 
         # # Sensor noise covariance matrices
-        odom0_pose_rejection_threshold: 0.0005 
-        imu0_twist_rejection_threshold: 0.0005 
+        odom0_pose_rejection_threshold: 0.3 
+        imu0_twist_rejection_threshold: 5.0 
         odom0_queue_size: 1
         imu0_queue_size: 1
         odom0_nodelay: false
@@ -45,8 +45,8 @@ ekf_filter_node:
         pose0_relative: false
         pose0_queue_size: 1
         pose0_delay: 0.001 
-        pose0_rejection_threshold: 10.5
-        pose0_mahalanobis_threshold: 10.5
+        pose0_rejection_threshold: 0.1
+        pose0_mahalanobis_threshold: 0.1
 
 
         pose1: /lidar_pose
@@ -59,8 +59,8 @@ ekf_filter_node:
         pose1_relative: false
         pose1_queue_size: 1
         pose1_delay: 0.001
-        pose1_rejection_threshold: 10.5
-        pose1_mahalanobis_threshold: 10.5
+        pose1_rejection_threshold: 0.1
+        pose1_mahalanobis_threshold: 0.1
 
         # # Measurement noise covariance matrices
         process_noise_covariance: [0.005, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,      # x
