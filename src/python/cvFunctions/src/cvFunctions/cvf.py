@@ -17,7 +17,7 @@ class Camera:
         self.robot_id = self.config["robot_id"]
 
         self.arucoParams = cv2.aruco.DetectorParameters()
-        self.arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)
+        self.arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
         self.detector = cv2.aruco.ArucoDetector(self.arucoDict, self.arucoParams)
 
         self.RotSideDict = {
@@ -33,8 +33,8 @@ class Camera:
             56: np.array([0.0, 0.05, 0.055]),   # From 56 to self.robot_id
             57: np.array([0.05, 0.0, 0.055]),   # From 57 to self.robot_id
             58: np.array([0.0, -0.05, 0.055]),  # From 58 to self.robot_id
-            964: np.array([0.043, -0.15, 0.135]),   # From 964 to self.robot_id 
-            992: np.array([0.043, 0.15, 0.135])   # From 992 to self.robot_id
+            127: np.array([-0.043, 0.15, 0.135]),   # From 127 to self.robot_id 
+            126: np.array([-0.043, -0.15, 0.135])   # From 126 to self.robot_id
         }
 
         self.field_markers = {
@@ -152,7 +152,7 @@ class Camera:
         image_points = []
         for mid, corners in zip(robot_ids, robot_corners):
             # Set marker size based on ID
-            if mid in [964, 992]:
+            if mid in [127, 126]:
                 marker_length = 0.085  # 8.5 cm for markers 964 and 992
             elif 1 <= mid <= 10:
                 marker_length = 0.07   # 7 cm for enemy markers
