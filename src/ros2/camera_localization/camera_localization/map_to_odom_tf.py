@@ -38,7 +38,7 @@ class MapToOdomTF(Node):
 
         self.map_to_odom.transform.translation.x = msg.pose.pose.position.x
         self.map_to_odom.transform.translation.y = msg.pose.pose.position.y
-        self.map_to_odom.transform.translation.z = msg.pose.pose.position.z
+        self.map_to_odom.transform.translation.z = 0.0
 
         self.map_to_odom.transform.rotation.x = msg.pose.pose.orientation.x
         self.map_to_odom.transform.rotation.y = msg.pose.pose.orientation.y
