@@ -173,23 +173,6 @@ class BEVPosePublisher(Node):
             covariance_matrix[5, 5] = 0.005 # yaw variance
             pose_msg.pose.covariance = covariance_matrix.flatten().tolist()
 
-            # Compute covariance
-            # if len(self.data_window) == self.window_size:
-            #     data = np.array(self.data_window).T
-            #     window_cov = np.cov(data)
-            #     window_cov = self.ensure_positive_semidefinite(window_cov)
-            #     combined_cov = self.combine_covariances(robot_cov, window_cov, alpha=0.3)
-            #     pose_msg.pose.covariance = combined_cov.flatten().tolist()
-            # else:
-            #     covariance_matrix = robot_cov if robot_cov is not None else np.zeros((6, 6))
-            #     covariance_matrix[0, 0] = max(covariance_matrix[0, 0], 0.15)  # x variance
-            #     covariance_matrix[1, 1] = max(covariance_matrix[1, 1], 0.15)  # y variance
-            #     covariance_matrix[2, 2] = max(covariance_matrix[2, 2], 0.0001)  # z variance
-            #     covariance_matrix[3, 3] = max(covariance_matrix[3, 3], 0.001)  # roll variance
-            #     covariance_matrix[4, 4] = max(covariance_matrix[4, 4], 0.001)  # pitch variance
-            #     covariance_matrix[5, 5] = max(covariance_matrix[5, 5], 0.25)  # yaw variance
-            #     pose_msg.pose.covariance = covariance_matrix.flatten().tolist()
-
             # Publish initial pose once and regular pose
             if self.counter == 0:
                 self.initial_pose_publisher.publish(pose_msg)
@@ -201,16 +184,11 @@ class BEVPosePublisher(Node):
                 # self.get_logger().info(f"{imu_pub}")
             self.pose_publisher.publish(pose_msg)
 
-            # Debug output
-            # self.get_logger().info(
-            #     f"Our robot: x={self.robotCoord[0]:.3f}, y={self.robotCoord[1]:.3f}, z={self.robotCoord[2]:.3f}, "
-            #     f"quat=[{self.quat[0]:.3f}, {self.quat[1]:.3f}, {self.quat[2]:.3f}, {self.quat[3]:.3f}]"
-            # )
 
         # Process enemy robot's pose
-        # if enemyCoord is not None:
-        #     self.enemyCoord = enemyCoord
-        #     self.enemyQuat = self.project_quaternion_to_xy_plane(enemyQuat)  # Project quaternion to xy-plane
+        if enemyCoord is not None:
+            self.enemyCoord = enemyCoord
+            self.enemyQuat = self.project_quaternion_to_xy_plane(enemyQuat)  # Project quaternion to xy-plane
 
             enemy_rotation = Rotation.from_quat(self.enemyQuat)
             enemy_euler = enemy_rotation.as_euler('xyz', degrees=False)
@@ -236,7 +214,7 @@ class BEVPosePublisher(Node):
             covariance_matrix[5, 5] = 0.005 # yaw variance
             pose_msg.pose.covariance = covariance_matrix.flatten().tolist()
 
-        #     self.enemy_pose_publisher.publish(pose_msg)
+            self.enemy_pose_publisher.publish(pose_msg)
 
             # Debug output
             # self.get_logger().info(
