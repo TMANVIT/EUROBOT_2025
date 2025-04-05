@@ -149,8 +149,11 @@ global_costmap:
         transform_tolerance: 0.05
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        update_frequency: 100.0 
-      dynamic_obstacles_layer:
+        enabled: true
+        inflation_radius: 0.05
+        cost_scaling_factor: 4.5
+        inflate_unknown: false
+      obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
         observation_sources: enemy_obstacles

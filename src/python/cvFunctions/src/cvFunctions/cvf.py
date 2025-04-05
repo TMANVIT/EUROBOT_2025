@@ -121,81 +121,58 @@ class Camera:
         else:
             return self.last_tmatrix, self.last_center
 
-        return tmatrix, center
+        return tmatrix, center 
+        
+    def robots_tracking(self, ids, transMatrixDict, tvecDict, weightsDictionary, tmatrix, center):
+        ourRobot = False
+        enemyCoord = None
+        enemyQuat = None
+        tvecArray = []
+        rvecArray = []
+        weightsArray = []
+        for i in ids:
+            if i in list(range(11))+list(self.RotSideDict.keys()):
+                rvec = tvecDict[i] - center
+                robotCoord = [np.dot(rvec, tmatrix[0]), np.dot(rvec, tmatrix[1]), np.dot(rvec, tmatrix[2])]
+                robotTransMatrix = np.linalg.inv(tmatrix) @ transMatrixDict[i]
+                if i in self.RotSideDict.keys():
+                    # robotCoord += self.TvecSideDict[i]
+                    robotTransMatrix = robotTransMatrix @ self.RotSideDict[i]
+                robotTransMatrix[0][2] = 0.0
+                robotTransMatrix[0] = robotTransMatrix[0] / np.linalg.norm(robotTransMatrix[0])
+                robotTransMatrix[1][2] = 0.0
+                robotTransMatrix[1] = robotTransMatrix[1] / np.linalg.norm(robotTransMatrix[1])
+                robotTransMatrix[2] = [0.0, 0.0, 1.0]
+                
+            
+                
+                if i == self.robot_id or i in self.RotSideDict.keys():
+                    print(i, robotCoord, robotTransMatrix)
+                    ourRobot = True
+                    tvecArray.append(np.array(robotCoord))
+                    rvecArray.append(robotTransMatrix)
+                    weightsArray.append(weightsDictionary[i])
+                else:
+                    enemyCoord = robotCoord
+                    r = R.from_matrix(robotTransMatrix)
+                    enemyQuat = r.as_quat()
 
-    def estimate_robot_pose(self, ids, corners, tmatrix, center, is_our_robot=True):
-        if not ids or tmatrix is None or center is None:
-            return None, None, None
-
-        robot_corners = []
-        robot_ids = []
-        for i, marker_id in enumerate(ids):
-            if is_our_robot:
-                if marker_id != self.robot_id and marker_id not in self.RotSideDict:
-                    continue
-            else:
-                if not (1 <= marker_id <= 10 and marker_id != self.robot_id):
-                    continue
-            robot_corners.append(corners[i][0])
-            robot_ids.append(marker_id)
-
-        if not robot_ids:
-            return None, None, None
-
-        print(f"Visible robot markers: {len(robot_ids)}")
-
-        object_points = []
-        image_points = []
-        for mid, corners in zip(robot_ids, robot_corners):
-            marker_length = 0.07 if (1 <= mid <= 10) else 0.05
-            obj_pts = np.array([
-                [-marker_length / 2, marker_length / 2, 0],
-                [marker_length / 2, marker_length / 2, 0],
-                [marker_length / 2, -marker_length / 2, 0],
-                [-marker_length / 2, -marker_length / 2, 0]
-            ], dtype=np.float32)
-            if mid in self.RotSideDict:
-                rot_side = self.RotSideDict[mid]
-                tvec_side = self.TvecSideDict[mid]
-                obj_pts = np.dot(obj_pts, rot_side.T) - tvec_side  # Transformation to self.robot_id system
-            object_points.extend(obj_pts)
-            image_points.extend(corners)
-
-        object_points = np.array(object_points, dtype=np.float32)
-        image_points = np.array(image_points, dtype=np.float32)
-
-        success, rvec, tvec = cv2.solvePnP(
-            object_points, image_points, self.camera_matrix, self.dist_coefs,
-            flags=cv2.SOLVEPNP_ITERATIVE
-        )
-        if not success:
-            print("Failed to estimate robot pose with solvePnP")
-            return None, None, None
-
-        tvec_cam = tvec.flatten()
-        rot_matrix = cv2.Rodrigues(rvec)[0]
-
-        robot_tvec = np.dot(tmatrix.T, tvec_cam - center)
-        robot_rot_matrix = np.dot(tmatrix.T, rot_matrix)
-        quat = R.from_matrix(robot_rot_matrix).as_quat()
-
-        _, jac = cv2.projectPoints(object_points, rvec, tvec, self.camera_matrix, self.dist_coefs)
-        J = jac[:, :6]
-        sigma2 = 1.0
-        cov = np.linalg.pinv(J.T @ J) * sigma2
-
-        return robot_tvec, quat, cov
-
-    def robots_tracking(self, img):
-        ids, corners = self.detect_markers(img)
-        tmatrix, center = self.t_matrix_building(ids, corners)
-
-        our_tvec, our_quat, our_cov = self.estimate_robot_pose(ids, corners, tmatrix, center, is_our_robot=True)
-        enemy_tvec, enemy_quat, enemy_cov = self.estimate_robot_pose(ids, corners, tmatrix, center, is_our_robot=False)
-
-        if our_tvec is not None:
-            print(f"Our robot: x={our_tvec[0]:.3f}, y={our_tvec[1]:.3f}, z={our_tvec[2]:.3f}")
-        if enemy_tvec is not None:
-            print(f"Enemy robot: x={enemy_tvec[0]:.3f}, y={enemy_tvec[1]:.3f}, z={enemy_tvec[2]:.3f}")
+        if not ourRobot:
+            robotCoordAver = None
+            quaternion = None
+        elif len(tvecArray) == 1:
+            r = R.from_matrix(rvecArray[0])
+            quaternion = r.as_quat()
+            robotCoordAver = tvecArray[0]
+        else:
+            weightsSum = sum(weightsArray)
+            for i in range(len(weightsArray)):
+                weightsArray[i] =  weightsArray[i]/weightsSum
+            
+            print(tvecArray)
+            robotCoordAver = np.average(tvecArray, axis = 0, weights= weightsArray)
+            AverTrans = np.average(np.array(rvecArray), axis=0, weights=weightsArray)
+            r = R.from_matrix(AverTrans)
+            quaternion = r.as_quat()
 
         return our_tvec, our_quat, enemy_tvec, enemy_quat, our_cov, enemy_cov

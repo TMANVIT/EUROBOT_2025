@@ -1,6 +1,8 @@
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import PoseWithCovarianceStamped, Point
+
+from geometry_msgs.msg import PoseWithCovarianceStamped
+from tf2_ros import Buffer, TransformListener, LookupException, ConnectivityException, ExtrapolationException
 from obstacle_detector.msg import Obstacles
 from visualization_msgs.msg import Marker, MarkerArray
 from std_msgs.msg import ColorRGBA
@@ -16,21 +18,37 @@ class LidarLocalization(Node):
     def __init__(self):
         super().__init__('lidar_localization_node')
 
-        # Объявление параметров
-        self.declare_parameter('side', 0)
-        self.declare_parameter('debug_mode', False)
-        self.declare_parameter('visualize_candidate', True)
-        self.declare_parameter('likelihood_threshold', 0.001)
-        self.declare_parameter('consistency_threshold', 0.9)
-        self.declare_parameter('frame_id', 'map')  # Глобальная система координат
+        # Declare parameters
+        self.declare_parameter("side", 0)
+        self.declare_parameter("debug_mode", False)
+        self.declare_parameter("visualize_candidate", True)
+        self.declare_parameter("likelihood_threshold", 0.001)
+        self.declare_parameter("consistency_threshold", 0.9)
+        self.declare_parameter("frame_id", "lidar_link")
+        self.declare_parameter('robot_parent_frame_id', 'base_footprint')
 
-        # Получение значений параметров
-        self.side = self.get_parameter('side').get_parameter_value().integer_value
-        self.debug_mode = self.get_parameter('debug_mode').get_parameter_value().bool_value
-        self.visualize_candidate = self.get_parameter('visualize_candidate').get_parameter_value().bool_value
-        self.likelihood_threshold = self.get_parameter('likelihood_threshold').get_parameter_value().double_value
-        self.consistency_threshold = self.get_parameter('consistency_threshold').get_parameter_value().double_value
-        self.frame_id = self.get_parameter('frame_id').get_parameter_value().string_value
+        # Get parameters
+        self.side = self.get_parameter("side").get_parameter_value().integer_value
+        self.debug_mode = (
+            self.get_parameter("debug_mode").get_parameter_value().bool_value
+        )
+        self.visualize_candidate = (
+            self.get_parameter("visualize_candidate").get_parameter_value().bool_value
+        )
+        self.likelihood_threshold = (
+            self.get_parameter("likelihood_threshold")
+            .get_parameter_value()
+            .double_value
+        )
+        self.consistency_threshold = (
+            self.get_parameter("consistency_threshold")
+            .get_parameter_value()
+            .double_value
+        )
+        self.frame_id = (
+            self.get_parameter("frame_id").get_parameter_value().string_value
+        )
+        self.parent_frame_id = self.get_parameter('robot_parent_frame_id').get_parameter_value().string_value
 
         # Инициализация карты ориентиров
         if self.side == 0:
@@ -46,29 +64,29 @@ class LidarLocalization(Node):
                 np.array([-1.49856, 0.994759])
             ]
 
-        self.beacon_no = 0
-        self.init_pose_detected = False
-        self.lidar_pose_pub = self.create_publisher(PoseWithCovarianceStamped, '/lidar_pose', 10)
-        
+        self.lidar_pose_pub = self.create_publisher(
+            PoseWithCovarianceStamped, "/lidar_pose", 10
+        )
         if self.visualize_candidate:
-            self.circles_pub = self.create_publisher(MarkerArray, '/candidates', 10)
-
-        # Подписки
-        self.create_subscription(Obstacles, '/raw_obstacles', self.obstacle_callback, 10)
-        self.create_subscription(PoseWithCovarianceStamped, '/pred_pose', self.pred_pose_callback, 10)
-        self.create_subscription(PoseWithCovarianceStamped, '/initialpose', self.initpose_callback, 10)
-
-        # Инициализация TF2 для преобразования координат
+            self.circles_pub = self.create_publisher(MarkerArray, "/candidates", 10)
+        self.subscription = self.create_subscription(
+            Obstacles, "/raw_obstacles", self.obstacle_callback, 10
+        )
+        self.subscription = self.create_subscription(
+            PoseWithCovarianceStamped, "/pred_pose", self.pred_pose_callback, 10
+        )
+        self.subscription  # prevent unused variable warning
+        
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
-        self.get_logger().info('Lidar Localization Node initialized, waiting for /initialpose')
-
         self.geometry_description_map = self.init_landmarks_map()
-        self.robot_pose = None
-        self.P_pred = None
+        self.robot_pose = []
+        self.P_pred = np.array([[0.05**2, 0.0, 0.0], [0.0, 0.05**2, 0.0], [0.0, 0.0, 0.1]])
         self.newPose = False
-        self.R = np.array([[0.05**2, 0.0], [0.0, 0.05**2]])  # Шум измерений
+        self.R = np.array(
+            [[0.001, 0.0], [0.0, 0.001]]
+        )
         self.lidar_pose_msg = PoseWithCovarianceStamped()
 
     def obstacle_callback(self, msg):
@@ -94,18 +112,34 @@ class LidarLocalization(Node):
         # Преобразование координат препятствий из lidar_link в map
         self.obs_raw = []
         for obs in msg.circles:
-            # Создание точки в системе lidar_link
-            point_lidar = Point(x=obs.center.x, y=obs.center.y, z=0.0)
-            point_map = self.transform_point(point_lidar, transform)
-            self.obs_raw.append(np.array([point_map.x, point_map.y]))
-
+            self.obs_raw.append(np.array([obs.center.x, obs.center.y]))
+            self.get_logger().info(f"x = {obs.center.x}; y = {obs.center.y}")
+        self.get_logger().info(f"complete")
         self.obs_time = msg.header.stamp
-
-        if not self.newPose:
-            self.get_logger().debug("No new robot pose or P_pred")
-            return
-
-        self.get_logger().debug(f"New Pose detected x = {self.robot_pose[0]}, y = {self.robot_pose[1]}, yaw = {self.robot_pose[2]}")
+        # data processing
+        try:
+            self.predict_transform = self.tf_buffer.lookup_transform(
+                self.parent_frame_id,
+                self.frame_id,
+                self.obs_time
+            )
+            euler = R.from_quat(
+                    [self.predict_transform.transform.rotation.x,
+                    self.predict_transform.transform.rotation.y,
+                    self.predict_transform.transform.rotation.z,
+                    self.predict_transform.transform.rotation.w]).as_euler(seq="xyz", degrees=False)[2]
+            self.robot_pose = np.array([
+                self.predict_transform.transform.translation.x,
+                self.predict_transform.transform.translation.y,
+                euler                
+            ])
+        except (LookupException, ConnectivityException, ExtrapolationException) as e:
+            self.get_logger().error(f'Could not transform {self.parent_frame_id} to {self.frame_id}: {e}')
+            self.get_logger().debug("now try to use the latest topic")
+            if self.newPose == False: 
+                self.get_logger().error("no new predict topic, skip.")
+                return
+        # self.get_logger().debug(f"New Pose detected x = {self.robot_pose[0]}, y = {self.robot_pose[1]}, yaw = {self.robot_pose[2]}")
         self.landmarks_candidate = self.get_landmarks_candidate()
         self.landmarks_set = self.get_landmarks_set()
         
@@ -148,19 +182,17 @@ class LidarLocalization(Node):
 
         if yaw < 0:
             yaw += 2 * np.pi
-        
-        self.robot_pose = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y, yaw])
-        self.P_pred = np.array([
-            [msg.pose.covariance[0], 0, 0],
-            [0, msg.pose.covariance[7], 0],
-            [0, 0, msg.pose.covariance[35]]
-        ])
 
-    def initpose_callback(self, msg):
-        """Обработка начальной позы от внешней камеры"""
-        if not self.init_pose_detected:
-            self.init_pose_detected = True
-            self.get_logger().info("Initial pose received from camera in LidarLocalization")
+        self.robot_pose = np.array(
+            [msg.pose.pose.position.x, msg.pose.pose.position.y, yaw]
+        )
+        self.P_pred = np.array(
+            [
+                [msg.pose.covariance[0] * 100, 0, 0],
+                [0, msg.pose.covariance[7] * 100, 0],
+                [0, 0, msg.pose.covariance[35] * 1e6],
+            ]
+        )
 
     def init_landmarks_map(self):
         """Инициализация геометрического описания карты ориентиров"""
@@ -179,6 +211,7 @@ class LidarLocalization(Node):
         self.landmarks_candidate = []
         self.landmarks_set = []
         self.newPose = False
+        self.predict_transform = None
 
     def get_obs_candidate(self, landmark):
         """Получение кандидатов наблюдений для конкретного ориентира"""
@@ -211,61 +244,55 @@ class LidarLocalization(Node):
             likelihood = likelihood / normalizer
 
             if likelihood > self.likelihood_threshold:
-                obs_candidates.append({'position': obs, 'probability': likelihood})
-                
-                if self.visualize_candidate and self.beacon_no == 1:
-                    marker = self.create_marker(obs, likelihood, marker_id)
-                    text_marker = self.create_text_marker(obs, likelihood, marker_id)
-                    marker_array.markers.extend([marker, text_marker])
-                    marker_id += 1
+                obs_candidates.append({"position": obs, "probability": likelihood})
+                if self.visualize_candidate:
+                    marker = Marker()
+                    marker.header.frame_id = self.frame_id
+                    marker.header.stamp = self.get_clock().now().to_msg()
+                    marker.ns = "candidates"
+                    marker.type = Marker.SPHERE
+                    marker.action = Marker.ADD
+                    marker.scale.x = 0.1
+                    marker.scale.y = 0.1
+                    marker.scale.z = 0.01
 
-        if self.visualize_candidate and self.beacon_no == 1:
+                    text_marker = Marker()
+                    text_marker.header.frame_id = self.frame_id
+                    text_marker.header.stamp = self.get_clock().now().to_msg()
+                    text_marker.ns = "text"
+                    text_marker.type = Marker.TEXT_VIEW_FACING
+                    text_marker.action = Marker.ADD
+                    text_marker.scale.z = 0.1
+                    text_marker.color = ColorRGBA(
+                        r=1.0, g=1.0, b=1.0, a=1.0
+                    )  # White text
+
+                    # use visualization_msgs to visualize the likelihood
+                    marker.pose.position.x = obs[0]
+                    marker.pose.position.y = obs[1]
+                    marker.pose.position.z = 0.0
+                    marker.color = ColorRGBA(r=0.0, g=0.5, b=1.0, a=likelihood)
+                    marker_id += 1
+                    marker.id = marker_id
+                    marker_array.markers.append(marker)
+                    text_marker.pose.position.x = obs[0]
+                    text_marker.pose.position.y = obs[1]
+                    text_marker.pose.position.z = 0.1
+                    text_marker.text = f"{likelihood:.2f}"
+                    text_marker.id = marker_id
+                    marker_array.markers.append(text_marker)
+        if self.visualize_candidate:
             self.circles_pub.publish(marker_array)
             self.get_logger().debug("Published marker array")
+            # clean up
+            marker_array.markers.clear()
 
         return obs_candidates
-
-    def create_marker(self, obs, likelihood, marker_id):
-        """Создание маркера для визуализации"""
-        marker = Marker()
-        marker.header.frame_id = self.frame_id
-        marker.header.stamp = self.get_clock().now().to_msg()
-        marker.ns = "candidates"
-        marker.type = Marker.SPHERE
-        marker.action = Marker.ADD
-        marker.scale.x = marker.scale.y = 0.1
-        marker.scale.z = 0.01
-        marker.pose.position.x = obs[0]
-        marker.pose.position.y = obs[1]
-        marker.pose.position.z = 0.0
-        marker.color = ColorRGBA(r=0.0, g=0.5, b=1.0, a=likelihood)
-        marker.id = marker_id
-        return marker
-
-    def create_text_marker(self, obs, likelihood, marker_id):
-        """Создание текстового маркера для визуализации вероятности"""
-        text_marker = Marker()
-        text_marker.header.frame_id = self.frame_id
-        text_marker.header.stamp = self.get_clock().now().to_msg()
-        text_marker.ns = "text"
-        text_marker.type = Marker.TEXT_VIEW_FACING
-        text_marker.action = Marker.ADD
-        text_marker.scale.z = 0.1
-        text_marker.color = ColorRGBA(r=1.0, g=1.0, b=1.0, a=1.0)
-        text_marker.pose.position.x = obs[0]
-        text_marker.pose.position.y = obs[1]
-        text_marker.pose.position.z = 0.1
-        text_marker.text = f"{likelihood:.2f}"
-        text_marker.id = marker_id
-        return text_marker
 
     def get_landmarks_candidate(self):
         """Получение списка кандидатов для всех ориентиров"""
         landmarks_candidate = []
-        self.beacon_no = 0
-        
         for landmark in self.landmarks_map:
-            self.beacon_no += 1
             candidate = {
                 'landmark': landmark,
                 'obs_candidates': self.get_obs_candidate(landmark)
@@ -320,10 +347,17 @@ class LidarLocalization(Node):
         max_likelihood_idx = 0
 
         lidar_pose = np.zeros(3)
-        lidar_cov = np.diag([0.05**2, 0.05**2, 0.05**2])
-
-        if len(self.landmarks_set[max_likelihood_idx]['beacons']) >= 3:
-            beacons = [self.landmarks_set[max_likelihood_idx]['beacons'][i] for i in range(3)]
+        lidar_cov = np.diag(
+            [0.05**2, 0.05**2, 0.05**2]
+        )
+        self.get_logger().debug(f"landmarks_set: {self.landmarks_set}")
+        # If the most likely set has at least 3 beacons
+        if len(self.landmarks_set[max_likelihood_idx]["beacons"]) >= 3:
+            beacons = [
+                self.landmarks_set[max_likelihood_idx]["beacons"][i] for i in range(3)
+            ]
+            A = np.zeros((2, 2))
+            b = np.zeros(2)
             dist_beacon_robot = [np.linalg.norm(beacon) for beacon in beacons]
 
             A = np.zeros((2, 2))
@@ -341,6 +375,8 @@ class LidarLocalization(Node):
 
             try:
                 X = np.linalg.solve(A.T @ A, A.T @ b)
+                if X[0] < 0 or X[0] > 3 or X[1] < 0 or X[1] > 2:
+                    return
                 lidar_pose[0] = X[0]
                 lidar_pose[1] = X[1]
 
@@ -351,7 +387,12 @@ class LidarLocalization(Node):
                                                np.arctan2(beacons[i][1], beacons[i][0]))
                     robot_sin += np.sin(theta)
                     robot_cos += np.cos(theta)
-                lidar_pose[2] = angle_limit_checking(np.arctan2(robot_sin, robot_cos))
+
+                    lidar_pose[2] = angle_limit_checking(
+                        np.arctan2(robot_sin, robot_cos)
+                    )
+                
+                self.pose_compensation(lidar_pose)
 
                 max_likelihood = self.landmarks_set[max_likelihood_idx]['probability_set']
                 lidar_cov /= max_likelihood
@@ -389,10 +430,52 @@ class LidarLocalization(Node):
                 dist = np.linalg.norm(beacons[i] - beacons[j])
                 geometry_description[(i, j)] = dist
                 if (i, j) in self.geometry_description_map:
-                    expected = self.geometry_description_map[(i, j)]
-                    consistency *= 1 - np.abs(dist - expected) / expected
+                    expected_distance = self.geometry_description_map[(i, j)]
+                    consistency *= (
+                        1
+                        - np.abs(geometry_description[(i, j)] - expected_distance)
+                        / expected_distance
+                    )
+                # if the index is not found in map, it is probably on the lower triangle of the matrix
 
-        return max(0.0, min(1.0, consistency))
+        return consistency
+
+    def pose_compensation(self, lidar_pose):
+        # find the translation and rotation from obs_time to now using TF
+        try:
+            now_transform = self.tf_buffer.lookup_transform( # get the latest transform
+                self.parent_frame_id,
+                self.frame_id,
+                rclpy.time.Time(),
+                timeout=rclpy.duration.Duration(seconds=0.1)
+            )
+            relative_transform = now_transform
+            relative_transform.transform.translation.x -= self.predict_transform.transform.translation.x
+            relative_transform.transform.translation.y -= self.predict_transform.transform.translation.y
+            # find the relative rotation
+            q1_inv = [
+                self.predict_transform.transform.rotation.x,
+                self.predict_transform.transform.rotation.y,
+                self.predict_transform.transform.rotation.z,
+                -self.predict_transform.transform.rotation.w  # Negate for inverse
+            ]
+
+            q0 = now_transform.transform.rotation
+            qr = [
+                q0.x * q1_inv[3] + q0.w * q1_inv[0] + q0.y * q1_inv[2] - q0.z * q1_inv[1],
+                q0.y * q1_inv[3] + q0.w * q1_inv[1] + q0.z * q1_inv[0] - q0.x * q1_inv[2],
+                q0.z * q1_inv[3] + q0.w * q1_inv[2] + q0.x * q1_inv[1] - q0.y * q1_inv[0],
+                q0.w * q1_inv[3] - q0.x * q1_inv[0] - q0.y * q1_inv[1] - q0.z * q1_inv[2]
+            ]
+            
+            lidar_pose[0] += relative_transform.transform.translation.x
+            lidar_pose[1] += relative_transform.transform.translation.y
+            lidar_pose[2] += R.from_quat([qr[0], qr[1], qr[2], qr[3]]).as_euler(seq='xyz', degrees=False)[2]
+        except (LookupException, ConnectivityException, ExtrapolationException) as e:
+            self.get_logger().error(f'Could not transform {self.robot_parent_frame_id} to {self.robot_frame_id}: {e}')
+            self.get_logger().error("Could not transform the robot pose")
+            return
+
 
 def angle_limit_checking(theta):
     """Нормализация угла в диапазон [-π, π]"""

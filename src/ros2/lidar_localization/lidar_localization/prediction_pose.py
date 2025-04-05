@@ -9,17 +9,23 @@ class PredPublisher(Node):
 
     def __init__(self):
         super().__init__("pred_publisher")
+        self.pose_pred = PoseWithCovarianceStamped()
+        self.pose_pred.header.frame_id = "map"
+        self.pose_pred.pose.pose.position.x = 0.0
+        self.pose_pred.pose.pose.position.y = 0.0
+        self.pose_pred.pose.pose.position.z = 0.0
+        self.pose_pred.pose.pose.orientation.x = 0.0
+        self.pose_pred.pose.pose.orientation.y = 0.0
+        self.pose_pred.pose.pose.orientation.z = 0.0
+        self.pose_pred.pose.pose.orientation.w = 1.0
+        self.pose_pred.pose.covariance = [0.0] * 36
+        self.pose_pred.pose.covariance[0] = 0.0025
+        self.pose_pred.pose.covariance[7] = 0.0025
+        self.pose_pred.pose.covariance[35] = 0.25
+        self.init_pose_detected = False
 
-        # Инициализация сообщения с предсказанной позой (без значений по умолчанию)
-        self.pose_pred = None  # Будет инициализировано только после получения /initialpose
-        self.init_pose_detected = False  # Флаг получения начальной позы
-
-        # Подписка на начальную позу от внешней камеры
-        self.create_subscription(
-            PoseWithCovarianceStamped,
-            "/initialpose",
-            self.initpose_callback,
-            10
+        self.init_pose = self.create_subscription(
+            PoseWithCovarianceStamped, "/initialpose", self.initpose_callback, 10
         )
 
         # Публикация предсказанной позы
