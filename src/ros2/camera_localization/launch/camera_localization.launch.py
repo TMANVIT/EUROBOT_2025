@@ -14,6 +14,6 @@ def generate_launch_description():
   
     ld = LaunchDescription()
 
-    ld.add_action(camera_odom_node)
+    # ld.add_action(camera_odom_node)
     ld.add_action(pub_node)
     return ld

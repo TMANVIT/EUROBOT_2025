@@ -1,12 +1,20 @@
-<!-- <?xml version="1.0" encoding="UTF-8" ?>
-<CycloneDDS xmlns="https://cdds.io/config" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://cdds.io/config https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/master/etc/cyclonedds.xsd">
+<CycloneDDS
+    xmlns="https://cdds.io/config"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://cdds.io/config https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/master/etc/cyclonedds.xsd"
+>
     <Domain Id="any">
         <General>
+            <Interfaces>
+                <NetworkInterface name="wlp2s0" priority="100"/>
+            </Interfaces>
+
+            <AllowMulticast>true</AllowMulticast>
+            <MaxMessageSize>65536B</MaxMessageSize>
+
+            <Transport>udp</Transport>
+            <DontRoute>false</DontRoute>
         </General>
-        <Discovery>
-            <Peers>
-                <Peer Address="localhost" />
-            </Peers>
-        </Discovery>
+
     </Domain>
-</CycloneDDS> -->
+</CycloneDDS>

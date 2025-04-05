@@ -11,20 +11,27 @@ def generate_launch_description():
                 executable = "static_transform_publisher",
                 arguments = ["0", "0", "0", "0", "0", "0", "world", "map"],
                 name = "world_to_map_static"
-            ),
-            # ## Link map to odom. TODO change this transform to camera initial pose.
+            ),       
+            
             Node(
                 package="tf2_ros",
                 executable="static_transform_publisher",
-                arguments=["0", "0", "0", "1.57", "0", "0", "map", "odom"],
-                name="map_to_odom_static",
-            ),         
+                arguments=["0", "0", "0", "0", "0", "0", "map", "odom"],
+                name="initial_map_to_odom",
+            ),
+            
+            Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                arguments=["0", "0", "0", "0", "0", "0", "odom", "base_footprint"],
+                name="initial_odom_to_base_footprint",
+            ),
             
             ## Link to torches, which depend on robot color. TODO Switch color in Makefile
             Node(
                 package="tf2_ros",
                 executable = "static_transform_publisher",
-                arguments = ["1.57914", "0.98733", "0", "0", "0", "0", "map", "torch_blue_1"],
+                arguments = ["1.5122", "1.0041", "0", "0", "0", "0", "map", "torch_blue_1"],
                 name = "First_torch_blue_team"
             ),
             
@@ -38,7 +45,7 @@ def generate_launch_description():
             Node(
                 package="tf2_ros",
                 executable = "static_transform_publisher",
-                arguments = ["-1.55888", "0.00659359", "0", "0", "0", "0", "map", "torch_blue_3"],
+                arguments = ["-1.6032", "-0.014313", "0", "0", "0", "0", "map", "torch_blue_3"],
                 name = "Third_torch_blue_team"
             ),
             ## ===================================================================================
@@ -49,5 +56,6 @@ def generate_launch_description():
                 arguments=["0", "0", "0", "3.14", "0", "0", "lidar_link", "laser"],
                 name="lidar_link_to_laser",
             ),
+            
         ]
     )

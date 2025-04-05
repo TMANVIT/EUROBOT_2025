@@ -29,8 +29,6 @@ echo "Waiting for running bringup launch file..."
 
 ros2 launch robot_bringup robot_bringup.launch.py &
 
-# TODO ADD launch file of localization
-
 if [ "$MAKE_MAP" == true ]; then
   echo "Launching map creation..."
   ros2 launch navigation slam.launch.py
