@@ -3,9 +3,8 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-        # Запуск ноды map_creator
         Node(
-            package='navigation',
+            package='map_creation',       # Обновлено на имя пакета
             executable='map_creator',
             name='map_creator_node',
             output='screen',
