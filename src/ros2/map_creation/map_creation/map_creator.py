@@ -4,11 +4,18 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import OccupancyGrid
 import cv2
 import numpy as np
+from rclpy.qos import QoSProfile, QoSDurabilityPolicy
 
 class EnemyMapNode(Node):
     def __init__(self):
         super().__init__('map_creator_node')
-        self.map_publisher = self.create_publisher(OccupancyGrid, '/map', 10)
+
+        qos_profile = QoSProfile(depth=10)
+        qos_profile.durability = QoSDurabilityPolicy.TRANSIENT_LOCAL
+
+        self.map_publisher = self.create_publisher(OccupancyGrid,'/dynamic_map',qos_profile)
+
+
         self.subscription = self.create_subscription(
             PoseWithCovarianceStamped, '/enemy_pose', self.enemy_pose_callback,
             rclpy.qos.QoSProfile(depth=10)
@@ -50,6 +57,7 @@ class EnemyMapNode(Node):
 
         self.current_map = self.base_map.copy()
         self.get_logger().info('Enemy Map Node has been started')
+        self.publish_map()
 
     def enemy_pose_callback(self, msg):
         self.current_map = self.base_map.copy()  # Копируем карту с прямоугольниками
