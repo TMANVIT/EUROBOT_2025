@@ -25,7 +25,7 @@ class EnemyMapNode(Node):
         self.map_height = 420        # 2.1 м
         self.origin_x = -1.55        # Центр в (0, 0)
         self.origin_y = -1.05
-        self.radius_px = 60          # 0.3 м = 60 пикселей
+        self.radius_px = 80          # 0.3 м = 60 пикселей
 
         # Базовая карта: занята (0)
         self.base_map = np.ones((self.map_height, self.map_width), dtype=np.uint8)
@@ -38,9 +38,9 @@ class EnemyMapNode(Node):
             [(605, 185), (585, 105)],            # right_lower_material
             [(310-40, 210), (310-120, 210+20)],  # center_material
             [(310+40, 210), (310+120, 210+20)],  # center_material
+            [(310-20, 210), (310+20, 210+20)],   # link to separate halfs
             [(125, 370), (205, 350)],            # lower_material
             [(495, 370), (415, 350)],            # lower_material
-            [(10, 10), (610, 410)],              # borders
             [(140, 50), (220, 10)],              # ramp
             [(480, 50), (400, 10)],              # ramp
             [(400, 10), (220, 100)],             # stage
@@ -50,8 +50,10 @@ class EnemyMapNode(Node):
 
         # Рисуем прямоугольники значением 50 (частично занято)
         for deck in self.decks:
-            cv2.rectangle(self.base_map, deck[0], deck[1], 100, 1)
+            cv2.rectangle(self.base_map, deck[0], deck[1], 100, -1)
             self.get_logger().info(f'Drawing rectangle: {deck[0]} to {deck[1]}')
+
+        cv2.rectangle(self.base_map, (10, 10), (610, 410), 100, 1)
 
         self.base_map = cv2.rotate(self.base_map, cv2.ROTATE_180)
 
