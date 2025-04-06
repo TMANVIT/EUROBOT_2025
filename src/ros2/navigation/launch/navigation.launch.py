@@ -15,6 +15,10 @@ def generate_launch_description():
         [FindPackageShare('navigation'), 'map', f'{MAP_NAME}.yaml']
     )
 
+    map_creator_launch_path = PathJoinSubstitution(
+        [FindPackageShare('map_creation'), 'launch', 'map_creator_launch.py']
+    )
+
     nav2_config_path = PathJoinSubstitution(
         [FindPackageShare('navigation'), 'config', 'navigation.yaml']
     )
@@ -40,5 +44,9 @@ def generate_launch_description():
                 'params_file': nav2_config_path,
                 'autostart': 'true',
             }.items()
+        ),
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(map_creator_launch_path)
         ),
     ])

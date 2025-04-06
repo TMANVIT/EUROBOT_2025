@@ -27,6 +27,8 @@ source "install/local_setup.bash"
 
 echo "Waiting for running bringup launch file..."
 
+ros2 topic pub --rate 1 /enemy_pose geometry_msgs/PoseWithCovarianceStamped "{header: {frame_id: 'map'}, pose: {pose: {position: {x: 1.0, y: 0.5, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}}" &
+
 ros2 launch robot_bringup robot_bringup.launch.py &
 
 if [ "$MAKE_MAP" == true ]; then
