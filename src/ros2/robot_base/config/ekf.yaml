@@ -43,8 +43,8 @@ ekf_filter_node:
 
         pose0_differential: false
         pose0_relative: false
-        pose0_queue_size: 1
-        pose0_delay: 0.001 
+        pose0_queue_size: 5
+        pose0_delay: 0.01 
         pose0_rejection_threshold: 1.0
         pose0_mahalanobis_threshold: 1.0
 

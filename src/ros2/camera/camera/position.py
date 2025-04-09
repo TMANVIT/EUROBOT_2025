@@ -165,12 +165,12 @@ class BEVPosePublisher(Node):
             covariance_matrix = np.eye(6)
 
 
-            covariance_matrix[0, 0] = 0.003  # x variance
-            covariance_matrix[1, 1] = 0.003  # y variance
-            covariance_matrix[2, 2] = 0.003  # z variance
+            covariance_matrix[0, 0] = 0.0002  # x variance
+            covariance_matrix[1, 1] = 0.0002  # y variance
+            covariance_matrix[2, 2] = 0.0002  # z variance
             covariance_matrix[3, 3] = 0.001  # roll variance
             covariance_matrix[4, 4] = 0.001  # pitch variance
-            covariance_matrix[5, 5] = 0.005 # yaw variance
+            covariance_matrix[5, 5] = 0.0002 # yaw variance
             pose_msg.pose.covariance = covariance_matrix.flatten().tolist()
 
             # Publish initial pose once and regular pose

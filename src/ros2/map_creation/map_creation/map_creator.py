@@ -13,8 +13,7 @@ class EnemyMapNode(Node):
         qos_profile = QoSProfile(depth=10)
         qos_profile.durability = QoSDurabilityPolicy.TRANSIENT_LOCAL
 
-        self.map_publisher = self.create_publisher(OccupancyGrid,'/dynamic_map',qos_profile)
-
+        self.map_publisher = self.create_publisher(OccupancyGrid, '/dynamic_map', qos_profile)
 
         self.subscription = self.create_subscription(
             PoseWithCovarianceStamped, '/enemy_pose', self.enemy_pose_callback,
@@ -25,7 +24,8 @@ class EnemyMapNode(Node):
         self.map_height = 420        # 2.1 м
         self.origin_x = -1.55        # Центр в (0, 0)
         self.origin_y = -1.05
-        self.radius_px = 80          # 0.3 м = 60 пикселей
+        self.radius_px = 100          # 0.3 м = 60 пикселей
+        self.timeout = 2.0           # Таймаут в секундах для очистки карты
 
         # Базовая карта: занята (0)
         self.base_map = np.ones((self.map_height, self.map_width), dtype=np.uint8)
@@ -48,17 +48,20 @@ class EnemyMapNode(Node):
             [(310+95, 55), (310+175, 75)]        # stage_material
         ]
 
-        # Рисуем прямоугольники значением 50 (частично занято)
+        # Рисуем прямоугольники значением 100 (занято)
         for deck in self.decks:
             cv2.rectangle(self.base_map, deck[0], deck[1], 100, -1)
-            self.get_logger().info(f'Drawing rectangle: {deck[0]} to {deck[1]}')
 
         cv2.rectangle(self.base_map, (10, 10), (610, 410), 100, 1)
 
         self.base_map = cv2.rotate(self.base_map, cv2.ROTATE_180)
 
         self.current_map = self.base_map.copy()
-        self.get_logger().info('Enemy Map Node has been started')
+        self.last_update_time = self.get_clock().now()  # Время последнего обновления
+
+
+        # Таймер для публикации карты с частотой 1 Гц
+        self.timer = self.create_timer(0.1, self.timer_callback)
         self.publish_map()
 
     def enemy_pose_callback(self, msg):
@@ -69,8 +72,22 @@ class EnemyMapNode(Node):
         pixel_y = int((enemy_y - self.origin_y) / self.map_resolution)
 
         if (0 <= pixel_x < self.map_width) and (0 <= pixel_y < self.map_height):
-            cv2.circle(self.current_map, (pixel_x, pixel_y), self.radius_px, 100, -1)  # Свободно (100)
-            self.publish_map()
+            cv2.circle(self.current_map, (pixel_x, pixel_y), self.radius_px, 100, -1)  # Занято (100)
+            self.last_update_time = self.get_clock().now()  # Обновляем время последнего сообщения
+    
+
+    def timer_callback(self):
+        # Проверяем, прошло ли время таймаута с последнего обновления
+        current_time = self.get_clock().now()
+        time_since_update = (current_time - self.last_update_time).nanoseconds / 1e9  # В секундах
+
+        if time_since_update > self.timeout:
+            # Если прошло больше времени, чем таймаут, очищаем карту
+            self.current_map = self.base_map.copy()
+            self.get_logger().info('Enemy timeout exceeded, map cleared to base state')
+
+        # Публикуем актуальное состояние карты
+        self.publish_map()
 
     def publish_map(self):
         map_msg = OccupancyGrid()
