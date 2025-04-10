@@ -13,7 +13,7 @@ class EnemyMapNode(Node):
         qos_profile = QoSProfile(depth=10)
         qos_profile.durability = QoSDurabilityPolicy.TRANSIENT_LOCAL
 
-        self.map_publisher = self.create_publisher(OccupancyGrid, '/dynamic_map', qos_profile)
+        self.map_publisher = self.create_publisher(OccupancyGrid, '/map', qos_profile)
 
         self.subscription = self.create_subscription(
             PoseWithCovarianceStamped, '/enemy_pose', self.enemy_pose_callback,
@@ -24,8 +24,7 @@ class EnemyMapNode(Node):
         self.map_height = 420        # 2.1 м
         self.origin_x = -1.55        # Центр в (0, 0)
         self.origin_y = -1.05
-        self.radius_px = 100          # 0.3 м = 60 пикселей
-        self.timeout = 2.0           # Таймаут в секундах для очистки карты
+        self.radius_px = 80         # 0.3 м = 60 пикселей
 
         # Базовая карта: занята (0)
         self.base_map = np.ones((self.map_height, self.map_width), dtype=np.uint8)
@@ -38,7 +37,7 @@ class EnemyMapNode(Node):
             [(605, 185), (585, 105)],            # right_lower_material
             [(310-40, 210), (310-120, 210+20)],  # center_material
             [(310+40, 210), (310+120, 210+20)],  # center_material
-            [(310-20, 210), (310+20, 210+20)],   # link to separate halfs
+            [(310-35, 210), (310+35, 210+20)],   # link to separate halfs
             [(125, 370), (205, 350)],            # lower_material
             [(495, 370), (415, 350)],            # lower_material
             [(140, 50), (220, 10)],              # ramp
@@ -56,36 +55,28 @@ class EnemyMapNode(Node):
 
         self.base_map = cv2.rotate(self.base_map, cv2.ROTATE_180)
 
+        # Инициализируем текущую карту как копию базовой карты
         self.current_map = self.base_map.copy()
-        self.last_update_time = self.get_clock().now()  # Время последнего обновления
-
 
         # Таймер для публикации карты с частотой 1 Гц
-        self.timer = self.create_timer(0.1, self.timer_callback)
+        self.timer = self.create_timer(0.033, self.timer_callback)
         self.publish_map()
 
     def enemy_pose_callback(self, msg):
-        self.current_map = self.base_map.copy()  # Копируем карту с прямоугольниками
+        # Сбрасываем текущую карту до базовой
+        self.current_map = self.base_map.copy()
+
+        # Преобразуем координаты противника в пиксели
         enemy_x = msg.pose.pose.position.x
         enemy_y = msg.pose.pose.position.y
         pixel_x = int((enemy_x - self.origin_x) / self.map_resolution)
         pixel_y = int((enemy_y - self.origin_y) / self.map_resolution)
 
+        # Рисуем круг на текущей карте, если координаты в пределах карты
         if (0 <= pixel_x < self.map_width) and (0 <= pixel_y < self.map_height):
             cv2.circle(self.current_map, (pixel_x, pixel_y), self.radius_px, 100, -1)  # Занято (100)
-            self.last_update_time = self.get_clock().now()  # Обновляем время последнего сообщения
-    
 
     def timer_callback(self):
-        # Проверяем, прошло ли время таймаута с последнего обновления
-        current_time = self.get_clock().now()
-        time_since_update = (current_time - self.last_update_time).nanoseconds / 1e9  # В секундах
-
-        if time_since_update > self.timeout:
-            # Если прошло больше времени, чем таймаут, очищаем карту
-            self.current_map = self.base_map.copy()
-            self.get_logger().info('Enemy timeout exceeded, map cleared to base state')
-
         # Публикуем актуальное состояние карты
         self.publish_map()
 

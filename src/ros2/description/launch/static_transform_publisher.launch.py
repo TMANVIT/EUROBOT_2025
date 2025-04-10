@@ -23,7 +23,7 @@ def generate_launch_description():
             Node(
                 package="tf2_ros",
                 executable="static_transform_publisher",
-                arguments=["0", "0.3", "0", "0", "0", "0", "odom", "base_footprint"],
+                arguments=["0", "0", "0", "0", "0", "0", "odom", "base_footprint"],
                 name="initial_odom_to_base_footprint",
             ),
             
