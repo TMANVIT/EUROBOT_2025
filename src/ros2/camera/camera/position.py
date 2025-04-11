@@ -3,7 +3,9 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Vector3
 from cv_bridge import CvBridge
-from cvFunctions.cvf import Camera  # Предполагается, что Camera находится в cvFunctions.cvf
+from cvFunctions.cvf import Camera
+from sensor_msgs.msg import Image, PointCloud2, PointField
+from sensor_msgs_py import point_cloud2
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from std_msgs.msg import Header
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSDurabilityPolicy, QoSHistoryPolicy
@@ -102,6 +104,36 @@ class BEVPosePublisher(Node):
         projected_rotation = Rotation.from_euler(seq='xyz', angles=yaw_only_euler, degrees=False)
         return projected_rotation.as_quat()
 
+
+    def generate_obstacle_points(self, center_x, center_y, radius=0.25, resolution=0.05):
+        """Generate filled circle with grid pattern"""
+        points = []
+        grid_steps = int(radius * 2 / resolution)
+        for i in range(-grid_steps, grid_steps + 1):
+            for j in range(-grid_steps, grid_steps + 1):
+                x = center_x + i * resolution
+                y = center_y + j * resolution
+                if np.hypot(i*resolution, j*resolution) <= radius:
+                    points.append([x, y, 0.0])
+        return points
+
+    def publish_obstacle_cloud(self, points):
+        """Publish or clear obstacles based on detection"""
+        header = Header()
+        header.stamp = self.get_clock().now().to_msg()
+        header.frame_id = "map"
+        
+        fields = [
+            PointField(name="x", offset=0, datatype=PointField.FLOAT32, count=1),
+            PointField(name="y", offset=4, datatype=PointField.FLOAT32, count=1),
+            PointField(name="z", offset=8, datatype=PointField.FLOAT32, count=1)
+        ]
+        
+        # Всегда публикуем облако, даже пустое
+        points_np = np.array(points, dtype=np.float32) if points else np.empty((0,3), dtype=np.float32)
+        pc2_msg = point_cloud2.create_cloud(header, fields, points_np)
+        self.enemy_obstacle_pub.publish(pc2_msg)
+
     def image_callback(self, msg):
         """Callback function for processing incoming images."""
         try:
@@ -112,6 +144,7 @@ class BEVPosePublisher(Node):
 
         # Get pose data from Camera class
         robotCoord, quat, enemyCoord, enemyQuat, robot_cov, enemy_cov = self.camera.robots_tracking(cv_image)
+       
 
         # Process our robot's pose
         if robotCoord is not None:
@@ -132,12 +165,12 @@ class BEVPosePublisher(Node):
             covariance_matrix = np.eye(6)
 
 
-            covariance_matrix[0, 0] = 0.003  # x variance
-            covariance_matrix[1, 1] = 0.003  # y variance
-            covariance_matrix[2, 2] = 0.003  # z variance
+            covariance_matrix[0, 0] = 0.0002  # x variance
+            covariance_matrix[1, 1] = 0.0002  # y variance
+            covariance_matrix[2, 2] = 0.0002  # z variance
             covariance_matrix[3, 3] = 0.001  # roll variance
             covariance_matrix[4, 4] = 0.001  # pitch variance
-            covariance_matrix[5, 5] = 0.005 # yaw variance
+            covariance_matrix[5, 5] = 0.0002 # yaw variance
             pose_msg.pose.covariance = covariance_matrix.flatten().tolist()
 
             # Publish initial pose once and regular pose
