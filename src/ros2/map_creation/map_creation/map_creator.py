@@ -24,7 +24,7 @@ class EnemyMapNode(Node):
         self.map_height = 420        # 2.1 м
         self.origin_x = -1.55        # Центр в (0, 0)
         self.origin_y = -1.05
-        self.radius_px = 80         # 0.3 м = 60 пикселей
+        self.radius_px = 60         # 0.3 м = 60 пикселей
 
         # Базовая карта: занята (0)
         self.base_map = np.ones((self.map_height, self.map_width), dtype=np.uint8)
@@ -51,7 +51,7 @@ class EnemyMapNode(Node):
         for deck in self.decks:
             cv2.rectangle(self.base_map, deck[0], deck[1], 100, -1)
 
-        cv2.rectangle(self.base_map, (10, 10), (610, 410), 100, 1)
+        # cv2.rectangle(self.base_map, (10, 10), (610, 410), 100, 1)
 
         self.base_map = cv2.rotate(self.base_map, cv2.ROTATE_180)
 
