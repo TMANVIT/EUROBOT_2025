@@ -49,6 +49,7 @@ RUN apt-get update && \
     apt-get install -y ros-$ROS_DISTRO-v4l2-camera && \
     apt-get install -y ros-$ROS_DISTRO-image-transport-plugins && \
     apt-get install -y ros-$ROS_DISTRO-rmw-cyclonedds-cpp && \
+    apt-get install -y ros-$ROS_DISTRO-nav2-smac-planner && \
     apt-get install -y libqt5gui5  && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
