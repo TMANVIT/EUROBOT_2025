@@ -3,6 +3,7 @@ from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.substitutions import FindPackageShare
+from launch_ros.actions import Node
 
 MAP_NAME = 'battlefield'
 
@@ -10,9 +11,7 @@ def generate_launch_description():
     nav2_launch_path = PathJoinSubstitution(
         [FindPackageShare('nav2_bringup'), 'launch', 'bringup_launch.py']
     )
-    map_creator_launch_path = PathJoinSubstitution(
-        [FindPackageShare('map_creation'), 'launch', 'map_creator_launch.py']  # Обновлено на map_creation
-    )
+    
     default_map_path = PathJoinSubstitution(
         [FindPackageShare('navigation'), 'map', f'{MAP_NAME}.yaml']
     )
@@ -34,7 +33,11 @@ def generate_launch_description():
                 'autostart': 'true',
             }.items()
         ),
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(map_creator_launch_path)
+        Node(
+            package='map_creation',
+            executable='map_creator',
+            name='map_creator_node',
+            output='screen',
         ),
+  
     ])
