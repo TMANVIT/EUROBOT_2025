@@ -37,7 +37,7 @@ class EnemyMapNode(Node):
             [(605, 185), (585, 105)],            # right_lower_material
             [(310-40, 210), (310-120, 210+20)],  # center_material
             [(310+40, 210), (310+120, 210+20)],  # center_material
-            [(310-35, 210), (310+35, 210+20)],   # link to separate halfs
+            # [(310-35, 210), (310+35, 210+20)],   # link to separate halfs
             [(125, 370), (205, 350)],            # lower_material
             [(495, 370), (415, 350)],            # lower_material
             [(140, 50), (220, 10)],              # ramp
