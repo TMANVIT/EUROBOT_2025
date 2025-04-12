@@ -18,6 +18,9 @@ def generate_launch_description():
     nav2_config_path = PathJoinSubstitution(
         [FindPackageShare('navigation'), 'config', 'navigation.yaml']
     )
+    waypoint_params = PathJoinSubstitution(
+        [FindPackageShare("waypoint_planner"), "config", "yellow_plan.yaml"]
+    )
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -38,12 +41,6 @@ def generate_launch_description():
             executable='map_creator',
             name='map_creator_node',
             output='screen',
+            
         ),
-        Node(
-            package='waypoint_planner',
-            executable='waypoint_planner',
-            name='waypoint_planner_node',
-            output='screen',
-        ),
-  
     ])
