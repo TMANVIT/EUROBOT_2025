@@ -39,5 +39,11 @@ def generate_launch_description():
             name='map_creator_node',
             output='screen',
         ),
+        Node(
+            package='waypoint_planner',
+            executable='waypoint_planner',
+            name='waypoint_planner_node',
+            output='screen',
+        ),
   
     ])
