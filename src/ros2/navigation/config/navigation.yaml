@@ -111,12 +111,12 @@ controller_server:
         enabled: true
         cost_power: 1
         cost_weight: 6.0
-        threshold_to_consider: 0.4
+        threshold_to_consider: 0.1
       GoalAngleCritic:
         enabled: true
         cost_power: 1
         cost_weight: 3.0
-        threshold_to_consider: 0.4
+        threshold_to_consider: 0.1
       PreferForwardCritic:
         enabled: true
         cost_power: 1

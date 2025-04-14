@@ -76,7 +76,7 @@ class Strategy(Node):
     def get_result_callback(self, future):
         self.get_logger().info("Call_result_callback")
         self.navigation_in_progress = False
-        self.current_waypoint += 14
+        self.current_waypoint += 1
 
     def elevator_callback(self, msg):
         self.get_logger().info(f"Received elevator response: {msg.data}")

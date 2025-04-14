@@ -7,9 +7,11 @@ from rosbag2_py._storage import StorageFilter
 import numpy as np
 from sensor_msgs.msg import Imu
 
-BIAS_VELOCITY = [-0.02080158, -0.00752798, -0.02633025]
+BIAS_VELOCITY = [-0.02058635, -0.00458323, -0.02784844]
+# BIAS_VELOCITY = [0.02080604 0.00754197 0.0263029] 
 
-BIAS_ACCEL = [-6.53508719e-02, -9.18961018e-03,  1.04276066e+01]
+
+BIAS_ACCEL = [-0.14627597,  0.03286619, 10.41976869]
 
 def extract_imu_data(bag_path, topic_name):
     """
@@ -93,7 +95,7 @@ def main():
     Main function to extract IMU data from a ROS 2 bag file and compute its covariance matrices.
     """
     # Path to the ROS 2 bag file and the IMU topic name
-    bag_path = '/home/timur/Documents/EUROBOT_2025/data/rosbag2_2025_03_18-18_40_21'
+    bag_path = '/home/timur/EUROBOT_2025/data/rosbag2_2025_04_13-15_32_08'
     topic_name = '/imu/data'
 
     # Extract IMU data from the bag
