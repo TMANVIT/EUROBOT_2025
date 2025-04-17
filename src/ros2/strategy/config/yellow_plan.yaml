@@ -14,3 +14,5 @@ strategy_node:
     time_until_end: 90
     obstacle_release: 
       - ["right_upper_material", "center_material_right"]
+    term_order: 
+      - [5,10,15,20]

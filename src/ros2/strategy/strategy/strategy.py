@@ -23,12 +23,14 @@ class Strategy(Node):
         self.screen_pub = self.create_publisher(Int16, '/screen', 10)
         
         self.create_timer(0.1, self.timer_callback)
+        self.create_timer(0.05, self.screen_callback)
         
         # Declare parameters
         raw_waypoints = self.declare_parameter('waypoints')
         self.elevator_order = self.declare_parameter('elevator_order')
         self.time_until_end = self.declare_parameter('time_until_end')
         self.obstacles = self.declare_parameter('obstacle_release')
+        self.term_order = self.declare_parameter('term_order')
         
         # Read params from YAML
         raw_waypoints = self.get_parameter("waypoints").get_parameter_value().double_array_value
@@ -41,23 +43,26 @@ class Strategy(Node):
             })
         self.elevator_order = self.get_parameter("elevator_order").get_parameter_value().integer_array_value
         self.time_until_end = self.get_parameter("time_until_end").get_parameter_value().integer_value
-        self.obstacles = self.get_parameter("obstacles").get_parameter_value().string_array_value    
+        self.obstacles = self.get_parameter("obstacle_release").get_parameter_value().string_array_value  
+        self.term_order = self.get_parameter('term_order').get_parameter_value().integer_array_value 
         
         # Node Variables
-        self.action_tact = 0 # Number set of actions
+        self.action_tact = 1 # Number set of actions
         self.navigation_in_progress = False # True means that robot is going to point
         self.elevator_in_progress = False # True means that robot work with elevator
         self.start_timer = None # Timing variable. Need to synchronize with SIMa's
         self.current_elevator = 0 # Index of current elevator command
         self.current_waypoint = 0 # Index of current goal point
         self.current_obstacle = 0 # Index of current obstacle
+        self.current_term = 0 # Index of current term
+        self.screen_sum = 0 # Summary value of points
         
     def timer_callback(self):
         # Start algo only when initialize timer
         if self.start_timer is not None:
             # Check if match near the end
             if time.time() - self.start_timer >= self.time_until_end:
-                self.navigate_to_waypoint(self.navigate_to_waypoint[len(self.waypoints)])
+                self.navigate_to_waypoint(len(self.waypoints))
             
             # First tact - publish paint on the side of the field.
             if self.action_tact == 0:
@@ -114,15 +119,16 @@ class Strategy(Node):
             elif self.action_tact == 5:
                 self.action_tact += 1
 
-    def navigate_to_waypoint(self, waypoint):
+    def navigate_to_waypoint(self, waypoint_index):
         self.navigation_in_progress = True
         goal_msg = NavigateToPose.Goal()
         goal_msg.pose = PoseStamped()
         goal_msg.pose.header.frame_id = 'map'
         goal_msg.pose.header.stamp = self.get_clock().now().to_msg()
-        goal_msg.pose.pose.position.x = waypoint['x']
-        goal_msg.pose.pose.position.y = waypoint['y']
-        yaw = waypoint['yaw']
+        self.get_logger().info(f"{waypoint_index}")
+        goal_msg.pose.pose.position.x = self.waypoints[waypoint_index]['x']
+        goal_msg.pose.pose.position.y = self.waypoints[waypoint_index]['y']
+        yaw = self.waypoints[waypoint_index]['yaw']
         
         # Correct quaternion conversion
         quat = R.from_euler('z', yaw, degrees=False).as_quat()
@@ -146,9 +152,15 @@ class Strategy(Node):
         if not goal_handle.accepted:
             self.get_logger().info('Tact failed')
             self.action_tact += 1
+            self.navigation_in_progress = False
             return
         
         self.get_logger().debug('Goal accepted')
+        self.result_future = goal_handle.get_result_async()
+        self.result_future.add_done_callback(self.get_result_callback)
+    
+    def get_result_callback(self, future):
+        self.get_logger().info("Call_result_callback")
         self.navigation_in_progress = False
         self.current_waypoint += 1
 
@@ -156,13 +168,15 @@ class Strategy(Node):
         self.elevator_in_progress = True
         msg = UInt8()
         msg.data = command_index
-        self.elevator_pub.publish(msg.data)
+        self.elevator_pub.publish(msg)
     
     def elevator_callback(self, msg):
         if msg.data == self.current_elevator:
             if self.action_tact == 0:
                 self.elevator_in_progress = False
                 self.current_elevator += 1
+                self.screen_sum += self.term_order[self.current_term]
+                self.current_term += 1
                 self.action_tact += 1
             if self.action_tact == 1:
                 self.elevator_in_progress = False
@@ -172,6 +186,8 @@ class Strategy(Node):
             if self.action_tact == 2:
                 self.elevator_in_progress = False
                 self.current_elevator += 1
+                self.screen_sum += self.term_order[self.current_term]
+                self.current_term += 1
                 self.action_tact += 1
             if self.action_tact == 3:
                 self.elevator_in_progress = False
@@ -181,6 +197,8 @@ class Strategy(Node):
             if self.action_tact == 4:
                 self.elevator_in_progress = False
                 self.current_elevator += 1
+                self.screen_sum += self.term_order[self.current_term]
+                self.current_term += 1
                 self.action_tact += 1
             if self.action_tact == 5:
                 self.elevator_in_progress = False
@@ -198,6 +216,13 @@ class Strategy(Node):
     def timer_counter(self, msg):
         if self.start_timer is None and msg.data == 1:
             self.start_timer = time.time()
+
+    # Points publisher to screen
+    def screen_callback(self):
+        msg = Int16()
+        msg.data = self.screen_sum
+        self.get_logger().debug(f"Current sum of points = {self.screen_sum}")
+        self.screen_pub.publish(msg)
 
 def main(args=None):
     rclpy.init(args=args)
