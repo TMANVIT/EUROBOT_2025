@@ -8,7 +8,6 @@ colcon build --symlink-install
 
 # Source the local setup file after building
 source "install/local_setup.bash"
-source ./sllidar_ros2/scripts/create_udev_rules.sh
 
 echo "Waiting for running bringup launch file"
 

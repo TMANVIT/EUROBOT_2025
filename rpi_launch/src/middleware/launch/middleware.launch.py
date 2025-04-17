@@ -24,6 +24,12 @@ def generate_launch_description():
         ),
         
         DeclareLaunchArgument(
+            name='Pico 2', 
+            default_value='/dev/ttyACM1',
+            description='Pico 2'
+        ),
+        
+        DeclareLaunchArgument(
             name='micro_ros_baudrate', 
             default_value='115200',
             description='micro-ROS baudrate'
@@ -50,12 +56,20 @@ def generate_launch_description():
         ),
         
         Node(
-                package="servo_control",
-                executable="servo_control_node",
-                name="servo_control_node",
-                output="screen",
-                parameters=[servo_params],
+            package='micro_ros_agent',
+            executable='micro_ros_agent',
+            name='micro_ros_agent',
+            output='screen',
+            arguments=['serial', '--dev', LaunchConfiguration("Pico 2"), '--baudrate', LaunchConfiguration("micro_ros_baudrate")]
         ),
+        
+        # Node(
+        #         package="servo_control",
+        #         executable="servo_control_node",
+        #         name="servo_control_node",
+        #         output="screen",
+        #         parameters=[servo_params],
+        # ),
         
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(lidar_launch_path),
