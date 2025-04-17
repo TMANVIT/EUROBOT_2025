@@ -24,23 +24,8 @@ class Camera:
         team = os.getenv("TEAM")
 
         if team:
-            self.RotSideDict = {
-                74: R.from_euler('y', 90, degrees=True).as_matrix(),    # Front: x down, z forward
-                75: R.from_euler('x', 90, degrees=True).as_matrix(),    # Right: x forward, z right
-                76: R.from_euler('y', -90, degrees=True).as_matrix(),   # Rear: x up, z backward
-                77: R.from_euler('x', -90, degrees=True).as_matrix(),   # Left: x forward, z left
-                127: np.eye(3),   # Top: no rotation (example)
-                126: np.eye(3)    # Side: x forward, z right (example)
-            }
-            self.TvecSideDict = {
-                74: np.array([-0.05, 0.0, 0.055]),  # From 55 to self.robot_id
-                75: np.array([0.0, 0.05, 0.055]),   # From 56 to self.robot_id
-                76: np.array([0.05, 0.0, 0.055]),   # From 57 to self.robot_id
-                77: np.array([0.0, -0.05, 0.055]),  # From 58 to self.robot_id
-                127: np.array([-0.043, 0.15, 0.135]),   # From 127 to self.robot_id 
-                126: np.array([-0.043, -0.15, 0.135])   # From 126 to self.robot_id
-            }
-        else:
+            self.colour_range = range(1,6)
+
             self.RotSideDict = {
                 55: R.from_euler('y', 90, degrees=True).as_matrix(),    # Front: x down, z forward
                 56: R.from_euler('x', 90, degrees=True).as_matrix(),    # Right: x forward, z right
@@ -54,6 +39,27 @@ class Camera:
                 56: np.array([0.0, 0.05, 0.055]),   # From 56 to self.robot_id
                 57: np.array([0.05, 0.0, 0.055]),   # From 57 to self.robot_id
                 58: np.array([0.0, -0.05, 0.055]),  # From 58 to self.robot_id
+                127: np.array([-0.043, 0.15, 0.135]),   # From 127 to self.robot_id 
+                126: np.array([-0.043, -0.15, 0.135])   # From 126 to self.robot_id
+            }
+
+            
+        else:
+            self.colour_range = range(6,11)
+
+            self.RotSideDict = {
+                74: R.from_euler('y', 90, degrees=True).as_matrix(),    # Front: x down, z forward
+                75: R.from_euler('x', 90, degrees=True).as_matrix(),    # Right: x forward, z right
+                76: R.from_euler('y', -90, degrees=True).as_matrix(),   # Rear: x up, z backward
+                77: R.from_euler('x', -90, degrees=True).as_matrix(),   # Left: x forward, z left
+                127: np.eye(3),   # Top: no rotation (example)
+                126: np.eye(3)    # Side: x forward, z right (example)
+            }
+            self.TvecSideDict = {
+                74: np.array([-0.05, 0.0, 0.055]),  # From 55 to self.robot_id
+                75: np.array([0.0, 0.05, 0.055]),   # From 56 to self.robot_id
+                76: np.array([0.05, 0.0, 0.055]),   # From 57 to self.robot_id
+                77: np.array([0.0, -0.05, 0.055]),  # From 58 to self.robot_id
                 127: np.array([-0.043, 0.15, 0.135]),   # From 127 to self.robot_id 
                 126: np.array([-0.043, -0.15, 0.135])   # From 126 to self.robot_id
             }
@@ -156,10 +162,10 @@ class Camera:
         robot_ids = []
         for i, marker_id in enumerate(ids):
             if is_our_robot:
-                if marker_id != self.robot_id and marker_id not in self.RotSideDict:
+                if marker_id not in self.colour_range and marker_id not in self.RotSideDict:
                     continue
             else:
-                if not (1 <= marker_id <= 10 and marker_id != self.robot_id):
+                if not (marker_id in range(11) and not in self.colour_range):
                     continue
             robot_corners.append(corners[i][0])
             robot_ids.append(marker_id)
