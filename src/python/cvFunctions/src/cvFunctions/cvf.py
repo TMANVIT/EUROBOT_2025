@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import yaml
 from scipy.spatial.transform import Rotation as R
+import os
 
 def read_config(config_path):
     with open(config_path, 'r') as file:
@@ -20,22 +21,42 @@ class Camera:
         self.arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
         self.detector = cv2.aruco.ArucoDetector(self.arucoDict, self.arucoParams)
 
-        self.RotSideDict = {
-            55: R.from_euler('y', 90, degrees=True).as_matrix(),    # Front: x down, z forward
-            56: R.from_euler('x', 90, degrees=True).as_matrix(),    # Right: x forward, z right
-            57: R.from_euler('y', -90, degrees=True).as_matrix(),   # Rear: x up, z backward
-            58: R.from_euler('x', -90, degrees=True).as_matrix(),   # Left: x forward, z left
-            964: np.eye(3),   # Top: no rotation (example)
-            992: np.eye(3)    # Side: x forward, z right (example)
-        }
-        self.TvecSideDict = {
-            55: np.array([-0.05, 0.0, 0.055]),  # From 55 to self.robot_id
-            56: np.array([0.0, 0.05, 0.055]),   # From 56 to self.robot_id
-            57: np.array([0.05, 0.0, 0.055]),   # From 57 to self.robot_id
-            58: np.array([0.0, -0.05, 0.055]),  # From 58 to self.robot_id
-            127: np.array([-0.043, 0.15, 0.135]),   # From 127 to self.robot_id 
-            126: np.array([-0.043, -0.15, 0.135])   # From 126 to self.robot_id
-        }
+        team = os.getenv("TEAM")
+
+        if team:
+            self.RotSideDict = {
+                74: R.from_euler('y', 90, degrees=True).as_matrix(),    # Front: x down, z forward
+                75: R.from_euler('x', 90, degrees=True).as_matrix(),    # Right: x forward, z right
+                76: R.from_euler('y', -90, degrees=True).as_matrix(),   # Rear: x up, z backward
+                77: R.from_euler('x', -90, degrees=True).as_matrix(),   # Left: x forward, z left
+                127: np.eye(3),   # Top: no rotation (example)
+                126: np.eye(3)    # Side: x forward, z right (example)
+            }
+            self.TvecSideDict = {
+                74: np.array([-0.05, 0.0, 0.055]),  # From 55 to self.robot_id
+                75: np.array([0.0, 0.05, 0.055]),   # From 56 to self.robot_id
+                76: np.array([0.05, 0.0, 0.055]),   # From 57 to self.robot_id
+                77: np.array([0.0, -0.05, 0.055]),  # From 58 to self.robot_id
+                127: np.array([-0.043, 0.15, 0.135]),   # From 127 to self.robot_id 
+                126: np.array([-0.043, -0.15, 0.135])   # From 126 to self.robot_id
+            }
+        else:
+            self.RotSideDict = {
+                55: R.from_euler('y', 90, degrees=True).as_matrix(),    # Front: x down, z forward
+                56: R.from_euler('x', 90, degrees=True).as_matrix(),    # Right: x forward, z right
+                57: R.from_euler('y', -90, degrees=True).as_matrix(),   # Rear: x up, z backward
+                58: R.from_euler('x', -90, degrees=True).as_matrix(),   # Left: x forward, z left
+                127: np.eye(3),   # Top: no rotation (example)
+                126: np.eye(3)    # Side: x forward, z right (example)
+            }
+            self.TvecSideDict = {
+                55: np.array([-0.05, 0.0, 0.055]),  # From 55 to self.robot_id
+                56: np.array([0.0, 0.05, 0.055]),   # From 56 to self.robot_id
+                57: np.array([0.05, 0.0, 0.055]),   # From 57 to self.robot_id
+                58: np.array([0.0, -0.05, 0.055]),  # From 58 to self.robot_id
+                127: np.array([-0.043, 0.15, 0.135]),   # From 127 to self.robot_id 
+                126: np.array([-0.043, -0.15, 0.135])   # From 126 to self.robot_id
+            }
 
         self.field_markers = {
             20: np.array([-0.9, 0.4, 0.0]),
