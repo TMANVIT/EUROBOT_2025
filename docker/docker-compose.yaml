@@ -18,6 +18,7 @@ services:
       - RMW_IMPLEMENTATION=$RMW_IMPLEMENTATION
       - CYCLONEDDS_URI=$CYCLONEDDS_URI
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - TEAM=${TEAM:-0}
     volumes:
       - /etc/localtime:/etc/localtime
       - $ROOT_DIR/src/ros2:/ros2_ws/src

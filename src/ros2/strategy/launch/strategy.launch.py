@@ -4,14 +4,21 @@ from launch.substitutions import PathJoinSubstitution
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
+import os
 
 def generate_launch_description():
     nav2_launch_path = PathJoinSubstitution(
         [FindPackageShare('navigation'), 'launch', 'navigation.launch.py']
     )
-    strategy_params = PathJoinSubstitution(
-        [FindPackageShare("strategy"), "config", "yellow_plan.yaml"]
-    )
+    team = os.getenv("TEAM")
+    if team == "0":
+        strategy_params = PathJoinSubstitution(
+            [FindPackageShare("strategy"), "config", "yellow_plan.yaml"]
+        )
+    else:
+        strategy_params = PathJoinSubstitution(
+            [FindPackageShare("strategy"), "config", "blue_plan.yaml"]
+        )
 
     return LaunchDescription([
         Node(

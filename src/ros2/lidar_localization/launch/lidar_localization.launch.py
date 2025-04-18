@@ -3,7 +3,7 @@ from launch.actions import DeclareLaunchArgument
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-
+import os
 
 def generate_launch_description():
 
@@ -11,9 +11,15 @@ def generate_launch_description():
         [FindPackageShare("obstacle_detector"), "config", "obstacle_config.yaml"]
     )
 
-    lidar_localization_params = PathJoinSubstitution(
-        [FindPackageShare("lidar_localization"), "config", "lidar_localization.yaml"]
-    )
+    team = os.getenv("TEAM")
+    if team == "0":
+        lidar_localization_params = PathJoinSubstitution(
+            [FindPackageShare("lidar_localization"), "config", "lidar_localization_yellow.yaml"]
+        )
+    else:
+        lidar_localization_params = PathJoinSubstitution(
+            [FindPackageShare("lidar_localization"), "config", "lidar_localization_blue.yaml"]
+        )
     
     return LaunchDescription(
         [

@@ -23,7 +23,7 @@ class Camera:
 
         team = os.getenv("TEAM")
 
-        if team:
+        if team == "1":
             self.RotSideDict = {
                 74: R.from_euler('y', 90, degrees=True).as_matrix(),    # Front: x down, z forward
                 75: R.from_euler('x', 90, degrees=True).as_matrix(),    # Right: x forward, z right

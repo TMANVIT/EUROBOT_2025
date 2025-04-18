@@ -10,6 +10,7 @@ MAKE_MAP ?= false
 RMW_IMPLEMENTATION ?= rmw_cyclonedds_cpp
 CYCLONEDDS_URI ?= /ros2_ws/cyclonedds.xml
 ROS_DOMAIN_ID := 0
+TEAM := 0 ## 0 - Yellow; 1 - Blue
 
 # ------------------------------------------------------------------------------
 
@@ -31,7 +32,8 @@ BASE_PARAMETERS := \
 	MAKE_MAP=$(MAKE_MAP) \
 	RMW_IMPLEMENTATION=$(RMW_IMPLEMENTATION) \
 	CYCLONEDDS_URI=$(CYCLONEDDS_URI) \
-	ROS_DOMAIN_ID=$(ROS_DOMAIN_ID)
+	ROS_DOMAIN_ID=$(ROS_DOMAIN_ID) \
+	TEAM=$(TEAM)
 
 # ------------------------------------------------------------------------------
 
