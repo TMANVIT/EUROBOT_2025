@@ -53,7 +53,7 @@ class EnemyMapNode(Node):
             "left_upper_material": [(604, 49), (584, 129)],
             "left_lower_material": [(604, 234), (584, 314)],
             "right_upper_material": [(14, 49), (34, 129)],
-            "right_lower_material": [(14, 234), (34, 314)],
+            # "right_lower_material": [(14, 234), (34, 314)],
             "center_material_left": [(349, 189), (429, 209)],
             "center_material_right": [(189, 189), (269, 209)],
             "upper_material_left": [(414, 29), (494, 49)],
@@ -61,8 +61,8 @@ class EnemyMapNode(Node):
             "ramp_left": [(399, 369), (479, 409)],
             "ramp_right": [(139, 369), (219, 409)],
             "stage": [(219, 319), (399, 409)],
-            "stage_material_left": [(444, 344), (524, 364)],
-            "stage_material_right": [(94, 344), (174, 364)]
+            # "stage_material_left": [(444, 344), (524, 364)],
+            # "stage_material_right": [(94, 344), (174, 364)]
         }
 
         # Базовая карта: занята (0)
@@ -122,11 +122,8 @@ class EnemyMapNode(Node):
             enemy_y = self.last_enemy_pose.position.y
             pixel_x = int((enemy_x - self.origin_x) / self.map_resolution)
             pixel_y = int((enemy_y - self.origin_y) / self.map_resolution)
-            # Учитываем поворот для позиции противника
-            pixel_x_rot = self.map_width - pixel_x - 1
-            pixel_y_rot = self.map_height - pixel_y - 1
-            if (0 <= pixel_x_rot < self.map_width) and (0 <= pixel_y_rot < self.map_height):
-                cv2.circle(self.current_map, (pixel_x_rot, pixel_y_rot), self.radius_px, 100, -1)
+            if (0 <= pixel_x < self.map_width) and (0 <= pixel_y < self.map_height):
+                cv2.circle(self.current_map, (pixel_x, pixel_y), self.radius_px, 100, -1)
 
     def timer_callback(self):
         """Публикация актуального состояния карты."""
