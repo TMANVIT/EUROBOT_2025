@@ -48,21 +48,21 @@ class EnemyMapNode(Node):
         # Хранение последней позиции противника
         self.last_enemy_pose = None
 
-        # Определение препятствий с именами
+        # Препятствия с координатами, уже учитывающими поворот на 180 градусов
         self.decks = {
-            "left_upper_material": [(15, 370), (35, 290)],
-            "left_lower_material": [(15, 185), (35, 105)],
-            "right_upper_material": [(605, 370), (585, 290)],
-            "right_lower_material": [(605, 185), (585, 105)],
-            "center_material_left": [(310-40, 210), (310-120, 210+20)],
-            "center_material_right": [(310+40, 210), (310+120, 210+20)],
-            "upper_material_left": [(125, 390), (205, 370)],
-            "upper_material_right": [(495, 390), (415, 370)],
-            "ramp_left": [(140, 50), (220, 10)],
-            "ramp_right": [(480, 50), (400, 10)],
-            "stage": [(400, 10), (220, 100)],
-            "stage_material_left": [(310-95, 55), (310-175, 75)],
-            "stage_material_right": [(310+95, 55), (310+175, 75)]
+            "left_upper_material": [(604, 49), (584, 129)],
+            "left_lower_material": [(604, 234), (584, 314)],
+            "right_upper_material": [(14, 49), (34, 129)],
+            "right_lower_material": [(14, 234), (34, 314)],
+            "center_material_left": [(349, 189), (429, 209)],
+            "center_material_right": [(189, 189), (269, 209)],
+            "upper_material_left": [(414, 29), (494, 49)],
+            "upper_material_right": [(124, 29), (204, 49)],
+            "ramp_left": [(399, 369), (479, 409)],
+            "ramp_right": [(139, 369), (219, 409)],
+            "stage": [(219, 319), (399, 409)],
+            "stage_material_left": [(444, 344), (524, 364)],
+            "stage_material_right": [(94, 344), (174, 364)]
         }
 
         # Базовая карта: занята (0)
@@ -71,9 +71,6 @@ class EnemyMapNode(Node):
         # Рисуем препятствия на базовой карте
         for deck in self.decks.values():
             cv2.rectangle(self.base_map, deck[0], deck[1], 100, -1)
-
-        # Поворачиваем базовую карту
-        self.base_map = cv2.rotate(self.base_map, cv2.ROTATE_180)
 
         # Инициализируем текущую карту как копию базовой
         self.current_map = self.base_map.copy()
@@ -125,8 +122,11 @@ class EnemyMapNode(Node):
             enemy_y = self.last_enemy_pose.position.y
             pixel_x = int((enemy_x - self.origin_x) / self.map_resolution)
             pixel_y = int((enemy_y - self.origin_y) / self.map_resolution)
-            if (0 <= pixel_x < self.map_width) and (0 <= pixel_y < self.map_height):
-                cv2.circle(self.current_map, (pixel_x, pixel_y), self.radius_px, 100, -1)
+            # Учитываем поворот для позиции противника
+            pixel_x_rot = self.map_width - pixel_x - 1
+            pixel_y_rot = self.map_height - pixel_y - 1
+            if (0 <= pixel_x_rot < self.map_width) and (0 <= pixel_y_rot < self.map_height):
+                cv2.circle(self.current_map, (pixel_x_rot, pixel_y_rot), self.radius_px, 100, -1)
 
     def timer_callback(self):
         """Публикация актуального состояния карты."""
