@@ -23,7 +23,7 @@ class Camera:
 
         team = os.getenv("TEAM")
 
-        if team:
+        if team == "1":
             self.colour_range = range(1,6)
 
             self.RotSideDict = {
@@ -160,15 +160,22 @@ class Camera:
 
         robot_corners = []
         robot_ids = []
+
+        # Define enemy colour range based on our colour range
+        our_colour_range = self.colour_range
+        enemy_colour_range = range(6, 11) if our_colour_range == range(1, 6) else range(1, 6)
+
         for i, marker_id in enumerate(ids):
             if is_our_robot:
-                if marker_id not in self.colour_range and marker_id not in self.RotSideDict:
-                    continue
+                # Include markers in our colour range or in RotSideDict (our robot's markers)
+                if marker_id in our_colour_range or marker_id in self.RotSideDict:
+                    robot_corners.append(corners[i][0])
+                    robot_ids.append(marker_id)
             else:
-                if not (marker_id in range(11) and not in self.colour_range):
-                    continue
-            robot_corners.append(corners[i][0])
-            robot_ids.append(marker_id)
+                # Include markers in enemy colour range
+                if marker_id in enemy_colour_range:
+                    robot_corners.append(corners[i][0])
+                    robot_ids.append(marker_id)
 
         if not robot_ids:
             return None, None, None
@@ -180,11 +187,11 @@ class Camera:
         for mid, corners in zip(robot_ids, robot_corners):
             # Set marker size based on ID
             if mid in [127, 126]:
-                marker_length = 0.085  # 8.5 cm for markers 964 and 992
+                marker_length = 0.085  # 8.5 cm for markers 127 and 126
             elif 1 <= mid <= 10:
                 marker_length = 0.07   # 7 cm for enemy markers
             else:
-                marker_length = 0.05   # 5 cm for other markers (55-58, self.robot_id)
+                marker_length = 0.05   # 5 cm for other markers (55-58, 74-77, self.robot_id)
             
             obj_pts = np.array([
                 [-marker_length / 2, marker_length / 2, 0],
@@ -223,6 +230,7 @@ class Camera:
         cov = np.linalg.pinv(J.T @ J) * sigma2
 
         return robot_tvec, quat, cov
+
 
     def robots_tracking(self, img):
         ids, corners = self.detect_markers(img)

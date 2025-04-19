@@ -1,6 +1,6 @@
 ekf_filter_node:
     ros__parameters:
-        frequency: 60.0
+        frequency: 50.0
         # sensor_timeout: 0.2
         two_d_mode: true
         publish_tf: true
@@ -11,12 +11,12 @@ ekf_filter_node:
         base_link_frame: base_footprint
         world_frame: odom
 
-        odom0: odom/unfiltered
-        odom0_config: [false, false, false,
-                       false, false, false,
-                       true, true, false, 
-                       false, false, false, 
-                       false, false, false]
+        # odom0: odom/unfiltered
+        # odom0_config: [false, false, false,
+        #                false, false, false,
+        #                true, true, false, 
+        #                false, false, false, 
+        #                false, false, false]
 
         # imu0: imu/data
         # imu0_config: [false, false, false,
@@ -26,13 +26,13 @@ ekf_filter_node:
         #                false, false, false]
 
         # # Sensor noise covariance matrices
-        odom0_pose_rejection_threshold: 0.3 
+        # odom0_pose_rejection_threshold: 0.3 
         # imu0_twist_rejection_threshold: 5.0 
-        odom0_queue_size: 1
+        # odom0_queue_size: 1
         # imu0_queue_size: 1
-        odom0_nodelay: false
+        # odom0_nodelay: false
         # imu0_nodelay: false
-        odom0_remove_gravitational_acceleration: false
+        # odom0_remove_gravitational_acceleration: false
 
         pose0: /bve_pose  
         pose0_config: [true, true, false,
@@ -43,10 +43,10 @@ ekf_filter_node:
 
         pose0_differential: false
         pose0_relative: false
-        pose0_queue_size: 5
+        pose0_queue_size: 1
         pose0_delay: 0.01 
-        pose0_rejection_threshold: 1.5
-        pose0_mahalanobis_threshold: 1.5
+        pose0_rejection_threshold: 2.5
+        pose0_mahalanobis_threshold: 2.5
 
 
         pose1: /lidar_pose
@@ -59,8 +59,8 @@ ekf_filter_node:
         pose1_relative: false
         pose1_queue_size: 1
         pose1_delay: 0.001
-        pose1_rejection_threshold: 1.5
-        pose1_mahalanobis_threshold: 1.5
+        pose1_rejection_threshold: 2.5
+        pose1_mahalanobis_threshold: 2.5
 
         # # Measurement noise covariance matrices
         process_noise_covariance: [0.005, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,      # x
