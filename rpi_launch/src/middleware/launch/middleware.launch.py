@@ -75,6 +75,7 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(lidar_launch_path),
             launch_arguments={
                 'frame_id': 'laser',
+                'serial_port': '/dev/ttyUSB1',
                 # 'serial_baudrate': LaunchConfiguration("lidar_baudrate"),
                 'angle_compensate': LaunchConfiguration("angle_compensate")
             }.items(),
