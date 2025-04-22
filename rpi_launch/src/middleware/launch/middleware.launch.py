@@ -63,13 +63,13 @@ def generate_launch_description():
             arguments=['serial', '--dev', LaunchConfiguration("Pico 2"), '--baudrate', LaunchConfiguration("micro_ros_baudrate")]
         ),
         
-        # Node(
-        #         package="servo_control",
-        #         executable="servo_control_node",
-        #         name="servo_control_node",
-        #         output="screen",
-        #         parameters=[servo_params],
-        # ),
+        Node(
+                package="imu",
+                executable="imu_node",
+                name="imu_node",
+                output="screen",
+                parameters=[{'port_name': '/dev/ttyUSB0'}]
+        ),
         
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(lidar_launch_path),
