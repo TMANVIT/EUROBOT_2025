@@ -5,12 +5,12 @@
         rgba="1 1 1 1" />
       </material>
   <xacro:macro name="imu">
-    <link name="imu_link"/>
+    <link name="base_imu_link"/>
     
     <joint name="imu_to_base_link" type="fixed">
       <parent link="base_link"/>
-      <child link="imu_link"/>
-      <origin xyz="0.065 0 0" rpy="0 0 0"/>
+      <child link="base_imu_link"/>
+      <origin xyz="0.065 0 0" rpy="0 3.14 3.14"/>
     </joint>
   </xacro:macro>
 
