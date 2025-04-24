@@ -72,21 +72,21 @@ class Strategy(Node):
                 if not self.elevator_in_progress:
                     self.elevator_publish(self.current_elevator)
             
-            # Second tact - go to first cans, grab them, release them from map.         
-            elif self.action_tact == 1 and time.time() - self.start_timer < 20: ###### TODO Tune time of interrupt Tact.
-                if not self.navigation_in_progress:
-                    self.navigate_to_waypoint(self.current_waypoint)
-                if not self.navigation_in_progress and self.current_waypoint == 1:
-                    if not self.elevator_in_progress:
-                        self.elevator_publish(self.current_elevator)                        
+            # # Second tact - go to first cans, grab them, release them from map.         
+            # elif self.action_tact == 1 and time.time() - self.start_timer < 20: ###### TODO Tune time of interrupt Tact.
+            #     if not self.navigation_in_progress:
+            #         self.navigate_to_waypoint(self.current_waypoint)
+            #     if not self.navigation_in_progress and self.current_waypoint == 1:
+            #         if not self.elevator_in_progress:
+            #             self.elevator_publish(self.current_elevator)                        
             
-            # Third tact - go to first base, build on them tribunes.    
-            elif self.action_tact == 2 and time.time() - self.start_timer < 40: ###### TODO Tune time of interrupt Tact.
-                if not self.navigation_in_progress:
-                    self.navigate_to_waypoint(self.current_waypoint)
-                if not self.navigation_in_progress and self.current_waypoint == 2:
-                    if not self.elevator_in_progress:
-                        self.elevator_publish(self.current_elevator) 
+            # # Third tact - go to first base, build on them tribunes.    
+            # elif self.action_tact == 2 and time.time() - self.start_timer < 40: ###### TODO Tune time of interrupt Tact.
+            #     if not self.navigation_in_progress:
+            #         self.navigate_to_waypoint(self.current_waypoint)
+            #     if not self.navigation_in_progress and self.current_waypoint == 2:
+            #         if not self.elevator_in_progress:
+            #             self.elevator_publish(self.current_elevator) 
             
             # # Fourth tact - go to second cans, grab them, release them from map.
             # elif self.action_tact == 3 and time.time() - self.start_timer < 60: ###### TODO Tune time of interrupt Tact.
@@ -105,8 +105,8 @@ class Strategy(Node):
             #             self.elevator_publish(self.current_elevator) 
             
             # Sixth tact - go to the 'waiting' point until SIMA's start time.
-            elif self.action_tact == 3 and time.time() - self.start_timer < 70: ###### TODO Tune time of interrupt Tact.
-                if not self.navigation_in_progress and self.current_waypoint == 3:
+            elif self.action_tact == 1 and time.time() - self.start_timer < 70: ###### TODO Tune time of interrupt Tact.
+                if not self.navigation_in_progress and self.current_waypoint == 0:
                     self.navigate_to_waypoint(self.current_waypoint)
                 if self.current_waypoint == 1:
                     if not self.elevator_in_progress:
