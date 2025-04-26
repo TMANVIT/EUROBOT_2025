@@ -23,7 +23,7 @@ class Strategy(Node):
         self.screen_pub = self.create_publisher(Int16, '/screen', 10)
         
         self.create_timer(1, self.timer_callback)
-        self.create_timer(1, self.screen_callback)
+        self.create_timer(3, self.screen_callback)
         
         # Declare parameters
         raw_waypoints = self.declare_parameter('waypoints')
@@ -71,44 +71,46 @@ class Strategy(Node):
             elif self.action_tact == 0:
                 if not self.elevator_in_progress:
                     self.elevator_publish(self.current_elevator)
+                    self.update_obstacle('ignore', self.obstacles[self.current_obstacle])
             
             # # Second tact - go to first cans, grab them, release them from map.         
-            # elif self.action_tact == 1 and time.time() - self.start_timer < 20: ###### TODO Tune time of interrupt Tact.
-            #     if not self.navigation_in_progress:
-            #         self.navigate_to_waypoint(self.current_waypoint)
-            #     if not self.navigation_in_progress and self.current_waypoint == 1:
-            #         if not self.elevator_in_progress:
-            #             self.elevator_publish(self.current_elevator)                        
-            
-            # # Third tact - go to first base, build on them tribunes.    
-            # elif self.action_tact == 2 and time.time() - self.start_timer < 40: ###### TODO Tune time of interrupt Tact.
-            #     if not self.navigation_in_progress:
-            #         self.navigate_to_waypoint(self.current_waypoint)
-            #     if not self.navigation_in_progress and self.current_waypoint == 2:
-            #         if not self.elevator_in_progress:
-            #             self.elevator_publish(self.current_elevator) 
-            
-            # # Fourth tact - go to second cans, grab them, release them from map.
-            # elif self.action_tact == 3 and time.time() - self.start_timer < 60: ###### TODO Tune time of interrupt Tact.
-            #     if not self.navigation_in_progress:
-            #         self.navigate_to_waypoint(self.current_waypoint)
-            #     if not self.navigation_in_progress and self.current_waypoint == 3:
-            #         if not self.elevator_in_progress:
-            #             self.elevator_publish(self.current_elevator)
-            
-            # # Fifth tact - go to second base, build on them tribunes.     
-            # elif self.action_tact == 4 and time.time() - self.start_timer < 80: ###### TODO Tune time of interrupt Tact.
-            #     if not self.navigation_in_progress:
-            #         self.navigate_to_waypoint(self.current_waypoint)
-            #     if not self.navigation_in_progress and self.current_waypoint == 4:
-            #         if not self.elevator_in_progress:
-            #             self.elevator_publish(self.current_elevator) 
-            
-            # Sixth tact - go to the 'waiting' point until SIMA's start time.
-            elif self.action_tact == 1 and time.time() - self.start_timer < 70: ###### TODO Tune time of interrupt Tact.
+            elif self.action_tact == 1 and time.time() - self.start_timer < 20: ###### TODO Tune time of interrupt Tact.
                 if not self.navigation_in_progress and self.current_waypoint == 0:
                     self.navigate_to_waypoint(self.current_waypoint)
-                if self.current_waypoint == 1:
+                if not self.navigation_in_progress and self.current_waypoint == 1:
+                    if not self.elevator_in_progress:
+                        self.elevator_publish(self.current_elevator)                        
+            
+            # Third tact - go to first base, build on them tribunes.    
+            elif self.action_tact == 2 and time.time() - self.start_timer < 40: ###### TODO Tune time of interrupt Tact.
+                if not self.navigation_in_progress and self.current_waypoint == 1:
+                    self.navigate_to_waypoint(self.current_waypoint)
+                if not self.navigation_in_progress and self.current_waypoint == 2:
+                    if not self.elevator_in_progress:
+                        self.elevator_publish(self.current_elevator) 
+            
+            # Fourth tact - go to second cans, grab them, release them from map.
+            elif self.action_tact == 3 and time.time() - self.start_timer < 60: ###### TODO Tune time of interrupt Tact.
+                if not self.navigation_in_progress and self.current_waypoint == 2:
+                    self.navigate_to_waypoint(self.current_waypoint)
+                if not self.navigation_in_progress and self.current_waypoint == 3:
+                    if not self.elevator_in_progress:
+                        self.elevator_publish(self.current_elevator)
+                        self.update_obstacle('ignore', self.obstacles[self.current_obstacle])
+            
+            # Fifth tact - go to second base, build on them tribunes.     
+            elif self.action_tact == 4 and time.time() - self.start_timer < 80: ###### TODO Tune time of interrupt Tact.
+                if not self.navigation_in_progress and self.current_waypoint == 3:
+                    self.navigate_to_waypoint(self.current_waypoint)
+                if not self.navigation_in_progress and self.current_waypoint == 4:
+                    if not self.elevator_in_progress:
+                        self.elevator_publish(self.current_elevator) 
+            
+            # Sixth tact - go to the 'waiting' point until SIMA's start time.
+            elif self.action_tact == 5 and time.time() - self.start_timer < 90: ###### TODO Tune time of interrupt Tact.
+                if not self.navigation_in_progress and self.current_waypoint == 4:
+                    self.navigate_to_waypoint(self.current_waypoint)
+                if not self.navigation_in_progress and self.current_waypoint == 5:
                     if not self.elevator_in_progress:
                         self.elevator_publish(self.current_elevator)
                         
@@ -122,7 +124,7 @@ class Strategy(Node):
         goal_msg.pose = PoseStamped()
         goal_msg.pose.header.frame_id = 'map'
         goal_msg.pose.header.stamp = self.get_clock().now().to_msg()
-        self.get_logger().info(f"{waypoint_index}")
+        self.get_logger().info(f"Waypoint index = {waypoint_index}")
         goal_msg.pose.pose.position.x = self.waypoints[waypoint_index]['x']
         goal_msg.pose.pose.position.y = self.waypoints[waypoint_index]['y']
         yaw = self.waypoints[waypoint_index]['yaw']
@@ -179,50 +181,49 @@ class Strategy(Node):
                 self.screen_sum += self.term_order[self.current_term]
                 self.current_term += 1
                 self.action_tact += 1
-                self.get_logger().info(f"Tact index = {self.action_tact}")
-            # elif self.action_tact == 1:
-            #     self.elevator_in_progress = False
-            #     self.current_elevator += 1
-            #     self.action_tact += 1
-            #     self.update_obstacle('ignore', self.obstacles[self.current_obstacle])
-            #     self.get_logger().info(f"Tact index = {self.action_tact}")
-            # elif self.action_tact == 2:
-            #     self.elevator_in_progress = False
-            #     self.current_elevator += 1
-            #     self.screen_sum += self.term_order[self.current_term]
-            #     self.current_term += 1
-            #     self.action_tact += 1
-            #     self.get_logger().info(f"Tact index = {self.action_tact}")
-            # elif self.action_tact == 3:
-            #     self.elevator_in_progress = False
-            #     self.current_elevator += 1
-            #     self.action_tact += 1
-            #     self.get_logger().info(f"Tact index = {self.action_tact}")
-            #     self.update_obstacle('ignore', self.obstacles[self.current_obstacle])
-            # elif self.action_tact == 4:
-            #     self.elevator_in_progress = False
-            #     self.current_elevator += 1
-            #     self.screen_sum += self.term_order[self.current_term]
-            #     self.current_term += 1
-            #     self.action_tact += 1
-            #     self.get_logger().info(f"Tact index = {self.action_tact}")
+                self.get_logger().debug(f"Tact index = {self.action_tact}")
             elif self.action_tact == 1:
                 self.elevator_in_progress = False
                 self.current_elevator += 1
                 self.action_tact += 1
-                self.get_logger().info(f"Tact index = {self.action_tact}")
+                self.get_logger().debug(f"Tact index = {self.action_tact}")
+            elif self.action_tact == 2:
+                self.elevator_in_progress = False
+                self.current_elevator += 1
+                self.screen_sum += self.term_order[self.current_term]
+                self.current_term += 1
+                self.action_tact += 1
+                self.get_logger().debug(f"Tact index = {self.action_tact}")
+            elif self.action_tact == 3:
+                self.elevator_in_progress = False
+                self.current_elevator += 1
+                self.action_tact += 1
+                self.get_logger().debug(f"Tact index = {self.action_tact}")
+                # self.update_obstacle('ignore', self.obstacles[self.current_obstacle])
+            elif self.action_tact == 4:
+                self.elevator_in_progress = False
+                self.current_elevator += 1
+                self.screen_sum += self.term_order[self.current_term]
+                self.current_term += 1
+                self.action_tact += 1
+                self.get_logger().debug(f"Tact index = {self.action_tact}")
+            elif self.action_tact == 5:
+                self.elevator_in_progress = False
+                self.current_elevator += 1
+                self.action_tact += 1
+                self.get_logger().debug(f"Tact index = {self.action_tact}")
         
     def update_obstacle(self, action, obstacle_name):
         msg = String()
         msg.data = f'{action}:{obstacle_name}'
         self.obstacle_pub.publish(msg)
-        self.get_logger().debug(f'Sent command: {msg.data}')
+        #self.get_logger().debug(f'Sent command: {msg.data}')
         self.current_obstacle += 1
     
     # Main synchronize function
     def timer_counter(self, msg):
         if self.start_timer is None and msg.data == 1:
-            self.get_logger().info("Start Match!")
+            self.get_logger().debug("Start Match!")
             self.start_timer = time.time()
 
     # Points publisher to screen
