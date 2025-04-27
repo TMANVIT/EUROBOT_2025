@@ -70,10 +70,10 @@ class Strategy(Node):
             # First tact - publish paint on the side of the field.
             elif self.action_tact == 0:
                 if not self.elevator_in_progress:
-                    self.elevator_publish(self.current_elevator)
                     self.update_obstacle('ignore', self.obstacles[self.current_obstacle])
+                    self.elevator_publish(self.current_elevator)
             
-            # # Second tact - go to first cans, grab them, release them from map.         
+            # Second tact - go to first cans, grab them, release them from map.         
             elif self.action_tact == 1 and time.time() - self.start_timer < 20: ###### TODO Tune time of interrupt Tact.
                 if not self.navigation_in_progress and self.current_waypoint == 0:
                     self.navigate_to_waypoint(self.current_waypoint)
@@ -169,7 +169,7 @@ class Strategy(Node):
         self.elevator_in_progress = True
         msg = UInt8()
         msg.data = self.elevator_order[command_index]
-        self.get_logger().info(f"Publish to elevator {msg.data}")
+        self.get_logger().debug(f"Publish to elevator {msg.data}")
         self.elevator_pub.publish(msg)
     
     def elevator_callback(self, msg):

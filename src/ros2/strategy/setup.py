@@ -26,6 +26,7 @@ setup(
     entry_points={
         'console_scripts': [
             'strategy_node = strategy.strategy:main',
+            'reinit_node = strategy.reinit:main'
         ],
     },
 )

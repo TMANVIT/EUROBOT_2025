@@ -29,5 +29,14 @@ def generate_launch_description():
             parameters=[strategy_params],
             
         ),
+        Node(
+            package='strategy',
+            executable='reinit_node',
+            name='reinit_node',
+            output='screen',
+            parameters=[{
+                'oneshot': True
+            }],
+        ),
         IncludeLaunchDescription(PythonLaunchDescriptionSource(nav2_launch_path)),
     ])
