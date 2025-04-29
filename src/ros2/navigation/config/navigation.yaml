@@ -11,50 +11,50 @@ amcl_rclcpp_node:
   ros__parameters:
     use_sim_time: False
 
-# bt_navigator:
-#   ros__parameters:
-#     use_sim_time: false
-#     global_frame: map
-#     robot_base_frame: base_footprint
-#     odom_topic: /odom
-#     default_nav_through_poses_bt_xml: /ros2_ws/src/navigation/config/bt/bt_throught_poses.xml
-#     default_nav_to_pose_bt_xml: /ros2_ws/src/navigation/config/bt/bt_to_pose.xml
-#     bt_loop_duration: 50
-#     default_server_timeout: 50
-#     enable_groot_monitoring: false
-#     groot_zmq_publisher_port: 1666
-#     groot_zmq_server_port: 1667
-#     plugin_lib_names:
-#     - nav2_compute_path_to_pose_action_bt_node
-#     - nav2_compute_path_through_poses_action_bt_node
-#     - nav2_follow_path_action_bt_node
-#     - nav2_back_up_action_bt_node
-#     - nav2_spin_action_bt_node
-#     - nav2_wait_action_bt_node
-#     - nav2_clear_costmap_service_bt_node
-#     - nav2_is_stuck_condition_bt_node
-#     - nav2_goal_reached_condition_bt_node
-#     - nav2_goal_updated_condition_bt_node
-#     - nav2_initial_pose_received_condition_bt_node
-#     - nav2_reinitialize_global_localization_service_bt_node
-#     - nav2_rate_controller_bt_node
-#     - nav2_distance_controller_bt_node
-#     - nav2_speed_controller_bt_node
-#     - nav2_truncate_path_action_bt_node
-#     - nav2_goal_updater_node_bt_node
-#     - nav2_recovery_node_bt_node
-#     - nav2_pipeline_sequence_bt_node
-#     - nav2_round_robin_node_bt_node
-#     - nav2_transform_available_condition_bt_node
-#     - nav2_time_expired_condition_bt_node
-#     - nav2_distance_traveled_condition_bt_node
-#     - nav2_single_trigger_bt_node
-#     - nav2_navigate_through_poses_action_bt_node
-#     - nav2_navigate_to_pose_action_bt_node
-#     - nav2_remove_passed_goals_action_bt_node
-#     - nav2_planner_selector_bt_node
-#     - nav2_controller_selector_bt_node
-#     - nav2_goal_checker_selector_bt_node
+bt_navigator:
+  ros__parameters:
+    use_sim_time: false
+    global_frame: map
+    robot_base_frame: base_footprint
+    odom_topic: /odom
+    default_nav_through_poses_bt_xml: /ros2_ws/src/navigation/config/bt/bt_throught_poses.xml
+    default_nav_to_pose_bt_xml: /ros2_ws/src/navigation/config/bt/bt_to_pose.xml
+    bt_loop_duration: 50
+    default_server_timeout: 50
+    enable_groot_monitoring: false
+    groot_zmq_publisher_port: 1666
+    groot_zmq_server_port: 1667
+    plugin_lib_names:
+    - nav2_compute_path_to_pose_action_bt_node
+    - nav2_compute_path_through_poses_action_bt_node
+    - nav2_follow_path_action_bt_node
+    - nav2_back_up_action_bt_node
+    - nav2_spin_action_bt_node
+    - nav2_wait_action_bt_node
+    - nav2_clear_costmap_service_bt_node
+    - nav2_is_stuck_condition_bt_node
+    - nav2_goal_reached_condition_bt_node
+    - nav2_goal_updated_condition_bt_node
+    - nav2_initial_pose_received_condition_bt_node
+    - nav2_reinitialize_global_localization_service_bt_node
+    - nav2_rate_controller_bt_node
+    - nav2_distance_controller_bt_node
+    - nav2_speed_controller_bt_node
+    - nav2_truncate_path_action_bt_node
+    - nav2_goal_updater_node_bt_node
+    - nav2_recovery_node_bt_node
+    - nav2_pipeline_sequence_bt_node
+    - nav2_round_robin_node_bt_node
+    - nav2_transform_available_condition_bt_node
+    - nav2_time_expired_condition_bt_node
+    - nav2_distance_traveled_condition_bt_node
+    - nav2_single_trigger_bt_node
+    - nav2_navigate_through_poses_action_bt_node
+    - nav2_navigate_to_pose_action_bt_node
+    - nav2_remove_passed_goals_action_bt_node
+    - nav2_planner_selector_bt_node
+    - nav2_controller_selector_bt_node
+    - nav2_goal_checker_selector_bt_node
 
 # bt_navigator_rclcpp_node:
 #   ros__parameters:
@@ -74,6 +74,7 @@ controller_server:
     min_y_velocity_threshold: 0.0
     min_theta_velocity_threshold: 0.1
     failure_tolerance: 0.3
+    publish_zero_velocity: false
     controller_plugins: ["FollowPath"]
 
     # # Progress checker parameters
@@ -86,21 +87,21 @@ controller_server:
     general_goal_checker:
       stateful: true
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.02
-      yaw_goal_tolerance: 0.05
+      xy_goal_tolerance: 0.01
+      yaw_goal_tolerance: 0.02
       
     FollowPath:
       plugin: "nav2_mppi_controller::MPPIController"
       time_steps: 56
       model_dt: 0.05
       batch_size: 6000
-      vx_std: 0.13
+      vx_std: 0.17
       vy_std: 0.0
       wz_std: 0.4
-      vx_max: 0.2
+      vx_max: 0.25
       vx_min: -0.1
       vy_max: 0.0
-      wz_max: 0.85
+      wz_max: 0.65
       ax_max: 0.05
       ax_min: -0.05
       ay_min: 0.0
@@ -149,7 +150,7 @@ controller_server:
         critical_cost: 300.0
         consider_footprint: true
         collision_cost: 1000000.0
-        near_goal_distance: 0.1
+        near_goal_distance: 0.05
         trajectory_point_step: 2
       PathAlignCritic:
         enabled: true
@@ -206,7 +207,7 @@ global_costmap:
         plugin: "nav2_costmap_2d::InflationLayer"
         enabled: true
         inflation_radius: 0.35
-        cost_scaling_factor: 0.5
+        cost_scaling_factor: 2.5
         inflate_unknown: false
         inflate_around_unknown: false
       always_send_full_costmap: true
@@ -234,7 +235,7 @@ local_costmap:
         plugin: "nav2_costmap_2d::InflationLayer"
         enabled: true
         inflation_radius: 0.35
-        cost_scaling_factor: 0.5
+        cost_scaling_factor: 2.5
         inflate_unknown: false
         inflate_around_unknown: false           
 
@@ -288,6 +289,21 @@ smoother_server:
       do_refinement: True
       refinement_num: 2
 
+velocity_smoother:
+  ros__parameters:
+    smoothing_frequency: 20.0
+    scale_velocities: false
+    feedback: "OPEN_LOOP"
+    max_velocity: [0.5, 0.0, 2.5]
+    min_velocity: [-0.5, 0.0, -2.5]
+    deadband_velocity: [0.01, 0.0, 0.01]
+    velocity_timeout: 1.0
+    max_accel: [2.5, 0.0, 3.2]
+    max_decel: [-2.5, 0.0, -3.2]
+    odom_topic: "odom"
+    odom_duration: 0.1
+    use_realtime_priority: false
+    enable_stamped_cmd_vel: false
 
 ### Нужно сделать
 
