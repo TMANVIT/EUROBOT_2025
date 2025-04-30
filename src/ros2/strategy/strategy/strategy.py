@@ -115,7 +115,7 @@ class Strategy(Node):
                         self.elevator_publish(self.current_elevator)
                         
             if (time.time() - self.start_timer > 100) or self.current_waypoint > len(self.waypoints):
-                pass
+                rclpy.shutdown()
             
 
     def navigate_to_waypoint(self, waypoint_index):
