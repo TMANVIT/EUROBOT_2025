@@ -73,16 +73,25 @@ class BEVPosePublisher(Node):
             spin_thread=True
         )
         
+        self.create_timer(0.01, self.timer_callback)
+        
         # Variables to store robot and enemy pose data
         self.robotCoord = None
         self.quat = None
         self.enemyCoord = None
         self.enemyQuat = None
         self.aruco_to_base_link = self.tf_buffer.lookup_transform("aruco_link", "base_footprint", rclpy.time.Time(), timeout=rclpy.duration.Duration(seconds=2.0))
-
+        self.last_robotPose = None
+        self.last_enemyPose = None
 
         # Sliding window for covariance estimation
         self.counter = 0  # Counter for initial pose publication
+        
+    def timer_callback(self):
+        if hasattr(self, 'last_robotPose') and self.last_robotPose is not None:
+            self.pose_publisher.publish(self.last_robotPose)
+        if hasattr(self, 'last_enemyPose') and self.last_enemyPose is not None:
+            self.enemy_pose_publisher.publish(self.last_enemyPose)
 
     def ensure_positive_semidefinite(self, matrix, epsilon=1e-6):
         """Ensure the covariance matrix is positive semi-definite."""
@@ -182,7 +191,8 @@ class BEVPosePublisher(Node):
                 imu_pub.y = pose_msg.pose.pose.position.y
                 imu_pub.z = Rotation.from_quat(self.quat).as_euler(seq='xyz', degrees=False)[2]
                 # self.get_logger().info(f"{imu_pub}")
-            self.pose_publisher.publish(pose_msg)
+            self.last_robotPose = pose_msg
+            # self.pose_publisher.publish(pose_msg)
 
 
         # Process enemy robot's pose
@@ -214,13 +224,14 @@ class BEVPosePublisher(Node):
             covariance_matrix[5, 5] = 0.005 # yaw variance
             pose_msg.pose.covariance = covariance_matrix.flatten().tolist()
 
-            self.enemy_pose_publisher.publish(pose_msg)
+            # self.enemy_pose_publisher.publish(pose_msg)
 
             # Debug output
             # self.get_logger().info(
             #     f"Enemy robot: x={self.enemyCoord[0]:.3f}, y={self.enemyCoord[1]:.3f}, z={self.enemyCoord[2]:.3f}, "
             #     f"quat=[{self.enemyQuat[0]:.3f}, {self.enemyQuat[1]:.3f}, {self.enemyQuat[2]:.3f}, {self.enemyQuat[3]:.3f}]"
             # )
+            self.last_enemyPose = pose_msg
 
 def main(args=None):
     rclpy.init(args=args)

@@ -64,8 +64,7 @@ class Strategy(Node):
             # Check if match near the end
             if (time.time() - self.start_timer) >= self.time_until_end and (time.time() - self.start_timer) < 100:
                 self.get_logger().info(f"Len wayp = {len(self.waypoints)}")
-                if len(self.waypoints) == self.current_waypoint + 1:
-                    self.navigate_to_waypoint(len(self.waypoints) - 1)
+                self.navigate_to_waypoint(len(self.waypoints) - 1)
                     
             # First tact - publish paint on the side of the field.
             elif self.action_tact == 0:
@@ -79,18 +78,25 @@ class Strategy(Node):
                     self.navigate_to_waypoint(self.current_waypoint)
                 if not self.navigation_in_progress and self.current_waypoint == 1:
                     if not self.elevator_in_progress:
-                        self.elevator_publish(self.current_elevator)                        
+                        self.elevator_publish(self.current_elevator)  
+                        
+            elif self.action_tact == 1 and time.time() - self.start_timer > 20:  
+                self.action_tact += 2                 
             
             # Third tact - go to first base, build on them tribunes.    
-            elif self.action_tact == 2 and time.time() - self.start_timer < 40: ###### TODO Tune time of interrupt Tact.
+            elif self.action_tact == 2 and time.time() - self.start_timer < 45: ###### TODO Tune time of interrupt Tact.
                 if not self.navigation_in_progress and self.current_waypoint == 1:
                     self.navigate_to_waypoint(self.current_waypoint)
                 if not self.navigation_in_progress and self.current_waypoint == 2:
                     if not self.elevator_in_progress:
                         self.elevator_publish(self.current_elevator) 
             
+            elif self.action_tact == 2 and time.time() - self.start_timer > 45: 
+                self.update_obstacle('ignore', self.obstacles[self.current_obstacle]) 
+                self.action_tact += 2
+            
             # Fourth tact - go to second cans, grab them, release them from map.
-            elif self.action_tact == 3 and time.time() - self.start_timer < 60: ###### TODO Tune time of interrupt Tact.
+            elif self.action_tact == 3 and time.time() - self.start_timer < 65: ###### TODO Tune time of interrupt Tact.
                 if not self.navigation_in_progress and self.current_waypoint == 2:
                     self.navigate_to_waypoint(self.current_waypoint)
                 if not self.navigation_in_progress and self.current_waypoint == 3:
@@ -98,23 +104,39 @@ class Strategy(Node):
                         self.elevator_publish(self.current_elevator)
                         self.update_obstacle('ignore', self.obstacles[self.current_obstacle])
             
+            elif self.action_tact == 3 and time.time() - self.start_timer > 65:  
+                self.action_tact += 1 
+            
             # Fifth tact - go to second base, build on them tribunes.     
-            elif self.action_tact == 4 and time.time() - self.start_timer < 80: ###### TODO Tune time of interrupt Tact.
+            elif self.action_tact == 4 and time.time() - self.start_timer < 85: ###### TODO Tune time of interrupt Tact.
                 if not self.navigation_in_progress and self.current_waypoint == 3:
                     self.navigate_to_waypoint(self.current_waypoint)
                 if not self.navigation_in_progress and self.current_waypoint == 4:
                     if not self.elevator_in_progress:
                         self.elevator_publish(self.current_elevator) 
-            
+                        
+            elif self.action_tact == 4 and time.time() - self.start_timer > 85:  
+                self.action_tact += 1 
+                            
             # Sixth tact - go to the 'waiting' point until SIMA's start time.
-            elif self.action_tact == 5 and time.time() - self.start_timer < 90: ###### TODO Tune time of interrupt Tact.
+            elif self.action_tact == 5 and time.time() - self.start_timer < 95: ###### TODO Tune time of interrupt Tact.
                 if not self.navigation_in_progress and self.current_waypoint == 4:
                     self.navigate_to_waypoint(self.current_waypoint)
                 if not self.navigation_in_progress and self.current_waypoint == 5:
                     if not self.elevator_in_progress:
                         self.elevator_publish(self.current_elevator)
                         
+            elif self.action_tact == 5 and time.time() - self.start_timer > 95:  
+                self.action_tact += 1
+                                       
             if (time.time() - self.start_timer > 100) or self.current_waypoint > len(self.waypoints):
+                self.get_logger().info("END OF THE MATCH")
+                if self.current_term < len(self.term_order):
+                    self.screen_sum += self.term_order[len(self.term_order) - 1]
+                    self.current_term = len(self.term_order)
+                    msg = Int16()
+                    msg.data = self.screen_sum
+                    self.screen_pub.publish(msg)
                 rclpy.shutdown()
             
 
@@ -164,6 +186,10 @@ class Strategy(Node):
         self.current_waypoint += 1
         if len(self.waypoints) == self.current_waypoint:
             self.screen_sum += self.term_order[len(self.term_order) - 1]
+            self.current_term = len(self.term_order)
+            msg = Int16()
+            msg.data = self.screen_sum
+            self.screen_pub.publish(msg)
 
     def elevator_publish(self, command_index):
         self.elevator_in_progress = True
@@ -181,37 +207,37 @@ class Strategy(Node):
                 self.screen_sum += self.term_order[self.current_term]
                 self.current_term += 1
                 self.action_tact += 1
-                self.get_logger().debug(f"Tact index = {self.action_tact}")
+                self.get_logger().info(f"Tact index = {self.action_tact}")
             elif self.action_tact == 1:
                 self.elevator_in_progress = False
                 self.current_elevator += 1
                 self.action_tact += 1
-                self.get_logger().debug(f"Tact index = {self.action_tact}")
+                self.get_logger().info(f"Tact index = {self.action_tact}")
             elif self.action_tact == 2:
                 self.elevator_in_progress = False
                 self.current_elevator += 1
                 self.screen_sum += self.term_order[self.current_term]
                 self.current_term += 1
                 self.action_tact += 1
-                self.get_logger().debug(f"Tact index = {self.action_tact}")
+                self.get_logger().info(f"Tact index = {self.action_tact}")
             elif self.action_tact == 3:
                 self.elevator_in_progress = False
                 self.current_elevator += 1
                 self.action_tact += 1
-                self.get_logger().debug(f"Tact index = {self.action_tact}")
+                self.get_logger().info(f"Tact index = {self.action_tact}")
                 # self.update_obstacle('ignore', self.obstacles[self.current_obstacle])
             elif self.action_tact == 4:
                 self.elevator_in_progress = False
                 self.current_elevator += 1
+                self.action_tact += 1
                 self.screen_sum += self.term_order[self.current_term]
                 self.current_term += 1
-                self.action_tact += 1
-                self.get_logger().debug(f"Tact index = {self.action_tact}")
-            elif self.action_tact == 5:
-                self.elevator_in_progress = False
-                self.current_elevator += 1
-                self.action_tact += 1
-                self.get_logger().debug(f"Tact index = {self.action_tact}")
+                self.get_logger().info(f"Tact index = {self.action_tact}")
+            # elif self.action_tact == 5:
+            #     self.elevator_in_progress = False
+            #     self.current_elevator += 1
+            #     self.action_tact += 1
+            #     self.get_logger().info(f"Tact index = {self.action_tact}")
         
     def update_obstacle(self, action, obstacle_name):
         msg = String()
@@ -230,7 +256,7 @@ class Strategy(Node):
     def screen_callback(self):
         msg = Int16()
         msg.data = self.screen_sum
-        self.get_logger().debug(f"Current sum of points = {self.screen_sum}")
+        self.get_logger().info(f"Current sum of points = {self.screen_sum}")
         self.screen_pub.publish(msg)
 
 def main(args=None):
