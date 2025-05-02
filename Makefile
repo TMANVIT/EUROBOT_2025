@@ -10,7 +10,7 @@ MAKE_MAP ?= false
 RMW_IMPLEMENTATION ?= rmw_cyclonedds_cpp
 CYCLONEDDS_URI ?= /ros2_ws/cyclonedds.xml
 ROS_DOMAIN_ID := 0
-TEAM := 0 ## 0 - Yellow; 1 - Blue
+TEAM := 1 ## 0 - Yellow; 1 - Blue
 
 # ------------------------------------------------------------------------------
 
@@ -39,13 +39,13 @@ BASE_PARAMETERS := \
 
 BUILD_COMMAND := $(BASE_PARAMETERS) docker compose $(DOCKER_COMPOSE_FILES) build
 
-RUN_COMMAND := $(BASE_PARAMETERS) docker compose $(DOCKER_COMPOSE_FILES) up
+RUN_COMMAND := docker compose $(DOCKER_COMPOSE_FILES) up
 
 # ------------------------------------------------------------------------------
 #                              BUILDING COMMANDS
 # ------------------------------------------------------------------------------
 
-.PHONY: build-robot build-camera build-all
+.PHONY: build-robot build-all
 
 build-robot:
 	@echo "Building robot"
@@ -59,17 +59,20 @@ build-all:
 #                              RUNNING COMMANDS
 # ------------------------------------------------------------------------------
 
-.PHONY: run-robot-stack run-camera-stack run-all-stack
+.PHONY: run-yellow run-blue run-all-stack  run-pi
 
-run-robot-stack: 
-	@echo "Running robot stack"
-	cd $(ROOT_DIR) && \
-	$(RUN_COMMAND) $(COMPUTER_IMAGE)
+run-yellow:
+	@echo "Running robot stack (Yellow team)"
+	cd $(ROOT_DIR) && $(BASE_PARAMETERS) TEAM=0 $(RUN_COMMAND) $(COMPUTER_IMAGE)
+
+run-blue:
+	@echo "Running robot stack (Blue team)"
+	cd $(ROOT_DIR) && $(BASE_PARAMETERS) TEAM=1 $(RUN_COMMAND) $(COMPUTER_IMAGE)
 
 run-all-stack:
 	@echo "Running all stack"
 	cd $(ROOT_DIR) && \
-	$(RUN_COMMAND) $(BASE_IMAGES)
+	$(BASE_PARAMETERS) $(RUN_COMMAND) $(BASE_IMAGES)
 
 run-pi:
 	@echo "Running rpi4 script"
@@ -80,10 +83,10 @@ run-pi:
 #                             AUXILIARY COMMANDS
 # ------------------------------------------------------------------------------
 
-.PHONY: prepare-for-visualization prepare-for-build
+.PHONY: prepare-for-visualization
 
 prepare-for-visualization:
 	@echo "Preparing for visualization"
 	DISPLAY=$(DISPLAY) xhost +local: && \
 	DISPLAY=$(DISPLAY) xhost + && \
-	export RCUTILS_COLORIZED_OUTPUT=1
+    export RCUTILS_COLORIZED_OUTPUT=1

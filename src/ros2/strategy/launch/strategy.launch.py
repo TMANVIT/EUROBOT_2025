@@ -38,5 +38,11 @@ def generate_launch_description():
                 'oneshot': True
             }],
         ),
+        Node(
+            package='strategy',
+            executable='reboot_node',
+            name='reboot_node',
+            output='screen',
+        ),
         IncludeLaunchDescription(PythonLaunchDescriptionSource(nav2_launch_path)),
     ])
