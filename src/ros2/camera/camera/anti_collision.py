@@ -18,6 +18,8 @@ class PoseDistanceNode(Node):
             history=QoSHistoryPolicy.KEEP_LAST,
             depth=10
         )
+
+        self.timer_sub = self.create_subscription(UInt8, '/timer', self.timer_counter, 10)
         
         # Subscribers
         self.bve_sub = self.create_subscription(
@@ -43,12 +45,17 @@ class PoseDistanceNode(Node):
         
         # Timer for periodic distance check
         self.timer = self.create_timer(0.01, self.check_distance)
+        self.start_timer = None 
 
     def bve_pose_callback(self, msg):
         self.bve_pose = msg.pose
 
     def enemy_pose_callback(self, msg):
         self.enemy_pose = msg.pose
+
+    def timer_counter(self, msg):
+        if self.start_timer is None and msg.data == 1:
+            self.start_timer = time.time()
 
     def cmd_vel_callback(self, msg):
         if self.enemy_pose is None:
@@ -61,7 +68,7 @@ class PoseDistanceNode(Node):
         distance = sqrt(dx**2 + dy**2)
 
         # If enemy is far (>= 20 cm), forward cmd_vel to cmd_vel/filtered
-        if distance >= 0.4:
+        if distance >= 0.4 and (time.time() - self.start_timer) < 101:
             self.cmd_vel_filtered_pub.publish(msg)
             self.zero_published = False  # Reset flag when enemy is far
 
@@ -80,7 +87,7 @@ class PoseDistanceNode(Node):
         self.enemy_warning_pub.publish(warning_msg)
 
         # If enemy is close (< 20 cm), publish zero velocity once
-        if distance < 0.4 and not self.zero_published:
+        if distance < 0.4 and not self.zero_published and (time.time() - self.start_timer) > 100:
             twist = Twist()
             twist.linear.x = 0.0
             twist.linear.y = 0.0
