@@ -1,7 +1,8 @@
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import PoseWithCovariance, Twist
+from geometry_msgs.msg import PoseWithCovarianceStamped, Twist
 from std_msgs.msg import Int8
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSDurabilityPolicy, QoSHistoryPolicy
 from math import sqrt
 
 class PoseDistanceNode(Node):
@@ -11,17 +12,25 @@ class PoseDistanceNode(Node):
         self.enemy_pose = None
         self.zero_published = False  # Flag to track if zero velocity was published
         
+        self.pose_qos = QoSProfile(
+            reliability=QoSReliabilityPolicy.RELIABLE,
+            durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
+            history=QoSHistoryPolicy.KEEP_LAST,
+            depth=10
+        )
+        
         # Subscribers
         self.bve_sub = self.create_subscription(
-            PoseWithCovariance,
+            PoseWithCovarianceStamped,
             '/bve_pose',
             self.bve_pose_callback,
-            10)
+            qos_profile=self.pose_qos
+            )
         self.enemy_sub = self.create_subscription(
-            PoseWithCovariance,
+            PoseWithCovarianceStamped,
             '/enemy_pose',
             self.enemy_pose_callback,
-            10)
+            qos_profile=self.pose_qos)
         self.cmd_vel_sub = self.create_subscription(
             Twist,
             '/cmd_vel',
@@ -33,7 +42,7 @@ class PoseDistanceNode(Node):
         self.enemy_warning_pub = self.create_publisher(Int8, '/enemy_warning', 10)
         
         # Timer for periodic distance check
-        self.timer = self.create_timer(0.1, self.check_distance)
+        self.timer = self.create_timer(0.01, self.check_distance)
 
     def bve_pose_callback(self, msg):
         self.bve_pose = msg.pose
@@ -42,12 +51,13 @@ class PoseDistanceNode(Node):
         self.enemy_pose = msg.pose
 
     def cmd_vel_callback(self, msg):
-        if self.bve_pose is None or self.enemy_pose is None:
+        if self.enemy_pose is None:
+            self.cmd_vel_filtered_pub.publish(msg)
             return
 
         # Calculate distance between poses
-        dx = self.bve_pose.position.x - self.enemy_pose.position.x
-        dy = self.bve_pose.position.y - self.enemy_pose.position.y
+        dx = self.bve_pose.pose.position.x - self.enemy_pose.pose.position.x
+        dy = self.bve_pose.pose.position.y - self.enemy_pose.pose.position.y
         distance = sqrt(dx**2 + dy**2)
 
         # If enemy is far (>= 20 cm), forward cmd_vel to cmd_vel/filtered
@@ -60,13 +70,13 @@ class PoseDistanceNode(Node):
             return
 
         # Calculate distance between poses
-        dx = self.bve_pose.position.x - self.enemy_pose.position.x
-        dy = self.bve_pose.position.y - self.enemy_pose.position.y
+        dx = self.bve_pose.pose.position.x - self.enemy_pose.pose.position.x
+        dy = self.bve_pose.pose.position.y - self.enemy_pose.pose.position.y
         distance = sqrt(dx**2 + dy**2)
 
         # Publish enemy warning: 1 if enemy is outside 20 cm, 0 if inside
         warning_msg = Int8()
-        warning_msg.data = 1 if distance >= 0.2 else 0
+        warning_msg.data = 1 if distance >= 0.4 else 0
         self.enemy_warning_pub.publish(warning_msg)
 
         # If enemy is close (< 20 cm), publish zero velocity once

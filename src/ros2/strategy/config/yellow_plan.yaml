@@ -12,7 +12,7 @@ strategy_node:
     elevator_order:
      - [3, 1, 2, 1, 2, 0] # Порядок команд элеватора
     #  - [3, 1, 2, 0] # Порядок команд элеватора
-    time_until_end: 95
+    time_until_end: 93
     obstacle_release: 
       - ["center_material_right", "upper_material_right"]
     term_order: 
