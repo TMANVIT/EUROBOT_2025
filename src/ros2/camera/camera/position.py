@@ -184,7 +184,7 @@ class BEVPosePublisher(Node):
 
             # Publish initial pose once and regular pose
             if self.counter == 0:
-                self.initial_pose_publisher.publish(pose_msg)
+                # self.initial_pose_publisher.publish(pose_msg)
                 self.counter = 1
                 imu_pub = Vector3()
                 imu_pub.x = pose_msg.pose.pose.position.x

@@ -35,5 +35,5 @@ if [ "$MAKE_MAP" == true ]; then
 else
   echo "Launching navigation with map..."
   ros2 launch strategy strategy.launch.py
-  # ros2 launch navigation navigation.launch.py
+  ros2 launch navigation navigation.launch.py
 fi

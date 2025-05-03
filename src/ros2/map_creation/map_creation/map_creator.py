@@ -40,7 +40,7 @@ class EnemyMapNode(Node):
         self.map_height = 420        # 2.1 м
         self.origin_x = -1.55        # Центр в (0, 0)
         self.origin_y = -1.05
-        self.radius_px = 60          # 0.3 м = 60 пикселей
+        self.radius_px = 40          # 0.3 м = 60 пикселей
 
         # Список игнорируемых препятствий
         self.ignored_obstacles = set()
