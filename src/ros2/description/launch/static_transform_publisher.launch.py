@@ -26,6 +26,14 @@ def generate_launch_description():
                 arguments = ["-1.57", "0.959966", "0", "0", "0", "0", "map", "torch_yellow_3"],
                 name = "Third_torch_yellow_team"
             )
+
+        init_pose = Node(
+            package="tf2_ros",
+            executable = "static_transform_publisher",
+            arguments = ["-0.28", "-0.80", "0", "-1.57", "0", "0", "map", "odom"],
+            name = "init_pose"
+        )
+
     else:
         torch1_node = Node(
                 package="tf2_ros",
@@ -46,6 +54,13 @@ def generate_launch_description():
                 name = "Third_torch_blue_team"
             )
 
+        init_pose = Node(
+            package="tf2_ros",
+            executable = "static_transform_publisher",
+            arguments = ["0.28", "-0.80", "0", "-1.57", "0", "0", "map", "odom"],
+            name = "init_pose"
+        )
+
     return LaunchDescription(
         [
             Node(
@@ -55,12 +70,12 @@ def generate_launch_description():
                 name = "world_to_map_static"
             ),       
             
-            Node(
-                package="tf2_ros",
-                executable="static_transform_publisher",
-                arguments=["0", "0", "0", "0", "0", "0", "map", "odom"],
-                name="initial_map_to_odom",
-            ),
+            # Node(
+            #     package="tf2_ros",
+            #     executable="static_transform_publisher",
+            #     arguments=["0", "0", "0", "0", "0", "0", "map", "odom"],
+            #     name="initial_map_to_odom",
+            # ),
             
             Node(
                 package="tf2_ros",
@@ -80,5 +95,6 @@ def generate_launch_description():
             torch1_node,
             torch2_node,
             torch3_node,
+            init_pose
         ]
     )

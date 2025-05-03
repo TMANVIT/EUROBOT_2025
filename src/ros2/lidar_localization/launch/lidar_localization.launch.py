@@ -46,12 +46,12 @@ def generate_launch_description():
             #     name="lidar_obstacle_node",
             #     output="screen",
             # ),
-            Node(
-                package="obstacle_detector",
-                executable="obstacle_extractor_node",
-                name="obstacle_extractor_node",
-                output="screen",
-                parameters=[obstacle_detector_params],
-            ),
+            # Node(
+            #     package="obstacle_detector",
+            #     executable="obstacle_extractor_node",
+            #     name="obstacle_extractor_node",
+            #     output="screen",
+            #     parameters=[obstacle_detector_params],
+            # ),
         ]
     )

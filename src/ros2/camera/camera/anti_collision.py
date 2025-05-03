@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist
 from sensor_msgs.msg import LaserScan
-from std_msgs.msg import Int8
+from std_msgs.msg import Int8, UInt8
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSDurabilityPolicy, QoSHistoryPolicy
 from math import sqrt, isinf, isnan, fmod, pi
 
@@ -15,6 +15,7 @@ class PoseDistanceNode(Node):
         self.scan_angle_min = None
         self.scan_angle_increment = None
         self.zero_published = False  # Flag to track if zero velocity was published
+        self.is_activated = False  # Flag to track if node is activated via /timer
 
         self.pose_qos = QoSProfile(
             reliability=QoSReliabilityPolicy.RELIABLE,
@@ -23,17 +24,11 @@ class PoseDistanceNode(Node):
             depth=10
         )
 
-        # Declare parameters for angular exclusion ranges (in radians)
-        # self.exclude_range_1_start = pi*2/4  # Default: no exclusion
-        # self.exclude_range_1_end = pi
-        # self.exclude_range_2_start =  pi
-        # self.exclude_range_2_end = pi*6/4
-
-        self.exclude_range_1_start = 0  # Default: no exclusion
-        self.exclude_range_1_end = pi*4/16
-        self.exclude_range_2_start =  pi*28/16
-        self.exclude_range_2_end = 2*pi
-
+        # Define angular exclusion ranges (in radians)
+        self.exclude_range_1_start = 0  # 0 to π/4
+        self.exclude_range_1_end = pi * 4 / 16
+        self.exclude_range_2_start = pi * 28 / 16  # 7π/4 to 2π
+        self.exclude_range_2_end = 2 * pi
 
         # Subscribers
         self.bve_sub = self.create_subscription(
@@ -56,6 +51,11 @@ class PoseDistanceNode(Node):
             '/scan',
             self.scan_callback,
             10)
+        self.timer_sub = self.create_subscription(
+            UInt8,
+            '/timer',
+            self.timer_callback,
+            10)
 
         # Publishers
         self.cmd_vel_filtered_pub = self.create_publisher(Twist, '/cmd_vel/filtered', 10)
@@ -76,17 +76,20 @@ class PoseDistanceNode(Node):
         self.scan_angle_min = msg.angle_min
         self.scan_angle_increment = msg.angle_increment
 
+    def timer_callback(self, msg):
+        if msg.data == 1 and not self.is_activated:
+            self.is_activated = True
+            self.get_logger().info("Node activated via /timer")
+
     def get_scan_distance(self):
         if self.scan_ranges is None or self.scan_angle_min is None or self.scan_angle_increment is None:
-            self.get_logger().info("Some value is NOne")
+            # self.get_logger().info("Some value is None")
             return float('inf')
 
-        # Get exclusion ranges
-
-        self.get_logger().info("lidar callback")
+        # self.get_logger().info("lidar callback")
         valid_ranges = []
         for i, r in enumerate(self.scan_ranges):
-            if isinf(r) or isnan(r) or r < 0.25:  # Filter out invalid ranges and < 10 cm
+            if isinf(r) or isnan(r) or r < 0.27:  # Filter out invalid ranges and < 25 cm
                 continue
 
             # Calculate the angle for this range
@@ -95,10 +98,9 @@ class PoseDistanceNode(Node):
             # Normalize angle to [0, 2π)
             angle = fmod(angle + 2 * pi, 2 * pi)
 
-            # Check if angle is in exclusion ranges (skip if parameters are invalid, e.g., -1000.0)
+            # Check if angle is in exclusion ranges
             in_exclusion = False
             if self.exclude_range_1_start != -1000.0 and self.exclude_range_1_end != -1000.0:
-                # Normalize exclusion range
                 range_1_start = fmod(self.exclude_range_1_start + 2 * pi, 2 * pi)
                 range_1_end = fmod(self.exclude_range_1_end + 2 * pi, 2 * pi)
                 if range_1_start <= range_1_end:
@@ -109,7 +111,6 @@ class PoseDistanceNode(Node):
                         in_exclusion = True
 
             if self.exclude_range_2_start != -1000.0 and self.exclude_range_2_end != -1000.0:
-                # Normalize exclusion range
                 range_2_start = fmod(self.exclude_range_2_start + 2 * pi, 2 * pi)
                 range_2_end = fmod(self.exclude_range_2_end + 2 * pi, 2 * pi)
                 if range_2_start <= range_2_end:
@@ -125,6 +126,9 @@ class PoseDistanceNode(Node):
         return min(valid_ranges) if valid_ranges else float('inf')
 
     def cmd_vel_callback(self, msg):
+        if not self.is_activated:
+            return
+
         # if self.bve_pose is None or self.enemy_pose is None:
         #     self.cmd_vel_filtered_pub.publish(msg)
         #     return
@@ -134,17 +138,20 @@ class PoseDistanceNode(Node):
         # dy = self.bve_pose.pose.position.y - self.enemy_pose.pose.position.y
         # pose_distance = sqrt(dx**2 + dy**2)
 
-        self.get_logger().info(f"Scan distance = ")
+        # self.get_logger().info(f"Scan distance = ")
 
         # Get scan-based distance
         scan_distance = self.get_scan_distance()
 
-        # If scan distance is >= 50 cm, forward cmd_vel to cmd_vel/filtered
-        if scan_distance >= 0.35:
+        # If scan distance is >= 35 cm, forward cmd_vel to cmd_vel/filtered
+        if scan_distance >= 0.3:
             self.cmd_vel_filtered_pub.publish(msg)
             self.zero_published = False  # Reset flag when enemy is far
 
     def check_distance(self):
+        if not self.is_activated:
+            return
+
         # if self.bve_pose is None or self.enemy_pose is None:
         #     return
 
@@ -157,13 +164,13 @@ class PoseDistanceNode(Node):
         scan_distance = self.get_scan_distance()
         self.get_logger().info(f"Scan distance = {scan_distance}")
 
-        # Publish enemy warning: 1 if scan distance is >= 50 cm, 0 if < 50 cm
+        # Publish enemy warning: 1 if scan distance is >= 30 cm, 0 if < 30 cm
         warning_msg = Int8()
         warning_msg.data = 1 if scan_distance >= 0.3 else 0
         # self.enemy_warning_pub.publish(warning_msg)
 
-        # If scan distance is < 50 cm, publish zero velocity once
-        if scan_distance < 0.35 and not self.zero_published:
+        # If scan distance is < 35 cm, publish zero velocity once
+        if scan_distance < 0.3 and not self.zero_published:
             twist = Twist()
             twist.linear.x = 0.0
             twist.linear.y = 0.0
