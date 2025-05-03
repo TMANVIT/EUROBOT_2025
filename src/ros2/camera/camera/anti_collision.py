@@ -16,6 +16,7 @@ class PoseDistanceNode(Node):
         self.scan_angle_increment = None
         self.zero_published = False  # Flag to track if zero velocity was published
         self.is_activated = False  # Flag to track if node is activated via /timer
+        self.disable_collision_avoidance = False  # Flag to track if collision avoidance is disabled
 
         self.pose_qos = QoSProfile(
             reliability=QoSReliabilityPolicy.RELIABLE,
@@ -56,6 +57,16 @@ class PoseDistanceNode(Node):
             '/timer',
             self.timer_callback,
             10)
+        self.elevator_request_sub = self.create_subscription(
+            UInt8,
+            '/elevator_request',
+            self.elevator_request_callback,
+            10)
+        self.elevator_answer_sub = self.create_subscription(
+            UInt8,
+            '/elevator/answer',
+            self.elevator_answer_callback,
+            10)
 
         # Publishers
         self.cmd_vel_filtered_pub = self.create_publisher(Twist, '/cmd_vel/filtered', 10)
@@ -81,6 +92,16 @@ class PoseDistanceNode(Node):
             self.is_activated = True
             self.get_logger().info("Node activated via /timer")
 
+    def elevator_request_callback(self, msg):
+        if msg.data == 2:
+            self.disable_collision_avoidance = True
+            self.get_logger().info("Collision avoidance disabled")
+
+    def elevator_answer_callback(self, msg):
+        if msg.data == 2:
+            self.disable_collision_avoidance = False
+            self.get_logger().info("Collision avoidance enabled")
+
     def get_scan_distance(self):
         if self.scan_ranges is None or self.scan_angle_min is None or self.scan_angle_increment is None:
             # self.get_logger().info("Some value is None")
@@ -89,7 +110,7 @@ class PoseDistanceNode(Node):
         # self.get_logger().info("lidar callback")
         valid_ranges = []
         for i, r in enumerate(self.scan_ranges):
-            if isinf(r) or isnan(r) or r < 0.27:  # Filter out invalid ranges and < 25 cm
+            if isinf(r) or isnan(r) or r < 0.25:  # Filter out invalid ranges and < 27 cm
                 continue
 
             # Calculate the angle for this range
@@ -129,6 +150,11 @@ class PoseDistanceNode(Node):
         if not self.is_activated:
             return
 
+        if self.disable_collision_avoidance:
+            self.cmd_vel_filtered_pub.publish(msg)
+            self.zero_published = False  # Reset flag to allow future zero publishing
+            return
+
         # if self.bve_pose is None or self.enemy_pose is None:
         #     self.cmd_vel_filtered_pub.publish(msg)
         #     return
@@ -143,13 +169,16 @@ class PoseDistanceNode(Node):
         # Get scan-based distance
         scan_distance = self.get_scan_distance()
 
-        # If scan distance is >= 35 cm, forward cmd_vel to cmd_vel/filtered
-        if scan_distance >= 0.3:
+        # If scan distance is >= 30 cm, forward cmd_vel to cmd_vel/filtered
+        if scan_distance >= 0.28:
             self.cmd_vel_filtered_pub.publish(msg)
             self.zero_published = False  # Reset flag when enemy is far
 
     def check_distance(self):
         if not self.is_activated:
+            return
+
+        if self.disable_collision_avoidance:
             return
 
         # if self.bve_pose is None or self.enemy_pose is None:
@@ -169,8 +198,8 @@ class PoseDistanceNode(Node):
         warning_msg.data = 1 if scan_distance >= 0.3 else 0
         # self.enemy_warning_pub.publish(warning_msg)
 
-        # If scan distance is < 35 cm, publish zero velocity once
-        if scan_distance < 0.3 and not self.zero_published:
+        # If scan distance is < 30 cm, publish zero velocity once
+        if scan_distance < 0.28 and not self.zero_published:
             twist = Twist()
             twist.linear.x = 0.0
             twist.linear.y = 0.0
