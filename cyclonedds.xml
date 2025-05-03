@@ -6,7 +6,7 @@
     <Domain Id="any">
         <General>
             <Interfaces>
-                <NetworkInterface name="wlp2s0" priority="100"/>
+                <NetworkInterface name="eno1" priority="100"/>
             </Interfaces>
 
             <AllowMulticast>true</AllowMulticast>
