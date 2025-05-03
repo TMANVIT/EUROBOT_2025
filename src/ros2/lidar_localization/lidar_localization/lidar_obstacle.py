@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from obstacle_detector.msg import Obstacles
+from sensor_msgs.msg import LaserScan
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSDurabilityPolicy, QoSHistoryPolicy
 from geometry_msgs.msg import Twist
 
@@ -19,7 +20,7 @@ class LidarLocalization(Node):
         )
 
         self.create_subscription(
-            Obstacles, "/raw_obstacles", self.obstacle_callback, 10
+            LaserScan, "/scan", self.obstacle_callback, 10
         )
         
         self.cmd_vel_sub = self.create_subscription(
@@ -36,13 +37,15 @@ class LidarLocalization(Node):
         
         # for obst in obstacles:
         
-        for obs in msg.circles:
-            if obs.center.x < 0.4 and obs.center.x > 0.1 and obs.center.y < 0.4 and obs.center.y > 0.1:
-                self.stop = False
+        for distance in msg.ranges:
+            # if obs.center.x < 0.4 and obs.center.x > 0.1 and obs.center.y < 0.4 and obs.center.y > 0.1:
+            #     self.stop = False
+            if not (distance == 0.0 or distance == float("inf") or distance == float("-inf")):
+                if distance < 0.4 and distance > 0.09:
+                    self.stop = False
+                    self.get_logger().info("Call lidar obstacle")
                 
     def cmd_vel_callback(self, msg):
-
-        # If enemy is far (>= 20 cm), forward cmd_vel to cmd_vel/filtered
         if self.stop:
             self.cmd_vel_filtered_pub.publish(msg)
         else:
