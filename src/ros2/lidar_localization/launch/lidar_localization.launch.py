@@ -40,12 +40,12 @@ def generate_launch_description():
             #     name="prediction_pose_node",
             #     output="screen",
             # ),
-            Node(
-                package="lidar_localization",
-                executable="lidar_obstacle_node",
-                name="lidar_obstacle_node",
-                output="screen",
-            ),
+            # Node(
+            #     package="lidar_localization",
+            #     executable="lidar_obstacle_node",
+            #     name="lidar_obstacle_node",
+            #     output="screen",
+            # ),
             Node(
                 package="obstacle_detector",
                 executable="obstacle_extractor_node",

@@ -208,6 +208,10 @@ class Strategy(Node):
                 self.current_term += 1
                 self.action_tact += 1
                 self.get_logger().info(f"Tact index = {self.action_tact}")
+                msg = Int16()
+                msg.data = 60
+                self.screen_pub.publish(msg)
+                rclpy.shutdown()
             elif self.action_tact == 1:
                 self.elevator_in_progress = False
                 self.current_elevator += 1
