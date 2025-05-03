@@ -20,25 +20,32 @@ def generate_launch_description():
         lidar_localization_params = PathJoinSubstitution(
             [FindPackageShare("lidar_localization"), "config", "lidar_localization_blue.yaml"]
         )
+
     
     return LaunchDescription(
         [
             DeclareLaunchArgument(
                 name="active_param", default_value="true", description="active_param"
             ),
-            Node(
-                package="lidar_localization",
-                executable="lidar_localization_node",
-                name="lidar_localization_node",
-                output="screen",
-                parameters=[lidar_localization_params],
-            ),
+            # Node(
+            #     package="lidar_localization",
+            #     executable="lidar_localization_node",
+            #     name="lidar_localization_node",
+            #     output="screen",
+            #     parameters=[lidar_localization_params],
+            # ),
             # Node(
             #     package="lidar_localization",
             #     executable="prediction_pose_node",
             #     name="prediction_pose_node",
             #     output="screen",
             # ),
+            Node(
+                package="lidar_localization",
+                executable="lidar_obstacle_node",
+                name="lidar_obstacle_node",
+                output="screen",
+            ),
             Node(
                 package="obstacle_detector",
                 executable="obstacle_extractor_node",
