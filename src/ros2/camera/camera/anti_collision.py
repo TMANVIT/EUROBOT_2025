@@ -170,7 +170,8 @@ class PoseDistanceNode(Node):
         scan_distance = self.get_scan_distance()
 
         # If scan distance is >= 30 cm, forward cmd_vel to cmd_vel/filtered
-        if scan_distance >= 0.28:
+        # if scan_distance >= 0.28:
+        if True:
             self.cmd_vel_filtered_pub.publish(msg)
             self.zero_published = False  # Reset flag when enemy is far
 
@@ -191,7 +192,7 @@ class PoseDistanceNode(Node):
 
         # Get scan-based distance
         scan_distance = self.get_scan_distance()
-        self.get_logger().info(f"Scan distance = {scan_distance}")
+        # self.get_logger().info(f"Scan distance = {scan_distance}")
 
         # Publish enemy warning: 1 if scan distance is >= 30 cm, 0 if < 30 cm
         warning_msg = Int8()
@@ -199,7 +200,8 @@ class PoseDistanceNode(Node):
         # self.enemy_warning_pub.publish(warning_msg)
 
         # If scan distance is < 30 cm, publish zero velocity once
-        if scan_distance < 0.28 and not self.zero_published:
+        # if scan_distance < 0.28 and not self.zero_published:
+        if False:
             twist = Twist()
             twist.linear.x = 0.0
             twist.linear.y = 0.0

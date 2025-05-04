@@ -209,6 +209,7 @@ class Strategy(Node):
                 self.current_term += 1
                 self.action_tact += 1
                 self.get_logger().info(f"Tact index = {self.action_tact}")
+                # self.elevator_publish(2)
                 # msg = Int16()
                 # msg.data = 60
                 # self.screen_pub.publish(msg)

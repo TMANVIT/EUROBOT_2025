@@ -62,7 +62,9 @@ class EnemyMapNode(Node):
             "ramp_right": [(139, 369), (219, 409)],
             "stage": [(219, 319), (399, 409)],
             "stage_material_left": [(404, 344), (484, 364)],
-            "stage_material_right": [(134, 344), (214, 364)]
+            "stage_material_right": [(134, 344), (214, 364)],
+            "blue_half" : [(320, 0), (640, 420)],
+            # "yellow_half" : [(320, 0), (o, 420)],
         }
 
         # Базовая карта: занята (0)
