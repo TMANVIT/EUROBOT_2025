@@ -1,7 +1,5 @@
 # EUROBOT 2025
 
-[![EuroBot 2025](https://www.eurobot.org/wp-content/uploads/2021/10/eurobot_logo.png)](https://www.eurobot.org/eurobot-contest/eurobot-2025/)
-
 Repository for the [EuroBot 2025 competition](https://www.eurobot.org/eurobot-contest/eurobot-2025/) by MEPhI students.
 
 ## Table of Contents
