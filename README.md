@@ -1,5 +1,9 @@
 # EUROBOT 2025
 
+<p align="center">
+  <img src="/team.jpg" alt="drawing" width="700"/> 
+</p>
+
 Repository for the [EuroBot 2025 competition](https://www.eurobot.org/eurobot-contest/eurobot-2025/) by MEPhI students.
 
 ## Table of Contents
