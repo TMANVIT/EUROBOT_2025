@@ -1,25 +1,71 @@
-# EUROBOT_2025
+# EUROBOT 2025
 
-Files for EuroBot 2025 competition by MEPhI students
+[![EuroBot 2025](https://www.eurobot.org/wp-content/uploads/2021/10/eurobot_logo.png)](https://www.eurobot.org/eurobot-contest/eurobot-2025/)
 
-## Setup
-In this topic should be instruction to use cofig files
+Repository for the [EuroBot 2025 competition](https://www.eurobot.org/eurobot-contest/eurobot-2025/) by MEPhI students.
 
-## Build/Up
+## Table of Contents
+- [Prerequisites](#prerequisites)
+- [Build](#build)
+  - [Set up Cyclone DDS](#set-up-cyclone-dds)
+- [Running](#running)
+  - [Launch Robot Stack](#launch-robot-stack)
+  - [Launch PC Stack](#launch-pc-stack)
+- [To-Do](#to-do)
+- [Feedback and Support](#feedback-and-support)
 
-In the root directory make ```docker compose build```, then ```docker compose up```
+## Prerequisites
 
-To allow GUI, in your terminal window printing ```xhost +local:docker``` may be needed
+- Docker
+- Python 3.10+
 
-## Run launch file
+## Build
 
-To start robot scenario in docker container print in terminal window ```ros2 launch .....``` 
+The repository supports two launch configurations:
+1. For small Mini PC (Raspberry Pi4) on the robot (see [/rpi_launch](./rpi_launch/rpi4_launch.sh))
+2. For external PC outside the competition area
 
-## TODO
-&#x2610; Fix bugs with running docker compose
+### Set up Cyclone DDS
 
-&#x2610; Make ROS2 environment
+Additional information available on [GitHub](https://github.com/eclipse-cyclonedds/cyclonedds-cxx).
 
-&#x2610; Implement microros-agent node
+**Important:** Configure [cyclonedds.xml](./cyclonedds.xml) before running.
 
-&#x2610; Start camera node
+## Running
+
+### Launch Robot Stack
+
+```bash
+make run-pi
+```
+
+### Launch PC stack
+
+1. Build docker. Write in terminal 
+```
+make build-robot
+```
+
+2. Select your team configuration:
+
+#### For Blue Team:
+```
+make run-blue
+```
+
+#### For Yellow Team:
+'''
+make run-yellow
+'''
+
+## To-Do
+
+- Write development blog on Habr
+- Migrate to Zenoh
+- Separate nodes into different containers
+- Release URDF model
+
+## Feedback and Support
+
+For suggestions, improvements, or issue reporting, please contact: 
+__Timur Manshin__ at [Telegram](https://t.me/tmanvit).
