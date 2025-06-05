@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+     <xacro:include filename="structure.xacro" />
+     <xacro:include filename="sensors.xacro" />
+
+     <link name="base_footprint" />
+     <joint name="base_to_footprint" type="fixed">
+          <parent link="base_footprint" />
+          <child link="base_link" />
+          <origin xyz="0 0 0" rpy="0 0 0" />
+     </joint>
+
+     <xacro:base_m 
+          name="base_link" 
+          mass="5" 
+          filename="package://description/meshes/base_link.STL">
+          <origin
+               xyz="0.016054 -0.0031971 0.10841"
+               rpy="0 0 0" 
+          />
+          <inertia
+          ixx="0.019114"
+          ixy="0.00015199"
+          ixz="6.8537E-05"
+          iyy="0.0061796"
+          iyz="-9.0111E-05"
+          izz="0.019044" />
+     </xacro:base_m>
+     <!-- <Right_Wheel> -->
+     <xacro:wheel_link 
+          name_link="right_wheel" 
+          filename="package://description/meshes/right_wheel.STL"
+          mass="0.08">
+          <origin
+               xyz="-6.245E-17 -2.8449E-16 0.013347"
+               rpy="0 0 0" 
+          />
+          <inertia
+               ixx="3.6651E-05"
+               ixy="9.6988E-21"
+               ixz="-7.7529E-22"
+               iyy="3.6651E-05"
+               iyz="-1.1318E-16"
+               izz="5.4175E-05" 
+          />
+     </xacro:wheel_link>
+     <xacro:wheel_joint
+          name="rightwheel"
+          name_link="right_wheel"> 
+          <origin
+               xyz="0.058997 -0.2 0.021"
+               rpy="-1.5708 0 0" 
+          />
+     </xacro:wheel_joint>
+     <!-- </Right_Wheel> -->
+     <!-- <Left_Wheel> -->
+     <xacro:wheel_link name_link="left_wheel" filename="package://description/meshes/left_wheel.STL"
+          mass="0.08">
+          <origin
+               xyz="4.5103E-17 2.0817E-17 -0.013347"
+               rpy="0 0 0" 
+          />
+          <inertia
+               ixx="3.6634E-05"
+               ixy="1.2292E-20"
+               ixz="-5.2555E-20"
+               iyy="3.6634E-05"
+               iyz="-3.185E-20"
+               izz="5.4175E-05" 
+          />
+     </xacro:wheel_link>
+     <xacro:wheel_joint
+          name="leftwheel"
+          name_link="left_wheel"> 
+          <origin
+               xyz="0.058997 0.2 0.021"
+               rpy="-1.5708 0 0" 
+          />
+     </xacro:wheel_joint>
+     <!-- <Left_Wheel> -->
+     <!-- <IMU> -->
+     <xacro:imu />
+     <!-- <IMU> -->
+     <!-- <Lidar> -->
+     <xacro:lazer
+          xyz="0 0 0.308"
+          rpy = "0 0 0"
+          length="0.041"
+          radius="0.040"
+          mass="0.25" >
+     </xacro:lazer>
+     <!-- <Lidar> -->
+     <!-- <Aruco> -->
+     <xacro:aruco_link_m 
+          filename="package://description/meshes/aruco.STL"
+          mass="0.4">
+          <origin 
+               xyz="-0.0077972 5.7506E-10 -0.038759"
+               rpy="0 0 0" />
+          <inertia
+               ixx="0.00060095"
+               ixy="1.109E-09"
+               ixz="-0.00011373"
+               iyy="0.00065092"
+               iyz="-2.1703E-12"
+               izz="0.00071676" />
+     </xacro:aruco_link_m>
+     <xacro:aruco_joint_m>
+          <origin
+          xyz="-0.003304 0 0.431"
+          rpy="0 0 0" />
+     </xacro:aruco_joint_m>
+     <!-- <Aruco> -->
+</robot>    

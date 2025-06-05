@@ -1,0 +1,20 @@
+<CycloneDDS
+    xmlns="https://cdds.io/config"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://cdds.io/config https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/master/etc/cyclonedds.xsd"
+>
+    <Domain Id="any">
+        <General>
+            <Interfaces>
+                <NetworkInterface name="eno1" priority="100"/>
+            </Interfaces>
+
+            <AllowMulticast>true</AllowMulticast>
+            <MaxMessageSize>65536B</MaxMessageSize>
+
+            <Transport>udp</Transport>
+            <DontRoute>false</DontRoute>
+        </General>
+
+    </Domain>
+</CycloneDDS>

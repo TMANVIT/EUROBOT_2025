@@ -1,0 +1,12 @@
+lidar_localization_node:
+  ros__parameters:
+    side: 1 # 0 - Blue, 1 - Yellow
+    debug_mode: false
+    visualize_candidate: true
+    likelihood_threshold: 0.01
+    consistency_threshold: 0.9
+    frame_id: base_footprint
+    robot_parent_frame_id: map
+    min_R: 0.001
+    max_R: 0.1
+    adaptation_window: 15
